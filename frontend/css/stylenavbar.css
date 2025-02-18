@@ -1,0 +1,97 @@
+/* Bottom Navbar */
+#bottom-navbar {
+  position: fixed;
+  bottom: 0; /* Add more space from the bottom */
+  left: 0;
+  width: 100%;
+  background: #FFBA49; /* Warm yellow background */
+  padding: 12px 0; /* Increased padding for better spacing */
+  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.15); /* Enhanced shadow for depth */
+  height: 70px; /* Adjusted for a more balanced look */
+  display: flex;
+  justify-content: space-between; /* Space between icons */
+  align-items: center;
+  z-index: 1000; /* Ensure it stays on top */
+  border-top-left-radius: 15px; /* Rounded corners for a modern look */
+  border-top-right-radius: 15px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* Adjust Navigation List */
+#bottom-navbar nav ul {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  justify-content: space-between; /* Space between items */
+  position: absolute; /* Allow items to position absolutely */
+  left: 0;
+  right: 0;
+}
+
+/* Adjust Items */
+#bottom-navbar nav ul li {
+  display: flex;
+  align-items: center;
+}
+
+/* Adjust Links */
+#bottom-navbar nav ul li a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  padding: 10px; /* Increased padding for easier clicking */
+  border-radius: 12px; /* Rounded corners for the buttons */
+  background-color: rgba(255, 255, 255, 0.2); /* Light background for buttons */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Soft shadow for a floating effect */
+}
+
+/* Adjust Icons */
+#bottom-navbar nav ul li a img {
+  width: 30px; /* Increased icon size for better visibility */
+  height: 30px;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+/* Hover Effects for Icons */
+#bottom-navbar nav ul li a:hover img {
+  transform: scale(1.1); /* Slight zoom effect */
+  filter: brightness(1.2); /* Slight brightening effect */
+}
+
+/* Hover Effects for Links */
+#bottom-navbar nav ul li a:hover {
+  background-color: rgba(255, 255, 255, 0.3); /* Darker background on hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Stronger shadow effect */
+}
+
+/* Ensure the main content does not overlap */
+body {
+  margin-bottom: 80px; /* Adjusted based on the navbar height */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #bottom-navbar {
+    height: 60px; /* Slightly smaller for mobile */
+    padding: 8px 0; /* Reduced padding for mobile */
+    bottom: 15px; /* More space from the bottom on mobile */
+  }
+
+  #bottom-navbar nav ul {
+    justify-content: space-evenly; /* Even spacing for small screens */
+  }
+
+  #bottom-navbar nav ul li a img {
+    width: 25px; /* Slightly smaller icons for mobile */
+    height: 25px;
+  }
+
+  body {
+    margin-bottom: 70px; /* Adjust for mobile */
+  }
+}
