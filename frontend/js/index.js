@@ -4,6 +4,7 @@ const socket = new WebSocket("ws://localhost:8080");
 // WebSocket event handlers
 socket.onopen = function () {
     console.log("✅ Connected to WebSocket server");
+    updateConnectionStatus("Connected");
 };
 
 // Function to handle different types of messages
@@ -39,6 +40,7 @@ socket.onmessage = function (event) {
 
 socket.onclose = function () {
     console.log("❌ WebSocket connection closed. Attempting to reconnect...");
+    updateConnectionStatus("Disconnected. Reconnecting...");
     setTimeout(function () {
         socket = new WebSocket("ws://localhost:8080");
         // Reassign event handlers
@@ -51,6 +53,7 @@ socket.onclose = function () {
 
 socket.onerror = function (error) {
     console.error("⚠️ WebSocket error:", error);
+    updateConnectionStatus("Error. Check console for details.");
 };
 
 // Function to send messages to the server
