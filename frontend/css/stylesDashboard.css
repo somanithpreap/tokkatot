@@ -9,21 +9,21 @@
 }
 
 html, body {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100vh;
   background-color: #20A39E;
   color: #333;
   overflow-x: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: relative;
 }
 
 /* Container */
 .container {
   width: 90%;
   max-width: 1200px;
-  height: 100%;
+  min-height: calc(100vh - 90px); /* Account for navbar height */
+  margin: 0 auto;
+  padding: 20px 0;
   text-align: center;
 }
 
@@ -90,7 +90,6 @@ header {
 /* Footer */
 footer {
   margin-top: 20px;
-  margin-bottom: 20px;
   text-align: center;
   color: white;
 }

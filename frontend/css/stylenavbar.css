@@ -1,21 +1,27 @@
 /* Bottom Navbar */
 #bottom-navbar {
   position: fixed;
-  bottom: 0; /* Add more space from the bottom */
+  bottom: 0;
   left: 0;
   width: 100%;
-  background: #FFBA49; /* Warm yellow background */
-  padding: 12px 0; /* Increased padding for better spacing */
-  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.15); /* Enhanced shadow for depth */
-  height: 70px; /* Adjusted for a more balanced look */
+  background: #FFBA49;
+  padding: 12px 0;
+  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.15);
+  height: 70px;
   display: flex;
-  justify-content: space-between; /* Space between icons */
+  justify-content: space-around; /* Changed to space-around for better mobile spacing */
   align-items: center;
-  z-index: 1000; /* Ensure it stays on top */
-  border-top-left-radius: 15px; /* Rounded corners for a modern look */
+  z-index: 1000;
+  border-top-left-radius: 15px;
   border-top-right-radius: 15px;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding: 0 10px; /* Adjusted padding for mobile */
+}
+
+/* Add safe area for iPhone X and newer */
+@supports (padding: max(0px)) {
+  #bottom-navbar {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
 }
 
 /* Adjust Navigation List */
@@ -25,16 +31,16 @@
   padding: 0;
   margin: 0;
   width: 100%;
-  justify-content: space-between; /* Space between items */
-  position: absolute; /* Allow items to position absolutely */
-  left: 0;
-  right: 0;
+  justify-content: space-around; /* Evenly space items */
+  align-items: center;
 }
 
 /* Adjust Items */
 #bottom-navbar nav ul li {
   display: flex;
   align-items: center;
+  flex: 1;
+  text-align: center;
 }
 
 /* Adjust Links */
@@ -48,6 +54,8 @@
   border-radius: 12px; /* Rounded corners for the buttons */
   background-color: rgba(255, 255, 255, 0.2); /* Light background for buttons */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Soft shadow for a floating effect */
+  width: 100%;
+  margin: 0 5px;
 }
 
 /* Adjust Icons */
@@ -71,27 +79,56 @@
 
 /* Ensure the main content does not overlap */
 body {
-  margin-bottom: 80px; /* Adjusted based on the navbar height */
+  margin-bottom: 90px; /* Increased margin to prevent overlap */
+  padding-bottom: env(safe-area-inset-bottom); /* Add safe area padding */
+}
+
+/* Add smooth transition for navbar */
+#bottom-navbar {
+  transition: all 0.3s ease;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   #bottom-navbar {
-    height: 60px; /* Slightly smaller for mobile */
-    padding: 8px 0; /* Reduced padding for mobile */
-    bottom: 15px; /* More space from the bottom on mobile */
+    height: 60px;
+    padding: 8px 0;
+    bottom: 0; /* Changed to stick to bottom */
+    border-radius: 0; /* Remove rounded corners for mobile */
   }
 
   #bottom-navbar nav ul {
-    justify-content: space-evenly; /* Even spacing for small screens */
+    justify-content: space-around;
+    padding: 0 5px;
+  }
+
+  #bottom-navbar nav ul li a {
+    padding: 8px; /* Reduced padding for mobile */
+    min-width: 50px; /* Ensure minimum touch target size */
   }
 
   #bottom-navbar nav ul li a img {
-    width: 25px; /* Slightly smaller icons for mobile */
-    height: 25px;
+    width: 28px; /* Slightly larger icons for better touch */
+    height: 28px;
   }
 
   body {
-    margin-bottom: 70px; /* Adjust for mobile */
+    margin-bottom: 80px; /* Increased margin for mobile */
+  }
+}
+
+/* Extra small devices (phones, 480px and down) */
+@media (max-width: 480px) {
+  #bottom-navbar {
+    height: 55px;
+  }
+
+  #bottom-navbar nav ul li a {
+    padding: 6px;
+  }
+
+  #bottom-navbar nav ul li a img {
+    width: 26px;
+    height: 26px;
   }
 }

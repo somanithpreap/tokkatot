@@ -1,10 +1,20 @@
+// Function to update the connection status on the webpage
+function updateConnectionStatus(status) {
+    const statusElement = document.getElementById('connection-status');
+    if (statusElement) {
+        statusElement.textContent = status;
+    } else {
+        console.warn('⚠️ Connection status element not found.');
+    }
+}
+
 // Establish WebSocket connection
-const socket = new WebSocket("ws://localhost:8080");
+let socket = new WebSocket("ws://localhost:8080");
 
 // WebSocket event handlers
 socket.onopen = function () {
     console.log("✅ Connected to WebSocket server");
-    updateConnectionStatus("Connected");
+    updateConnectionStatus(""); // Clear the status message when connected
 };
 
 // Function to handle different types of messages
@@ -40,7 +50,7 @@ socket.onmessage = function (event) {
 
 socket.onclose = function () {
     console.log("❌ WebSocket connection closed. Attempting to reconnect...");
-    updateConnectionStatus("Disconnected. Reconnecting...");
+    updateConnectionStatus("Connecting...");
     setTimeout(function () {
         socket = new WebSocket("ws://localhost:8080");
         // Reassign event handlers
