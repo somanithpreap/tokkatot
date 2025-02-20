@@ -67,3 +67,8 @@ new Chart(ctx, {
     },
 });
 
+// Function to update temperature
+function updateTemperature(temp) {
+    document.querySelector("#temperature").textContent = temp + "°C";
+}
+

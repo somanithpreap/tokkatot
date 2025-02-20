@@ -23,3 +23,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   });
 });
+
+// Function to handle sensor control updates
+function handleUpdate(data) {
+    console.log("Home update:", data);
+}
+
+// Function to handle alerts
+function handleAlert(data) {
+    console.warn("Home alert:", data);
+}
