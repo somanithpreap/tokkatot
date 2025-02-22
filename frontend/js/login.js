@@ -5,25 +5,6 @@ pField = form.querySelector(".password"),
 pInput = pField.querySelector("input");
 const togglePassword = document.querySelector(".toggle-password");
 
-// Establish WebSocket connection
-const socket = new WebSocket('ws://localhost:8080'); // Adjust the URL as needed
-
-socket.onopen = () => {
-  console.log('WebSocket connection established');
-};
-
-socket.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  if (data.type === 'loginResponse') {
-    if (data.success) {
-      localStorage.setItem('registrationKey', data.registrationKey);
-      window.location.href = form.getAttribute("action");
-    } else {
-      alert('Login failed: ' + data.message);
-    }
-  }
-};
-
 togglePassword.addEventListener("click", () => {
   const type = pInput.getAttribute("type") === "password" ? "text" : "password";
   pInput.setAttribute("type", type);

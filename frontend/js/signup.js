@@ -9,13 +9,6 @@ const form = document.querySelector("form"),
 const togglePassword = document.querySelector(".toggle-password");
 const toggleConfirmPassword = document.querySelector(".toggle-confirm-password");
 
-// Establish WebSocket connection
-const socket = new WebSocket('ws://localhost:8080'); // Adjust the URL as needed
-
-socket.onopen = () => {
-  console.log('WebSocket connection established');
-};
-
 socket.onmessage = (event) => {
   const data = JSON.parse(event.data);
   if (data.type === 'signupResponse') {

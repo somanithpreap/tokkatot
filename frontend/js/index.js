@@ -38,6 +38,22 @@ function handleMessage(event) {
                 updateTemperature(message.data);
             }
             break;
+        case "loginResponse":
+            if (message.success) {
+                localStorage.setItem('registrationKey', message.registrationKey);
+                window.location.href = form.getAttribute("action");
+            } else {
+                alert('Login failed: ' + message.message);
+            }
+            break;
+        case "signupResponse":
+            if (message.success) {
+                localStorage.setItem('registrationKey', message.registrationKey);
+                window.location.href = form.getAttribute("action");
+            } else {
+                alert('Signup failed: ' + message.message);
+            }
+            break;
         default:
             console.log("📩 Message from server:", message.data);
     }
@@ -55,7 +71,7 @@ socket.onclose = function () {
         socket = new WebSocket("ws://localhost:8080");
         // Reassign event handlers
         socket.onopen = socket.onopen;
-        socket.onmessage = socket.onmessage;
+        socket.onmessage = handleMessage;
         socket.onclose = socket.onclose;
         socket.onerror = socket.onerror;
     }, reconnectInterval);
