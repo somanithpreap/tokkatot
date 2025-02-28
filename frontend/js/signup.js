@@ -93,5 +93,17 @@ form.onsubmit = (e) => {
       password: pInput.value
     };
     socket.send(JSON.stringify(signupData));
+    // Handle server response for signup
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'signupResponse') {
+            if (data.success) {
+                window.location.href = "home.html"; // Redirect to home on success
+            } else {
+                alert('Signup failed: ' + data.message);
+            }
+        }
+    };
+
   }
 }

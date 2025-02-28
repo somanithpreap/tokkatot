@@ -54,6 +54,18 @@ form.onsubmit = (e) => {
       password: pInput.value
     };
     socket.send(JSON.stringify(loginData));
+    // Handle server response for login
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'loginResponse') {
+            if (data.success) {
+                window.location.href = "home.html"; // Redirect to home on success
+            } else {
+                alert('Login failed: ' + data.message);
+            }
+        }
+    };
+
   }
 }
 
