@@ -45,7 +45,7 @@ func LoginHandler(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "token",
 		Value:    signedToken,
-		Expires:  time.Now().Add(time.Hour * 1),
+		Expires:  time.Now().Add(0),
 		HTTPOnly: true,
 		Secure:   false,
 		SameSite: fiber.CookieSameSiteLaxMode,
@@ -84,8 +84,8 @@ func main() {
 	app.Post("/login", LoginHandler)
 	api := app.Group("/api")
 	api.Get("/protected", ProtectedHandler)
-	log.Println("Server is running on port 5500")
-	log.Fatal(app.Listen(":5500"))
+	log.Println("Server is running on port 3000")
+	log.Fatal(app.Listen(":3000"))
 }
 
 func HelloWorld(c *fiber.Ctx) error {
