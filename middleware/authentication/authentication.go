@@ -1,8 +1,6 @@
 package authentication
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,20 +8,11 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-var SecretKey string
+const SecretKey = "supersecretkey"
 
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-}
-
-func generateRandomSecret() (string, error) {
-	b := make([]byte, 32)
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(b), nil
 }
 
 func LoginHandler(c *fiber.Ctx) error {
@@ -67,12 +56,4 @@ func JwtErrorHandler(c *fiber.Ctx, err error) error {
 
 func ProtectedHandler(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"message": "You have access to this protected route"})
-}
-
-func init() {
-	secret, err := generateRandomSecret()
-	if err != nil {
-		panic(err)
-	}
-	SecretKey = secret
 }

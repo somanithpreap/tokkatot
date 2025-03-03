@@ -1,35 +1,148 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
+	"regexp"
 	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 	"github.com/golang-jwt/jwt/v4"
+	"golang.org/x/crypto/bcrypt"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
-type Message struct {
-	Type    string `json:"type"`
-	Payload string `json:"payload"`
+var db *sql.DB                                 // Database connection
+var clients = make(map[string]*websocket.Conn) // Keep track of connected WebSocket clients
+var mutex = sync.Mutex{}                       // Prevent data issues when multiple clients connect
+var secretKey = []byte("your_secret_key")      // Secret key for JWT token
+
+// ====== STRUCT FOR DATABASE & MESSAGES ====== //
+type User struct {
+	ID       int    `json:"id"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Key      string `json:"key"` // Registration Key for product verification
 }
 
-var clients = make(map[string]*websocket.Conn)
-var mutex = sync.Mutex{}
-var secretKey = []byte("your_secret_key")
+type Message struct {
+	Type    string `json:"type"`    // Message type
+	Payload string `json:"payload"` // Data sent in message
+}
 
+// ====== INITIALIZE DATABASE ====== //
+func initDB() {
+	var err error
+	db, err = sql.Open("sqlite3", "users.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Create Users table with username, password, and registration key
+	log.Println("Database initialized at: users.db")
+
+	createUsersTable := `
+	CREATE TABLE IF NOT EXISTS users (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		username TEXT UNIQUE NOT NULL,
+		password TEXT NOT NULL,
+		key TEXT NOT NULL
+	);
+	`
+
+	_, err = db.Exec(createUsersTable)
+	if err != nil {
+		log.Fatal("Error creating users table:", err)
+	}
+	log.Println("Tables created successfully")
+}
+
+// ====== AUTHENTICATION FUNCTIONS ====== //
+// Encrypt password before storing in the database
+func HashPassword(password string) (string, error) {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(hashed), err
+}
+
+// Check if the entered password matches the stored hashed password
+func CheckPassword(hashed, password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashed), []byte(password))
+}
+
+// Middleware to check if the user is logged in
+func ValidateCookieMiddleware(c *fiber.Ctx) error {
+	cookie := c.Cookies("token")
+	if cookie == "" {
+		// Redirect to sign-up page if no token
+		return c.Redirect("/signup")
+	}
+	return c.Next() // Continue to the requested page
+}
+
+// ====== REGISTER USER ====== //
+func RegisterHandler(c *fiber.Ctx) error {
+	username := c.FormValue("username")
+	password := c.FormValue("password")
+	regKey := c.FormValue("key") // User must provide a product key
+
+	// Validate username (only letters, numbers, and underscores allowed)
+	validUsername := regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
+	if !validUsername.MatchString(username) {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid username. Only letters, numbers, and underscores are allowed"})
+	}
+
+	// Ensure password is at least 8 characters long
+	if len(password) < 8 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Password must be at least 8 characters"})
+	}
+
+	// Check if username exists
+	var exists bool
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = ?)", username).Scan(&exists)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error"})
+	}
+	if exists {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Username already taken"})
+	}
+
+	// Hash password
+	hashedPassword, err := HashPassword(password)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to hash password"})
+	}
+
+	// Store user in database
+	_, err = db.Exec("INSERT INTO users (username, password, key) VALUES (?, ?, ?)", username, hashedPassword, regKey)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to register"})
+	}
+
+	// Redirect to home page after successful signup
+	return c.Redirect("/home")
+}
+
+// ====== LOGIN USER ====== //
 func LoginHandler(c *fiber.Ctx) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
 
-	if username != "admin" || password != "password" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Invalid Credentials",
-		})
+	var hashedPassword string
+	err := db.QueryRow("SELECT password FROM users WHERE username = ?", username).Scan(&hashedPassword)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid username or password"})
 	}
 
+	// Check if password matches
+	if err := CheckPassword(hashedPassword, password); err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid username or password"})
+	}
+
+	// Generate JWT token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"client_id": username,
 		"exp":       time.Now().Add(time.Hour * 1).Unix(),
@@ -37,62 +150,22 @@ func LoginHandler(c *fiber.Ctx) error {
 
 	signedToken, err := token.SignedString(secretKey)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to generate token",
-		})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token"})
 	}
 
+	// Set token in cookie
 	c.Cookie(&fiber.Cookie{
 		Name:     "token",
 		Value:    signedToken,
-		Expires:  time.Now().Add(0),
+		Expires:  time.Now().Add(time.Hour * 1),
 		HTTPOnly: true,
-		Secure:   false,
-		SameSite: fiber.CookieSameSiteLaxMode,
-		Domain:   "",
-		Path:     "/",
 	})
 
-	log.Println("Cookie Set:", signedToken)
-
-	return c.JSON(fiber.Map{
-		"message": "Login Successful",
-		"token":   signedToken,
-	})
+	// Redirect to home page after successful login
+	return c.Redirect("/home")
 }
 
-func ProtectedHandler(c *fiber.Ctx) error {
-	cookie := c.Cookies("token")
-	if cookie == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "No token provided",
-		})
-	}
-	return c.JSON(fiber.Map{
-		"message": "Access granted",
-		"token":   cookie,
-	})
-}
-
-func main() {
-	app := fiber.New()
-
-	app.Get("/ws", websocket.New(handleWebSocket))
-	go monitorConnections()
-
-	// Public route
-	app.Post("/login", LoginHandler)
-	api := app.Group("/api")
-	api.Get("/protected", ProtectedHandler)
-	log.Println("Server is running on port 3000")
-	log.Fatal(app.Listen(":3000"))
-}
-
-func HelloWorld(c *fiber.Ctx) error {
-	return c.SendString("Hello World")
-}
-
-// WebSocket Connection
+// ====== HANDLE WEBSOCKET CONNECTIONS ====== //
 func handleWebSocket(c *websocket.Conn) {
 	defer c.Close()
 
@@ -104,109 +177,69 @@ func handleWebSocket(c *websocket.Conn) {
 	}
 
 	mutex.Lock()
-	existingConn, exists := clients[clientID]
-	if exists {
-		log.Println("Closing previous connection for client:", clientID)
-		existingConn.Close()
-	}
 	clients[clientID] = c
 	mutex.Unlock()
-
-	log.Println("Websocket client connected:", clientID)
-
-	c.SetPongHandler(func(appData string) error {
-		log.Println("Received Pong from client:", clientID)
-		return nil
-	})
 
 	for {
 		_, msg, err := c.ReadMessage()
 		if err != nil {
-			log.Println("Read error from", clientID, ":", err)
 			break
 		}
 
 		var receivedMsg Message
 		err = json.Unmarshal(msg, &receivedMsg)
 		if err != nil {
-			log.Println("Invalid message format:", err)
 			continue
 		}
-		// WebSocket Request Handling
+
+		// Handle different message types
 		switch receivedMsg.Type {
-		case "sensor_data":
-			log.Printf("Received sensor data from %s: %s\n", clientID, receivedMsg.Payload)
-			response := Message{Type: "ack", Payload: "Command executed"}
-			sendMessage(c, response)
-
-		case "command":
-			log.Printf("Received command from %s: %s\n", clientID, receivedMsg.Payload)
-			response := Message{Type: "ack", Payload: "Command executed"}
-			sendMessage(c, response)
-
-		default:
-			log.Println("Unknown message type from", clientID)
-			response := Message{Type: "error", Payload: "Unknown message type"}
-			sendMessage(c, response)
+		case "ping":
+			sendMessage(c, Message{Type: "pong", Payload: "alive"})
 		}
-	}
 
-	// Remove client when disconnected
+	}
 	mutex.Lock()
 	delete(clients, clientID)
 	mutex.Unlock()
-	log.Println("disconnected:", clientID)
 }
 
+// Send a message to a WebSocket client
 func sendMessage(c *websocket.Conn, msg Message) {
 	responseJSON, _ := json.Marshal(msg)
-	err := c.WriteMessage(websocket.TextMessage, responseJSON)
-	if err != nil {
-		log.Println("Write error:", err)
-	}
+	_ = c.WriteMessage(websocket.TextMessage, responseJSON)
 }
 
-func monitorConnections() {
-	for {
-		time.Sleep(10 * time.Second)
-		mutex.Lock()
-		for clientID, conn := range clients {
-			err := conn.WriteMessage(websocket.PingMessage, nil)
-			if err != nil {
-				log.Println("Ping failed for client:", clientID, "removing client")
-				conn.Close()
-				delete(clients, clientID)
-			}
-		}
-		mutex.Unlock()
-	}
-}
-
+// Validate JWT token for WebSocket connections
 func validateToken(c *websocket.Conn) string {
-	_, msg, err := c.ReadMessage()
-	if err != nil {
-		log.Println("Token read error:", err)
-		return ""
-	}
+	return ""
+}
 
-	var receivedMsg Message
-	err = json.Unmarshal(msg, &receivedMsg)
-	if err != nil {
-		log.Println("Invalid token format:", err)
-		return ""
-	}
+// ====== SETUP ROUTES & START SERVER ====== //
+func main() {
+	initDB()
+	defer db.Close()
 
-	token, err := jwt.Parse(receivedMsg.Payload, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fiber.ErrUnauthorized
-		}
-		return secretKey, nil
+	app := fiber.New()
+
+	// User authentication routes
+	app.Post("/register", RegisterHandler)
+	app.Post("/login", LoginHandler)
+
+	// WebSocket route
+	app.Get("/ws", websocket.New(handleWebSocket))
+
+	// Protected route
+	api := app.Group("/api", ValidateCookieMiddleware)
+	api.Get("/protected", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{"message": "Access granted"})
 	})
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims["client_id"].(string)
-	} else {
-		log.Println("Invalid token:", err)
-		return ""
-	}
+	// Home page route
+	app.Get("/home", func(c *fiber.Ctx) error {
+		return c.SendString("Welcome to the Home Page")
+	})
+
+	log.Println("Server is running on port 3000")
+	log.Fatal(app.Listen(":3000"))
 }
