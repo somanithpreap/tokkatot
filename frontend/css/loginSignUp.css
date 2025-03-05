@@ -85,28 +85,29 @@ form .field.error input {
   position: absolute;
   top: 50%;
   font-size: 18px;
-  pointer-events: none;
   transform: translateY(-50%);
 }
 .input-area .icon {
   left: 15px;
   color: #bfbfbf;
   transition: color 0.2s ease;
+  pointer-events: none;
 }
 .input-area .error-icon {
-  right: 15px;
+  right: 40px;
   color: #dc3545;
+  pointer-events: none;
 }
 .input-area .toggle-password,
 .input-area .toggle-confirm-password {
-  right: 15px; /* Adjusted position */
-  top: 50%; /* Center vertically */
-  transform: translateY(-50%); /* Center vertically */
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
   cursor: pointer;
   color: #bfbfbf;
-  transition: color 0.2s ease;
-  pointer-events: auto; /* Ensure it is clickable */
-  z-index: 2; /* Ensure it is above other elements */
+  font-size: 18px;
+  z-index: 10;
 }
 .input-area .toggle-password:hover,
 .input-area .toggle-confirm-password:hover {
