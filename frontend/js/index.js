@@ -9,17 +9,18 @@ function updateConnectionStatus(status) {
 }
 
 // Establish WebSocket connection
-let socket = new WebSocket("ws://localhost:8080");
+let socket = new WebSocket("ws://localhost:5500/ws");
 
 // WebSocket event handlers
 socket.onopen = function () {
     console.log("✅ Connected to WebSocket server");
-    updateConnectionStatus(""); // Clear the status message when connected
+    updateConnectionStatus("Connected"); // Update the status message when connected
 };
 
 // Function to handle different types of messages
 function handleMessage(event) {
     const message = JSON.parse(event.data);
+    console.log("📩 Message from server:", message);
     switch (message.type) {
         case "update":
             console.log("🔄 Update received:", message.data);
@@ -41,7 +42,7 @@ function handleMessage(event) {
         case "loginResponse":
             if (message.success) {
                 localStorage.setItem('registrationKey', message.registrationKey);
-                window.location.href = form.getAttribute("action");
+                window.location.href = document.querySelector(".login-form").getAttribute("action");
             } else {
                 alert('Login failed: ' + message.message);
             }
@@ -49,7 +50,7 @@ function handleMessage(event) {
         case "signupResponse":
             if (message.success) {
                 localStorage.setItem('registrationKey', message.registrationKey);
-                window.location.href = form.getAttribute("action");
+                window.location.href = document.querySelector(".signup-form").getAttribute("action");
             } else {
                 alert('Signup failed: ' + message.message);
             }
@@ -68,9 +69,12 @@ socket.onclose = function () {
     console.log("❌ WebSocket connection closed. Attempting to reconnect...");
     updateConnectionStatus("Connecting...");
     setTimeout(function () {
-        socket = new WebSocket("ws://localhost:8080");
+        socket = new WebSocket("ws://localhost:5500/ws");
         // Reassign event handlers
-        socket.onopen = socket.onopen;
+        socket.onopen = function () {
+            console.log("✅ Reconnected to WebSocket server");
+            updateConnectionStatus("Connected"); // Update the status message when connected
+        };
         socket.onmessage = handleMessage;
         socket.onclose = socket.onclose;
         socket.onerror = socket.onerror;
