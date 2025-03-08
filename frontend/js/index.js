@@ -4,8 +4,13 @@ function getUsername() {
 		return JSON.parse(atob(cookie[1].split(".")[1])).client_id;
 	else {
 		document.cookie = "";
-		window.location.href = "http://localhost:8080";
+		window.location.href = getURL();
 	}
 }
 
-document.getElementById("username").textContent = getUsername();
+function getURL() {
+	return "https://" + window.location.hostname + ":" + window.location.port;
+}
+
+if (document.getElementById("username"))
+	document.getElementById("username").textContent = getUsername();

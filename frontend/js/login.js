@@ -1,3 +1,6 @@
+document.querySelector("form").action = getURL() + "/login";
+document.getElementById("signup-link").href = getURL() + "/signup";
+
 const form = document.querySelector("form"),
 	uField = form.querySelector(".username"),
 	uInput = uField.querySelector("input"),
@@ -11,6 +14,7 @@ togglePassword.addEventListener("click", () => {
 	togglePassword.classList.toggle("fa-eye-slash");
 });
 
+/*
 form.onsubmit = (e) => {
 	e.preventDefault();
 	uInput.value == "" ? uField.classList.add("shake", "error") : checkUsername();
@@ -74,3 +78,4 @@ form.onsubmit = (e) => {
 		};
 	}
 };
+*/

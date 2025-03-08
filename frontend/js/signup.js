@@ -1,34 +1,42 @@
+document.querySelector("form").action = getURL() + "/register";
+document.getElementById("login-link").href = getURL();
+
 const form = document.querySelector("form"),
-  uField = form.querySelector(".username"),
-  uInput = uField.querySelector("input"),
-  pField = form.querySelector(".password"),
-  pInput = pField.querySelector("input"),
-  cpField = form.querySelector(".confirm-password"),
-  cpInput = cpField.querySelector("input");
+	uField = form.querySelector(".username"),
+	uInput = uField.querySelector("input"),
+	pField = form.querySelector(".password"),
+	pInput = pField.querySelector("input"),
+	cpField = form.querySelector(".confirm-password"),
+	cpInput = cpField.querySelector("input");
 
 // Get the toggle password icons
 const togglePassword = document.querySelector(".toggle-password");
-const toggleConfirmPassword = document.querySelector(".toggle-confirm-password");
+const toggleConfirmPassword = document.querySelector(
+	".toggle-confirm-password",
+);
 
 // Password toggle functionality
-document.addEventListener('DOMContentLoaded', () => {
-  // Toggle password visibility
-  togglePassword.addEventListener("click", function() {
-    const type = pInput.getAttribute("type") === "password" ? "text" : "password";
-    pInput.setAttribute("type", type);
-    this.classList.toggle("fa-eye");
-    this.classList.toggle("fa-eye-slash");
-  });
+document.addEventListener("DOMContentLoaded", () => {
+	// Toggle password visibility
+	togglePassword.addEventListener("click", function () {
+		const type =
+			pInput.getAttribute("type") === "password" ? "text" : "password";
+		pInput.setAttribute("type", type);
+		this.classList.toggle("fa-eye");
+		this.classList.toggle("fa-eye-slash");
+	});
 
-  // Toggle confirm password visibility
-  toggleConfirmPassword.addEventListener("click", function() {
-    const type = cpInput.getAttribute("type") === "password" ? "text" : "password";
-    cpInput.setAttribute("type", type);
-    this.classList.toggle("fa-eye");
-    this.classList.toggle("fa-eye-slash");
-  });
+	// Toggle confirm password visibility
+	toggleConfirmPassword.addEventListener("click", function () {
+		const type =
+			cpInput.getAttribute("type") === "password" ? "text" : "password";
+		cpInput.setAttribute("type", type);
+		this.classList.toggle("fa-eye");
+		this.classList.toggle("fa-eye-slash");
+	});
 });
 
+/*
 // Socket functionality
 if (typeof socket !== 'undefined') {
   socket.onmessage = (event) => {
@@ -49,7 +57,7 @@ form.onsubmit = (e) => {
   (uInput.value == "") ? uField.classList.add("shake", "error") : checkUsername();
   (pInput.value == "") ? pField.classList.add("shake", "error") : checkPass();
   (cpInput.value == "") ? cpField.classList.add("shake", "error") : checkConfirmPass();
-  
+
   setTimeout(() => {
     uField.classList.remove("shake");
     pField.classList.remove("shake");
@@ -105,3 +113,4 @@ form.onsubmit = (e) => {
     }
   }
 }
+*/
