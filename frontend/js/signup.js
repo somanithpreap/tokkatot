@@ -53,25 +53,49 @@ form.addEventListener("submit", function (event) {
             },
             body: JSON.stringify(data),
         })
-            .then((response) => response.json())
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then((error) => {
+                        throw error;
+                    });
+                }
+                return response.json();
+            })
             .then((result) => {
                 if (result.error) {
-                    displayError(result.error);
+                    handleServerErrors(result.error);
                 } else {
                     window.location.href = "/";
                 }
             })
             .catch((error) => {
                 console.error("Error:", error);
-                displayError("An unexpected error occurred. Please try again.");
+                handleServerErrors(error);
             });
     }
 });
 
-function displayError(message) {
-    const errorElement = document.querySelector(".error-txt");
-    errorElement.textContent = message;
-    errorElement.style.display = "block";
+function handleServerErrors(errors) {
+    if (errors.username) {
+        uField.classList.add("error");
+        let errorTxt = uField.querySelector(".error-txt");
+        errorTxt.innerText = errors.username;
+    }
+    if (errors.password) {
+        pField.classList.add("error");
+        let errorTxt = pField.querySelector(".error-txt");
+        errorTxt.innerText = errors.password;
+    }
+    if (errors.confirmPassword) {
+        cpField.classList.add("error");
+        let errorTxt = cpField.querySelector(".error-txt");
+        errorTxt.innerText = errors.confirmPassword;
+    }
+    if (errors.registrationKey) {
+        kField.classList.add("error");
+        let errorTxt = kField.querySelector(".error-txt");
+        errorTxt.innerText = errors.registrationKey;
+    }
 }
 
 function checkUsername() {
