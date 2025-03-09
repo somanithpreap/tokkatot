@@ -54,8 +54,6 @@ func main() {
 
 	defer authentication.DB.Close()
 
-	// app.Get("/ws", websocket.New(websocket.handleWebSocket))
-
-	log.Println("Server is running on port 4433")
-	log.Fatal(app.ListenTLS(":4433", os.Getenv("TLS_CERT"), os.Getenv("TLS_KEY")))
+	log.Println("Server is running on port 5500")
+	log.Fatal(app.ListenTLS(":5500", os.Getenv("TLS_CERT"), os.Getenv("TLS_KEY")))
 }
