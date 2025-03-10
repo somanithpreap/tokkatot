@@ -1,100 +1,88 @@
 document.querySelector("form").action = getURL() + "/login";
-document.getElementById("signup-link").href = getURL() + "/signup";
+document.getElementById("signup-link").href = getURL() + "/register";
 
 const form = document.querySelector("form"),
-    uField = form.querySelector(".username"),
-    uInput = uField.querySelector("input"),
-    pField = form.querySelector(".password"),
-    pInput = pField.querySelector("input");
+	uField = form.querySelector(".username"),
+	uInput = uField.querySelector("input"),
+	pField = form.querySelector(".password"),
+	pInput = pField.querySelector("input");
 
 // Get the toggle password icon
 const togglePassword = document.querySelector(".toggle-password");
 
 // Password toggle functionality
 document.addEventListener("DOMContentLoaded", () => {
-    // Toggle password visibility
-    togglePassword.addEventListener("click", function () {
-        const type = pInput.getAttribute("type") === "password" ? "text" : "password";
-        pInput.setAttribute("type", type);
-        this.classList.toggle("fa-eye");
-        this.classList.toggle("fa-eye-slash");
-    });
+	// Toggle password visibility
+	togglePassword.addEventListener("click", function () {
+		const type =
+			pInput.getAttribute("type") === "password" ? "text" : "password";
+		pInput.setAttribute("type", type);
+		this.classList.toggle("fa-eye");
+		this.classList.toggle("fa-eye-slash");
+	});
 });
 
 form.addEventListener("submit", function (event) {
-    event.preventDefault();
+	event.preventDefault();
 
-    checkUsername();
-    checkPass();
+	checkUsername();
+	checkPass();
 
-    if (!uField.classList.contains("error") && !pField.classList.contains("error")) {
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
+	if (
+		!uField.classList.contains("error") &&
+		!pField.classList.contains("error")
+	) {
+		const formData = new FormData(form);
 
-        fetch(form.action, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    return response.json().then((error) => {
-                        throw error;
-                    });
-                }
-                return response.json();
-            })
-            .then((result) => {
-                if (result.error) {
-                    handleServerErrors(result.error);
-                } else {
-                    window.location.href = "/";
-                }
-            })
-            .catch((error) => {
-                console.error("Error:", error);
-                handleServerErrors(error);
-            });
-    }
+		fetch(form.action, {
+			method: "POST",
+			body: formData,
+		}).then((response) => {
+			if (response.ok) window.location.href = "/";
+			else {
+				return response.json().then((error) => {
+					handleServerErrors(error.error);
+					console.error("Error: ", error.error);
+				});
+			}
+		});
+	}
 });
 
-function handleServerErrors(errors) {
-    if (errors.username) {
-        uField.classList.add("error");
-        let errorTxt = uField.querySelector(".error-txt");
-        errorTxt.innerText = errors.username;
-    }
-    if (errors.password) {
-        pField.classList.add("error");
-        let errorTxt = pField.querySelector(".error-txt");
-        errorTxt.innerText = errors.password;
-    }
+function handleServerErrors(error) {
+	if (error == "Invalid username") {
+		uField.classList.add("error");
+		let errorTxt = uField.querySelector(".error-txt");
+		errorTxt.innerText = "ឈ្មោះអ្នកប្រើប្រាស់មិនត្រឹមត្រូវ";
+	} else if (error == "Invalid password") {
+		pField.classList.add("error");
+		let errorTxt = pField.querySelector(".error-txt");
+		errorTxt.innerText = "ពាក្យសម្ងាត់មិនត្រឹមត្រូវ";
+	}
 }
 
 function checkUsername() {
-    if (uInput.value == "") {
-        uField.classList.add("error");
-        uField.classList.remove("valid");
-        let errorTxt = uField.querySelector(".error-txt");
-        errorTxt.innerText = "Username can't be blank";
-    } else {
-        uField.classList.remove("error");
-        uField.classList.add("valid");
-    }
+	if (uInput.value == "") {
+		uField.classList.add("error");
+		uField.classList.remove("valid");
+		let errorTxt = uField.querySelector(".error-txt");
+		errorTxt.innerText = "Username can't be blank";
+	} else {
+		uField.classList.remove("error");
+		uField.classList.add("valid");
+	}
 }
 
 function checkPass() {
-    if (pInput.value == "") {
-        pField.classList.add("error");
-        pField.classList.remove("valid");
-        let errorTxt = pField.querySelector(".error-txt");
-        errorTxt.innerText = "Password can't be blank";
-    } else {
-        pField.classList.remove("error");
-        pField.classList.add("valid");
-    }
+	if (pInput.value == "") {
+		pField.classList.add("error");
+		pField.classList.remove("valid");
+		let errorTxt = pField.querySelector(".error-txt");
+		errorTxt.innerText = "Password can't be blank";
+	} else {
+		pField.classList.remove("error");
+		pField.classList.add("valid");
+	}
 }
 /*
 form.onsubmit = (e) => {

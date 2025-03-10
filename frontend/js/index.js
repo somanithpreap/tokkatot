@@ -4,12 +4,12 @@ function getUsername() {
 		return JSON.parse(atob(cookie[1].split(".")[1])).client_id;
 	else {
 		document.cookie = "";
-		window.location.href = getURL();
+		window.location.href = getURL() + "/login";
 	}
 }
 
 function getURL() {
-	return "https://" + window.location.hostname + ":" + window.location.port;
+	return window.location.origin;
 }
 
 if (document.getElementById("username"))
