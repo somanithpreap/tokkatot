@@ -19,23 +19,40 @@ func main() {
 	app.Static("/css", "../frontend/css")
 	app.Static("/js", "../frontend/js")
 
+	app.Get("/login", func(c *fiber.Ctx) error {
+		if authentication.ValidateCookie(c) == nil {
+			return c.Redirect("/")
+		}
+		return c.SendFile("../frontend/pages/login.html")
+	})
+
 	// Home page route
 	app.Get("/", func(c *fiber.Ctx) error {
 		if authentication.ValidateCookie(c) != nil {
-			return c.SendFile("../frontend/pages/login.html")
+			return c.Redirect("/login")
 		}
 		return c.SendFile("../frontend/pages/index.html")
 	})
 
-	app.Get("/signup", func(c *fiber.Ctx) error {
+	app.Get("/register", func(c *fiber.Ctx) error {
 		if authentication.ValidateCookie(c) == nil {
 			return c.Redirect("/")
 		}
 		return c.SendFile("../frontend/pages/signup.html")
 	})
 
-	app.Static("/dashboard", "../frontend/pages/dashboard.html")
-	app.Static("/settings", "../frontend/pages/settings.html")
+	app.Get("/dashboard", func(c *fiber.Ctx) error {
+		if authentication.ValidateCookie(c) == nil {
+			return c.SendFile("../frontend/pages/dashboard.html")
+		}
+		return c.Redirect("/login")
+	})
+	app.Get("/settings", func(c *fiber.Ctx) error {
+		if authentication.ValidateCookie(c) == nil {
+			return c.SendFile("../frontend/pages/settings.html")
+		}
+		return c.Redirect("/login")
+	})
 
 	// User authentication routes
 	app.Post("/register", authentication.RegisterHandler)
@@ -56,6 +73,6 @@ func main() {
 
 	// app.Get("/ws", websocket.New(websocket.handleWebSocket))
 
-	log.Println("Server is running on port 4433")
-	log.Fatal(app.ListenTLS(":4433", os.Getenv("TLS_CERT"), os.Getenv("TLS_KEY")))
+	log.Println("Server is running on port 4000")
+	log.Fatal(app.ListenTLS(":4000", os.Getenv("TLS_CERT"), os.Getenv("TLS_KEY")))
 }

@@ -1,5 +1,5 @@
 document.querySelector("form").action = getURL() + "/register";
-document.getElementById("login-link").href = getURL();
+document.getElementById("login-link").href = getURL() + "/login";
 
 const form = document.querySelector("form"),
 	uField = form.querySelector(".username"),
@@ -7,7 +7,9 @@ const form = document.querySelector("form"),
 	pField = form.querySelector(".password"),
 	pInput = pField.querySelector("input"),
 	cpField = form.querySelector(".confirm-password"),
-	cpInput = cpField.querySelector("input");
+	cpInput = cpField.querySelector("input"),
+	kField = form.querySelector(".registration-key"),
+	kInput = kField.querySelector("input");
 
 // Get the toggle password icons
 const togglePassword = document.querySelector(".toggle-password");
@@ -35,6 +37,116 @@ document.addEventListener("DOMContentLoaded", () => {
 		this.classList.toggle("fa-eye-slash");
 	});
 });
+
+form.addEventListener("submit", function (event) {
+	event.preventDefault();
+
+	checkUsername();
+	checkPass();
+	checkConfirmPass();
+	checkRegKey();
+
+	if (
+		!uField.classList.contains("error") &&
+		!pField.classList.contains("error") &&
+		!cpField.classList.contains("error") &&
+		!kField.classList.contains("error")
+	) {
+		const formData = new FormData(form);
+
+		fetch(form.action, {
+			method: "POST",
+			body: formData,
+		}).then((response) => {
+			if (response.ok) window.location.href = "/";
+			else {
+				// handleServerErrors(error);
+				return response.json().then((error) => {
+					console.error("Error: ", error.error);
+				});
+			}
+		});
+	}
+});
+
+function handleServerErrors(error) {
+	// Use switch-case to handle the errors
+	if (error.username) {
+		uField.classList.add("error");
+		let errorTxt = uField.querySelector(".error-txt");
+		errorTxt.innerText = error.username;
+	}
+	if (error.password) {
+		pField.classList.add("error");
+		let errorTxt = pField.querySelector(".error-txt");
+		errorTxt.innerText = error.password;
+	}
+	if (error.confirmPassword) {
+		cpField.classList.add("error");
+		let errorTxt = cpField.querySelector(".error-txt");
+		errorTxt.innerText = error.confirmPassword;
+	}
+	if (error.registrationKey) {
+		kField.classList.add("error");
+		let errorTxt = kField.querySelector(".error-txt");
+		errorTxt.innerText = error.registrationKey;
+	}
+}
+
+function checkUsername() {
+	if (uInput.value == "") {
+		uField.classList.add("error");
+		uField.classList.remove("valid");
+		let errorTxt = uField.querySelector(".error-txt");
+		errorTxt.innerText = "Username can't be blank";
+	} else {
+		uField.classList.remove("error");
+		uField.classList.add("valid");
+	}
+}
+
+function checkPass() {
+	if (pInput.value == "") {
+		pField.classList.add("error");
+		pField.classList.remove("valid");
+		let errorTxt = pField.querySelector(".error-txt");
+		errorTxt.innerText = "Password can't be blank";
+	} else if (pInput.value.length < 8) {
+		pField.classList.add("error");
+		pField.classList.remove("valid");
+		let errorTxt = pField.querySelector(".error-txt");
+		errorTxt.innerText = "Password must be at least 8 characters";
+	} else {
+		pField.classList.remove("error");
+		pField.classList.add("valid");
+	}
+}
+
+function checkConfirmPass() {
+	if (cpInput.value == "" || cpInput.value !== pInput.value) {
+		cpField.classList.add("error");
+		cpField.classList.remove("valid");
+		let errorTxt = cpField.querySelector(".error-txt");
+		cpInput.value != ""
+			? (errorTxt.innerText = "Passwords do not match")
+			: (errorTxt.innerText = "Confirm Password can't be blank");
+	} else {
+		cpField.classList.remove("error");
+		cpField.classList.add("valid");
+	}
+}
+
+function checkRegKey() {
+	if (kInput.value == "") {
+		kField.classList.add("error");
+		kField.classList.remove("valid");
+		let errorTxt = kField.querySelector(".error-txt");
+		errorTxt.innerText = "Registration key can't be blank";
+	} else {
+		kField.classList.remove("error");
+		kField.classList.add("valid");
+	}
+}
 
 /*
 // Socket functionality

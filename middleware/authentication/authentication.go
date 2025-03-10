@@ -114,7 +114,7 @@ func ValidateCookie(c *fiber.Ctx) error {
 // ====== REGISTER USER ====== //
 func RegisterHandler(c *fiber.Ctx) error {
 	if ValidateCookie(c) == nil {
-		return c.Redirect("/")
+		return c.Redirect("/login")
 	}
 
 	username := c.FormValue("username")
@@ -123,7 +123,7 @@ func RegisterHandler(c *fiber.Ctx) error {
 
 	// Validate username
 	if !LegalCharacters.MatchString(username) {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid username. Only letters, numbers, and legal symbols are allowed"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid username"})
 	}
 
 	// Ensure password is at least 8 characters long
@@ -160,8 +160,7 @@ func RegisterHandler(c *fiber.Ctx) error {
 
 	SetCookie(&c, username, time.Now().Add(expiration))
 
-	// Redirect to home page after successful signup
-	return c.Redirect("/")
+	return c.Redirect("/", fiber.StatusOK)
 }
 
 // ====== LOGIN USER ====== //
@@ -176,30 +175,15 @@ func LoginHandler(c *fiber.Ctx) error {
 	var hashedPassword string
 	err := DB.QueryRow("SELECT password FROM users WHERE username = ?", username).Scan(&hashedPassword)
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid username or password"})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid username"})
 	}
 
 	// Check if password matches
 	if err := CheckPassword(hashedPassword, password); err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid username or password"})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid password"})
 	}
-
-	// Generate JWT token
-	// expire := time.Now().Add(expiration)
-	// signedToken, err := GenerateToken(username, expire)
-	// if err != nil {
-	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token", "err": err.Error()})
-	// }
-
-	// Set token in cookie
-	// c.Cookie(&fiber.Cookie{
-	// 	Name:    "token",
-	// 	Value:   signedToken,
-	// 	Expires: expire, // 6 months
-	// })
 
 	SetCookie(&c, username, time.Now().Add(expiration))
 
-	// Redirect to home page after successful login
-	return c.Redirect("/")
+	return c.Redirect("/", fiber.StatusOK)
 }
