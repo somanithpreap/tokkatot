@@ -158,7 +158,8 @@ function checkRegKey() {
   if (kInput.value == "") {
     kField.classList.add("error");
     kField.classList.remove("valid");
-    kField.querySelector(".error-txt");
+    kField.querySelector(".error-txt").innerText =
+      "Registration key can't be blank";
   } else {
     kField.classList.remove("error");
     kField.classList.add("valid");
