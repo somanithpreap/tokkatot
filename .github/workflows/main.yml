@@ -31,4 +31,4 @@ jobs:
           TLS_CERT: ${{ secrets.TLS_CERT }}
         run: |
           cd middleware
-          nohup ./middleware &>/dev/null &
+          nohup ./middleware > middleware.log 2>&1 &
