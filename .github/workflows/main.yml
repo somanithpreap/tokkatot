@@ -31,4 +31,4 @@ jobs:
           TLS_CERT: ${{ secrets.TLS_CERT }}
         run: |
           cd middleware
-          ./middleware &
+          ./middleware
