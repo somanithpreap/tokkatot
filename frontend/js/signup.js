@@ -70,41 +70,50 @@ form.addEventListener("submit", function (event) {
 });
 
 function handleServerErrors(error) {
-  if (error.username) {
-    uField.classList.add("error");
-    let errorTxt = uField.querySelector(".error-txt");
-    errorTxt.innerText = error.username;
-  } else if (error == "Username already exists") {
-    uField.classList.add("error");
-    let errorTxt = uField.querySelector(".error-txt");
-    errorTxt.innerText = "ឈ្មោះអ្នកប្រើប្រាស់មានរួចហើយ";
-  }
-  if (error.password) {
-    pField.classList.add("error");
-    let errorTxt = pField.querySelector(".error-txt");
-    errorTxt.innerText = error.password;
-  } else if (error == "Password too weak") {
-    pField.classList.add("error");
-    let errorTxt = pField.querySelector(".error-txt");
-    errorTxt.innerText = "ពាក្យសម្ងាត់ខ្សោយពេក";
-  }
-  if (error.confirmPassword) {
-    cpField.classList.add("error");
-    let errorTxt = cpField.querySelector(".error-txt");
-    errorTxt.innerText = error.confirmPassword;
-  } else if (error == "Passwords do not match") {
-    cpField.classList.add("error");
-    let errorTxt = cpField.querySelector(".error-txt");
-    errorTxt.innerText = "ពាក្យសម្ងាត់មិនត្រូវគ្នា";
-  }
-  if (error.registrationKey) {
-    kField.classList.add("error");
-    let errorTxt = kField.querySelector(".error-txt");
-    errorTxt.innerText = error.registrationKey;
-  } else if (error == "Invalid registration key") {
-    kField.classList.add("error");
-    let errorTxt = kField.querySelector(".error-txt");
-    errorTxt.innerText = "លេខកូដចុះឈ្មោះមិនត្រឹមត្រូវ";
+  let errorTxt;
+  switch (true) {
+    case !!error.username:
+      uField.classList.add("error");
+      errorTxt = uField.querySelector(".error-txt");
+      errorTxt.innerText = error.username;
+      break;
+    case error === "Username already exists":
+      uField.classList.add("error");
+      errorTxt = uField.querySelector(".error-txt");
+      errorTxt.innerText = "ឈ្មោះអ្នកប្រើប្រាស់មានរួចហើយ";
+      break;
+    case !!error.password:
+      pField.classList.add("error");
+      errorTxt = pField.querySelector(".error-txt");
+      errorTxt.innerText = error.password;
+      break;
+    case error === "Password too weak":
+      pField.classList.add("error");
+      errorTxt = pField.querySelector(".error-txt");
+      errorTxt.innerText = "ពាក្យសម្ងាត់ខ្សោយពេក";
+      break;
+    case !!error.confirmPassword:
+      cpField.classList.add("error");
+      errorTxt = cpField.querySelector(".error-txt");
+      errorTxt.innerText = error.confirmPassword;
+      break;
+    case error === "Passwords do not match":
+      cpField.classList.add("error");
+      errorTxt = cpField.querySelector(".error-txt");
+      errorTxt.innerText = "ពាក្យសម្ងាត់មិនត្រូវគ្នា";
+      break;
+    case !!error.registrationKey:
+      kField.classList.add("error");
+      errorTxt = kField.querySelector(".error-txt");
+      errorTxt.innerText = error.registrationKey;
+      break;
+    case error === "Invalid registration key":
+      kField.classList.add("error");
+      errorTxt = kField.querySelector(".error-txt");
+      errorTxt.innerText = "លេខកូដចុះឈ្មោះមិនត្រឹមត្រូវ";
+      break;
+    default:
+      console.error("Unknown error: ", error);
   }
 }
 
