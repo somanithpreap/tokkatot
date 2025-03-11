@@ -92,6 +92,14 @@ function handleServerErrors(error) {
       errorTxt = kField.querySelector(".error-txt");
       errorTxt.innerText = "លេខកូដចុះឈ្មោះមិនត្រឹមត្រូវ";
       break;
+    case "Internal server error":
+      console.error("Internal server error");
+      alert("ស៊ើវើមានបញ្ហា សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ");
+      break;
+    case "Database error":
+      console.error("Database error");
+      alert("ឃ្លាំងផ្ទុកទិន្នន័យមានបញ្ហា សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ");
+      break;
     default:
       console.error("Unknown error: ", error);
   }
