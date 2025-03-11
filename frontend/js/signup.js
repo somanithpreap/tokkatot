@@ -60,8 +60,8 @@ form.addEventListener("submit", function (event) {
 		}).then((response) => {
 			if (response.ok) window.location.href = "/";
 			else {
-				// handleServerErrors(error);
 				return response.json().then((error) => {
+					handleServerErrors(error.error);
 					console.error("Error: ", error.error);
 				});
 			}
@@ -70,26 +70,36 @@ form.addEventListener("submit", function (event) {
 });
 
 function handleServerErrors(error) {
-	// Use switch-case to handle the errors
-	if (error.username) {
-		uField.classList.add("error");
-		let errorTxt = uField.querySelector(".error-txt");
-		errorTxt.innerText = error.username;
-	}
-	if (error.password) {
-		pField.classList.add("error");
-		let errorTxt = pField.querySelector(".error-txt");
-		errorTxt.innerText = error.password;
-	}
-	if (error.confirmPassword) {
-		cpField.classList.add("error");
-		let errorTxt = cpField.querySelector(".error-txt");
-		errorTxt.innerText = error.confirmPassword;
-	}
-	if (error.registrationKey) {
-		kField.classList.add("error");
-		let errorTxt = kField.querySelector(".error-txt");
-		errorTxt.innerText = error.registrationKey;
+	let errorTxt;
+	switch (error) {
+		case "Username already exists":
+			uField.classList.add("error");
+			errorTxt = uField.querySelector(".error-txt");
+			errorTxt.innerText = "ឈ្មោះអ្នកប្រើប្រាស់មានរួចហើយ";
+			break;
+		case "Password too weak":
+			pField.classList.add("error");
+			errorTxt = pField.querySelector(".error-txt");
+			errorTxt.innerText = "ពាក្យសម្ងាត់ខ្សោយពេក";
+			break;
+		case "Passwords do not match":
+			cpField.classList.add("error");
+			errorTxt = cpField.querySelector(".error-txt");
+			errorTxt.innerText = "ពាក្យសម្ងាត់មិនត្រូវគ្នា";
+			break;
+		case "Invalid registration key":
+			kField.classList.add("error");
+			errorTxt = kField.querySelector(".error-txt");
+			errorTxt.innerText = "លេខកូដចុះឈ្មោះមិនត្រឹមត្រូវ";
+			break;
+		case "Internal server error":
+			alert("ស៊ើវើមានបញ្ហា សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ");
+			break;
+		case "Database error":
+			alert("ឃ្លាំងផ្ទុកទិន្នន័យមានបញ្ហា សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ");
+			break;
+		default:
+			console.error("Unknown error: ", error);
 	}
 }
 
