@@ -23,7 +23,12 @@ jobs:
           cd middleware
           go build
 
-      - name: Run Middleware
+      - name: Run Middleware with Environment Variables
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          REG_KEY: ${{ secrets.REG_KEY }}
+          TLS_KEY: ${{ secrets.TLS_KEY }}
+          TLS_CERT: ${{ secrets.TLS_CERT }}
         run: |
           cd middleware
           ./middleware &
