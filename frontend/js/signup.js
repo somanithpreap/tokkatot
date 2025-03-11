@@ -70,35 +70,43 @@ form.addEventListener("submit", function (event) {
 });
 
 function handleServerErrors(error) {
-  let errorTxt;
   switch (error) {
-    case "Username already exists":
+    case "Invalid username":
       uField.classList.add("error");
-      errorTxt = uField.querySelector(".error-txt");
-      errorTxt.innerText = "ឈ្មោះអ្នកប្រើប្រាស់មានរួចហើយ";
+      uField.querySelector(".error-txt").innerText =
+        "ឈ្មោះអ្នកប្រើប្រាស់មិនត្រឹមត្រូវ";
       break;
-    case "Password too weak":
+    case "Password must be at least 8 characters":
       pField.classList.add("error");
-      errorTxt = pField.querySelector(".error-txt");
-      errorTxt.innerText = "ពាក្យសម្ងាត់ខ្សោយពេក";
+      pField.querySelector(".error-txt").innerText =
+        "ពាក្យសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ ៨ តួអក្សរ";
       break;
-    case "Passwords do not match":
-      cpField.classList.add("error");
-      errorTxt = cpField.querySelector(".error-txt");
-      errorTxt.innerText = "ពាក្យសម្ងាត់មិនត្រូវគ្នា";
+    case "Username already taken":
+      uField.classList.add("error");
+      uField.querySelector(".error-txt").innerText =
+        "ឈ្មោះអ្នកប្រើប្រាស់មានរួចហើយ";
+      break;
+    case "Failed to hash password":
+      pField.classList.add("error");
+      pField.querySelector(".error-txt").innerText =
+        "បរាជ័យក្នុងការអ៊ិនគ្រីបពាក្យសម្ងាត់";
       break;
     case "Invalid registration key":
       kField.classList.add("error");
-      errorTxt = kField.querySelector(".error-txt");
-      errorTxt.innerText = "លេខកូដចុះឈ្មោះមិនត្រឹមត្រូវ";
+      kField.querySelector(".error-txt").innerText =
+        "លេខកូដចុះឈ្មោះមិនត្រឹមត្រូវ";
       break;
-    case "Internal server error":
-      console.error("Internal server error");
-      alert("ស៊ើវើមានបញ្ហា សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ");
+    case "Failed to register":
+      console.error("Failed to register");
+      alert("បរាជ័យក្នុងការចុះឈ្មោះ សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ");
       break;
     case "Database error":
       console.error("Database error");
       alert("ឃ្លាំងផ្ទុកទិន្នន័យមានបញ្ហា សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ");
+      break;
+    case "Internal server error":
+      console.error("Internal server error");
+      alert("ស៊ើវើមានបញ្ហា សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ");
       break;
     default:
       console.error("Unknown error: ", error);
@@ -109,8 +117,7 @@ function checkUsername() {
   if (uInput.value == "") {
     uField.classList.add("error");
     uField.classList.remove("valid");
-    let errorTxt = uField.querySelector(".error-txt");
-    errorTxt.innerText = "Username can't be blank";
+    uField.querySelector(".error-txt").innerText = "Username can't be blank";
   } else {
     uField.classList.remove("error");
     uField.classList.add("valid");
@@ -121,13 +128,12 @@ function checkPass() {
   if (pInput.value == "") {
     pField.classList.add("error");
     pField.classList.remove("valid");
-    let errorTxt = pField.querySelector(".error-txt");
-    errorTxt.innerText = "Password can't be blank";
+    pField.querySelector(".error-txt").innerText = "Password can't be blank";
   } else if (pInput.value.length < 8) {
     pField.classList.add("error");
     pField.classList.remove("valid");
-    let errorTxt = pField.querySelector(".error-txt");
-    errorTxt.innerText = "Password must be at least 8 characters";
+    pField.querySelector(".error-txt").innerText =
+      "Password must be at least 8 characters";
   } else {
     pField.classList.remove("error");
     pField.classList.add("valid");
@@ -138,10 +144,10 @@ function checkConfirmPass() {
   if (cpInput.value == "" || cpInput.value !== pInput.value) {
     cpField.classList.add("error");
     cpField.classList.remove("valid");
-    let errorTxt = cpField.querySelector(".error-txt");
-    cpInput.value != ""
-      ? (errorTxt.innerText = "Passwords do not match")
-      : (errorTxt.innerText = "Confirm Password can't be blank");
+    cpField.querySelector(".error-txt").innerText =
+      cpInput.value != ""
+        ? "Passwords do not match"
+        : "Confirm Password can't be blank";
   } else {
     cpField.classList.remove("error");
     cpField.classList.add("valid");
@@ -152,8 +158,7 @@ function checkRegKey() {
   if (kInput.value == "") {
     kField.classList.add("error");
     kField.classList.remove("valid");
-    let errorTxt = kField.querySelector(".error-txt");
-    errorTxt.innerText = "Registration key can't be blank";
+    kField.querySelector(".error-txt");
   } else {
     kField.classList.remove("error");
     kField.classList.add("valid");
