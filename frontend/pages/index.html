@@ -1,112 +1,110 @@
 <!doctype html>
 <html lang="km">
-	<head>
-		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Tokkatot - Home</title>
-		<link
-			href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
-			rel="stylesheet"
-		/>
-		<link
-			href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&display=swap"
-			rel="stylesheet"
-		/>
-		<link rel="stylesheet" href="../css/styleHome.css" />
-		<link rel="stylesheet" href="../css/stylenavbar.css" />
-	</head>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tokkatot - Home</title>
+        <link
+            href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="../css/styleHome.css" />
+        <link rel="stylesheet" href="../css/stylenavbar.css" />
+    </head>
 
-	<body>
-		<div>
-			<!-- Header Clock and Profile-->
-			<header>
-				<div>
-					📅
-					<b id="t"></b>
-					🕰️
-					<b id="t2"></b>
-				</div>
-				<div>
-					<p><span>កសិករ​ ៖ </span><span id="username"></span></p>
-					<img src="../assets/icons/profile-pic.jpg" alt="Profile" />
-				</div>
-				<!-- Connection Status -->
-				<div id="connection-status">Connecting...</div>
-			</header>
-			<!-- Weather & Gas Information -->
-			<div>
-				<div>
-					<p>សីតុណ្ហភាពក្នុងទ្រុង</p>
-					<p>30°C</p>
-					<i>thermostat</i>
-				</div>
-				<div>
-					<p>កំហាប់ឧស្ម័ន</p>
-					<p>CO2 =</p>
-					<p>CH4 =</p>
-					<p>NH3 =</p>
-				</div>
-			</div>
-			<!-- Navigation Icons -->
-			<div>
-				<p>មុខងារ ៖</p>
-				<div>
-					<i class="material-icons-sharp">🌡️</i>
-					<i class="material-icons-sharp">🍴</i>
-					<i class="material-icons-sharp">💧</i>
-					<i class="material-icons-sharp">💩</i>
-					<i class="material-icons-sharp">⚙️</i>
-				</div>
-			</div>
-			<!-- Sensor Controls -->
-			<section class="sensor-controls">
-				<h2>ការគ្រប់គ្រង</h2>
-				<div class="control-card">
-					<span class="icon"
-						><img src="../assets/icons/cooling-fan.png" alt="Fan"
-					/></span>
-					<p>កង្ហារត្រជាក់</p>
-					<label class="switch">
-						<input type="checkbox" id="fan-toggle" />
-						<span class="slider"></span>
-					</label>
-				</div>
-				<div class="control-card">
-					<span class="icon"
-						><img src="../assets/icons/lamp.png" alt="Light"
-					/></span>
-					<p>អំពូលពងមាន់</p>
-					<label class="switch">
-						<input type="checkbox" id="light-toggle" />
-						<span class="slider"></span>
-					</label>
-				</div>
-				<div class="control-card">
-					<span class="icon"
-						><img src="../assets/icons/feeding.png" alt="Feeding"
-					/></span>
-					<p>ទម្លាក់ចំណី</p>
-					<label class="switch">
-						<input type="checkbox" id="feed-toggle" />
-						<span class="slider"></span>
-					</label>
-				</div>
-				<div class="control-card">
-					<span class="icon"
-						><img src="../assets/icons/faucet.png" alt="Water"
-					/></span>
-					<p>បើកទឹក</p>
-					<label class="switch">
-						<input type="checkbox" id="water-toggle" />
-						<span class="slider"></span>
-					</label>
-				</div>
-			</section>
-		</div>
-		<script src="../js/index.js"></script>
-		<script src="../js/scriptHome.js"></script>
-		<!-- Load Navbar Dynamically -->
-		<script src="../js/navbar.js"></script>
-	</body>
+    <body>
+        <div>
+            <!-- Header Clock and Profile-->
+            <header>
+                <div>
+                    📅
+                    <b id="t"></b>
+                    🕰️
+                    <b id="t2"></b>
+                </div>
+                <div>
+                    <p><span>កសិករ​ ៖ </span><span id="username"></span></p>
+                    <img src="../assets/icons/profile-pic.jpg" alt="Profile" />
+                </div>
+            </header>
+            <!-- Weather & Gas Information -->
+            <div>
+                <div>
+                    <p>សីតុណ្ហភាពក្នុងទ្រុង</p>
+                    <p>30°C</p>
+                    <i>thermostat</i>
+                </div>
+                <div>
+                    <p>កំហាប់ឧស្ម័ន</p>
+                    <p>CO2 =</p>
+                    <p>CH4 =</p>
+                    <p>NH3 =</p>
+                </div>
+            </div>
+            <!-- Navigation Icons -->
+            <div>
+                <p>មុខងារ ៖</p>
+                <div>
+                    <i class="material-icons-sharp">🌡️</i>
+                    <i class="material-icons-sharp">🍴</i>
+                    <i class="material-icons-sharp">💧</i>
+                    <i class="material-icons-sharp">💩</i>
+                    <i class="material-icons-sharp">⚙️</i>
+                </div>
+            </div>
+            <!-- Sensor Controls -->
+            <section class="sensor-controls">
+                <h2>ការគ្រប់គ្រង</h2>
+                <div class="control-card">
+                    <span class="icon"
+                        ><img src="../assets/icons/cooling-fan.png" alt="Fan"
+                    /></span>
+                    <p>កង្ហារត្រជាក់</p>
+                    <label class="switch">
+                        <input type="checkbox" id="fan-toggle" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="control-card">
+                    <span class="icon"
+                        ><img src="../assets/icons/lamp.png" alt="Light"
+                    /></span>
+                    <p>អំពូលពងមាន់</p>
+                    <label class="switch">
+                        <input type="checkbox" id="light-toggle" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="control-card">
+                    <span class="icon"
+                        ><img src="../assets/icons/feeding.png" alt="Feeding"
+                    /></span>
+                    <p>ទម្លាក់ចំណី</p>
+                    <label class="switch">
+                        <input type="checkbox" id="feed-toggle" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="control-card">
+                    <span class="icon"
+                        ><img src="../assets/icons/faucet.png" alt="Water"
+                    /></span>
+                    <p>បើកទឹក</p>
+                    <label class="switch">
+                        <input type="checkbox" id="water-toggle" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </section>
+        </div>
+        <script src="../js/index.js"></script>
+        <script src="../js/scriptHome.js"></script>
+        <!-- Load Navbar Dynamically -->
+        <script src="../js/navbar.js"></script>
+    </body>
 </html>
