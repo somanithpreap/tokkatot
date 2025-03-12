@@ -63,10 +63,15 @@ func main() {
 		if authentication.ValidateCookie(c) != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized access"})
 		}
-		return nil
+		return c.Next()
 	})
 	backend.Get("/test", func(c *fiber.Ctx) error {
 		return c.SendString("You have accessed the backend route!")
+	})
+
+	// 404 Handler
+	app.Use(func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusNotFound).SendFile("../frontend/pages/404.html")
 	})
 
 	defer authentication.DB.Close()
