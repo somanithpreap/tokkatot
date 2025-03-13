@@ -40,13 +40,14 @@ func main() {
 		}
 		return c.SendFile("../frontend/pages/signup.html")
 	})
-
-	app.Get("/dashboard", func(c *fiber.Ctx) error {
-		if authentication.ValidateCookie(c) == nil {
-			return c.SendFile("../frontend/pages/dashboard.html")
-		}
-		return c.Redirect("/login")
-	})
+	/*
+		app.Get("/das hboard", func(c *fiber.Ctx) error {
+			if authentication.ValidateCookie(c) == nil {
+				return c.SendFile("../frontend/pages/dashboard.html")
+			}
+			return c.Redirect("/login")
+		})
+	*/
 	app.Get("/settings", func(c *fiber.Ctx) error {
 		if authentication.ValidateCookie(c) == nil {
 			return c.SendFile("../frontend/pages/settings.html")
