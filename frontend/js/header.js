@@ -42,4 +42,4 @@ function initializeHeader() {
     // Set username if available
     const username = localStorage.getItem('username') || 'អ្នកប្រើប្រាស់';
     document.getElementById('username').textContent = username;
-}
+} 
