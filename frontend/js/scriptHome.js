@@ -1,21 +1,3 @@
-//real time clock
-function clock() {
-	window.rt = 1000; // Refresh time interval in milliseconds
-
-	document.getElementById("t").textContent = new Date().toLocaleDateString(); // Set the date once
-
-	let interval = setInterval(function () {
-		document.getElementById("t2").textContent = new Date().toLocaleTimeString(); // Update clock every second
-
-		if (window.rt <= 0) {
-			clearInterval(interval);
-		}
-	}, window.rt);
-}
-// Call the function to start the clock
-clock();
-
-
 // Function to handle sensor control updates
 function handleUpdate(data) {
 	console.log("Home update:", data);
@@ -27,7 +9,6 @@ function handleAlert(data) {
 }
 
 // Chart configuration
-let temperatureChart;
 const chartConfig = {
 	type: 'line',
 	data: {
@@ -88,203 +69,22 @@ const chartConfig = {
 	}
 };
 
-// Initialize chart
-document.addEventListener('DOMContentLoaded', () => {
-	const ctx = document.getElementById('temperatureChart').getContext('2d');
-	temperatureChart = new Chart(ctx, chartConfig);
-	
-	// Start data fetching
-	fetchCurrentData();
-	fetchHistoricalData();
-
-	// Set up intervals for updates
-	setInterval(fetchCurrentData, 60000); // Update current data every minute
-	setInterval(fetchHistoricalData, 300000); // Update historical data every 5 minutes
-});
-
-// Fetch current temperature and humidity
-async function fetchCurrentData() {
-	try {
-		// Replace with your actual API endpoint
-		const response = await fetch('/api/current-data');
-		const data = await response.json();
-		
-		updateCurrentValues(data);
-	} catch (error) {
-		console.error('Error fetching current data:', error);
-		showError('current');
-	}
-}
-
-// Fetch historical temperature data
-async function fetchHistoricalData() {
-	try {
-		// Replace with your actual API endpoint
-		const response = await fetch('/api/historical-temperature');
-		const data = await response.json();
-		
-		updateChart(data);
-	} catch (error) {
-		console.error('Error fetching historical data:', error);
-		showError('historical');
-	}
-}
-
-// Update current temperature and humidity values
-function updateCurrentValues(data) {
-	const tempElement = document.getElementById('current-temp');
-	const humidityElement = document.getElementById('current-humidity');
-	
-	if (data.temperature !== undefined) {
-		tempElement.textContent = data.temperature.toFixed(1);
-	}
-	
-	if (data.humidity !== undefined) {
-		humidityElement.textContent = data.humidity.toFixed(1);
-	}
-}
-
-// Update temperature chart
-function updateChart(data) {
-	const timestamps = data.map(item => {
-		const date = new Date(item.timestamp);
-		return formatTimestamp(date);
-	});
-	
-	const temperatures = data.map(item => item.temperature);
-	
-	temperatureChart.data.labels = timestamps;
-	temperatureChart.data.datasets[0].data = temperatures;
-	temperatureChart.update();
-}
-
-// Format timestamp for chart labels
-function formatTimestamp(date) {
-	const today = new Date();
-	const yesterday = new Date(today);
-	yesterday.setDate(yesterday.getDate() - 1);
-	
-	if (date.toDateString() === today.toDateString()) {
-		return `ថ្ងៃនេះ ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-	} else if (date.toDateString() === yesterday.toDateString()) {
-		return `ម្សិលមិញ ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-	} else {
-		return `${date.getDate()}/${date.getMonth() + 1} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-	}
-}
-
-// Show error state
-function showError(type) {
-	if (type === 'current') {
-		document.getElementById('current-temp').textContent = '--';
-		document.getElementById('current-humidity').textContent = '--';
-	} else if (type === 'historical') {
-		const graphWrapper = document.querySelector('.graph-wrapper');
-		graphWrapper.classList.add('loading');
-	}
-}
-//real time clock
-function clock() {
-	window.rt = 1000; // Refresh time interval in milliseconds
-
-	document.getElementById("t").textContent = new Date().toLocaleDateString(); // Set the date once
-
-	let interval = setInterval(function () {
-		document.getElementById("t2").textContent = new Date().toLocaleTimeString(); // Update clock every second
-
-		if (window.rt <= 0) {
-			clearInterval(interval);
-		}
-	}, window.rt);
-}
-// Call the function to start the clock
-clock();
-
-
-// Function to handle sensor control updates
-function handleUpdate(data) {
-	console.log("Home update:", data);
-}
-
-// Function to handle alerts
-function handleAlert(data) {
-	console.warn("Home alert:", data);
-}
-
-// Chart configuration
 let temperatureChart;
-const chartConfig = {
-	type: 'line',
-	data: {
-		labels: [],
-		datasets: [{
-			label: 'សីតុណ្ហភាព',
-			data: [],
-			borderColor: '#FFBA49',
-			backgroundColor: 'rgba(255, 186, 73, 0.1)',
-			borderWidth: 2,
-			fill: true,
-			tension: 0.4,
-			pointRadius: 3,
-			pointBackgroundColor: '#FFBA49'
-		}]
-	},
-	options: {
-		responsive: true,
-		maintainAspectRatio: false,
-		plugins: {
-			legend: {
-				display: false
-			},
-			tooltip: {
-				mode: 'index',
-				intersect: false,
-				callbacks: {
-					label: function(context) {
-						return `សីតុណ្ហភាព: ${context.parsed.y}°C`;
-					}
-				}
-			}
-		},
-		scales: {
-			x: {
-				grid: {
-					display: false
-				},
-				ticks: {
-					maxRotation: 0,
-					font: {
-						size: 10
-					}
-				}
-			},
-			y: {
-				beginAtZero: false,
-				grid: {
-					color: 'rgba(0, 0, 0, 0.1)'
-				},
-				ticks: {
-					font: {
-						size: 10
-					}
-				}
-			}
-		}
-	}
-};
 
 // Initialize chart
 document.addEventListener('DOMContentLoaded', () => {
-	const ctx = document.getElementById('temperatureChart').getContext('2d');
-	temperatureChart = new Chart(ctx, chartConfig);
-	
-	// Start data fetching
-	fetchCurrentData();
-	fetchHistoricalData();
+	const ctx = document.getElementById('temperatureChart');
+	if (ctx) {
+		temperatureChart = new Chart(ctx, chartConfig);
+		
+		// Start data fetching
+		fetchCurrentData();
+		fetchHistoricalData();
 
-	// Set up intervals for updates
-	setInterval(fetchCurrentData, 60000); // Update current data every minute
-	setInterval(fetchHistoricalData, 300000); // Update historical data every 5 minutes
+		// Set up intervals for updates
+		setInterval(fetchCurrentData, 60000); // Update current data every minute
+		setInterval(fetchHistoricalData, 300000); // Update historical data every 5 minutes
+	}
 });
 
 // Fetch current temperature and humidity
@@ -320,17 +120,19 @@ function updateCurrentValues(data) {
 	const tempElement = document.getElementById('current-temp');
 	const humidityElement = document.getElementById('current-humidity');
 	
-	if (data.temperature !== undefined) {
+	if (data.temperature !== undefined && tempElement) {
 		tempElement.textContent = data.temperature.toFixed(1);
 	}
 	
-	if (data.humidity !== undefined) {
+	if (data.humidity !== undefined && humidityElement) {
 		humidityElement.textContent = data.humidity.toFixed(1);
 	}
 }
 
 // Update temperature chart
 function updateChart(data) {
+	if (!temperatureChart) return;
+
 	const timestamps = data.map(item => {
 		const date = new Date(item.timestamp);
 		return formatTimestamp(date);
@@ -361,10 +163,12 @@ function formatTimestamp(date) {
 // Show error state
 function showError(type) {
 	if (type === 'current') {
-		document.getElementById('current-temp').textContent = '--';
-		document.getElementById('current-humidity').textContent = '--';
+		const tempElement = document.getElementById('current-temp');
+		const humidityElement = document.getElementById('current-humidity');
+		if (tempElement) tempElement.textContent = '--';
+		if (humidityElement) humidityElement.textContent = '--';
 	} else if (type === 'historical') {
 		const graphWrapper = document.querySelector('.graph-wrapper');
-		graphWrapper.classList.add('loading');
+		if (graphWrapper) graphWrapper.classList.add('loading');
 	}
 }
