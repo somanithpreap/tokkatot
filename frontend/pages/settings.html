@@ -14,49 +14,67 @@
             rel="stylesheet"
         />
         <link rel="stylesheet" href="../css/styleSettings.css" />
+        <link rel="stylesheet" href="../css/styleHeader.css" />
         <link rel="stylesheet" href="../css/stylenavbar.css" />
     </head>
     <body>
         <div class="container">
-            <!-- Profile Section -->
-            <div class="profile">
-                <h2>ទិន្នន័យពីកសិដ្ឋាន</h2>
-                <img
-                    src="../assets/icons/profile-pic.jpg"
-                    alt="Profile"
-                    class="w-10 h-10 rounded-full"
-                />
-            </div>
+            <!-- Header Placeholder -->
+            <div id="header-placeholder"></div>
 
-            <!-- Cards Section -->
-            <div class="card">
-                <i class="fas fa-user"></i>
-                <div class="card-text">
-                    <p><strong>ព័ត៍មានផ្ទាល់ខ្លួន</strong></p>
-                    <p><strong>ឈ្មោះ: </strong><span id="username"></span></p>
+            <!-- Sensor Controls -->
+            <div class="sensor-controls">
+                <h2>ការគ្រប់គ្រង</h2>
+                <div class="controls-grid">
+                    <div class="control-card">
+                        <span class="icon">
+                            <img src="../assets/icons/cooling-fan.png" alt="Fan" />
+                        </span>
+                        <p>កង្ហារត្រជាក់</p>
+                        <label class="switch">
+                            <input type="checkbox" id="fan-toggle" />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="control-card">
+                        <span class="icon">
+                            <img src="../assets/icons/lamp.png" alt="Light" />
+                        </span>
+                        <p>អំពូលពងមាន់</p>
+                        <label class="switch">
+                            <input type="checkbox" id="light-toggle" />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="control-card">
+                        <span class="icon">
+                            <img src="../assets/icons/feeding.png" alt="Feeding" />
+                        </span>
+                        <p>ទម្លាក់ចំណី</p>
+                        <label class="switch">
+                            <input type="checkbox" id="feed-toggle" />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="control-card">
+                        <span class="icon">
+                            <img src="../assets/icons/faucet.png" alt="Water" />
+                        </span>
+                        <p>បើកទឹក</p>
+                        <label class="switch">
+                            <input type="checkbox" id="water-toggle" />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Navigation Icons -->
-            <div>
-                <p>មុខងារ ៖</p>
-                <div>
-                    <i class="material-icons-sharp">🌡️</i>
-                    <i class="material-icons-sharp">🍴</i>
-                    <i class="material-icons-sharp">💧</i>
-                    <i class="material-icons-sharp">💩</i>
-                    <i class="material-icons-sharp">⚙️</i>
-                </div>
-            </div>
-
-            <div class="card">
-                <i class="fas fa-phone"></i>
-                <p>សុំជំនួយ សេវាកម្មជួសជុល</p>
-                <p>លេខទូរស័ព្ទ:</p>
-                <p>077 878 908 / 088 997 788</p>
             </div>
         </div>
+        <!--
         <script src="../js/index.js"></script>
+        -->
+        <!-- Load Header Dynamically -->
+        <script src="../js/header.js"></script>
+        <!-- Load Settings Page Dynamically -->
         <script src="../js/scriptSettings.js"></script>
         <!-- Load Navbar Dynamically -->
         <script src="../js/navbar.js"></script>

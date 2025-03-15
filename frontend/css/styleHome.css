@@ -144,3 +144,166 @@ input:checked + .slider:before {
     text-align: center;
   }
 }
+
+/* Info Cards */
+.info-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 20px 0;
+    padding: 0 10px;
+}
+
+.info-card {
+    background: #fff;
+    padding: 15px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(255, 186, 73, 0.3);
+}
+
+.info-title {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.info-value {
+    display: flex;
+    align-items: baseline;
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+}
+
+.unit {
+    font-size: 16px;
+    margin-left: 4px;
+    color: #666;
+}
+
+.info-card i {
+    margin-top: 8px;
+    color: #FFBA49;
+    font-size: 24px;
+}
+
+/* Temperature Graph */
+.graph-container {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin: 20px 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.graph-container h3 {
+    color: #333;
+    font-size: 18px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.graph-wrapper {
+    position: relative;
+    height: 200px;
+    margin-bottom: 15px;
+}
+
+.graph-legend {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #FFBA49;
+}
+
+.legend-text {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .info-cards {
+        gap: 10px;
+        padding: 0 5px;
+    }
+
+    .info-card {
+        padding: 12px;
+    }
+
+    .info-title {
+        font-size: 12px;
+    }
+
+    .info-value {
+        font-size: 20px;
+    }
+
+    .unit {
+        font-size: 14px;
+    }
+
+    .info-card i {
+        font-size: 20px;
+    }
+
+    .graph-container {
+        padding: 15px;
+        margin: 15px 5px;
+    }
+
+    .graph-wrapper {
+        height: 180px;
+    }
+
+    .graph-container h3 {
+        font-size: 16px;
+    }
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    border: 3px solid #FFBA49;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

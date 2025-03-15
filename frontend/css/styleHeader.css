@@ -1,0 +1,73 @@
+/* Header Styles */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #fff;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.datetime {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    color: #333;
+}
+
+.datetime b {
+    font-weight: 500;
+    margin: 0 4px;
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-info p {
+    font-size: 16px;
+    color: #333;
+}
+
+.profile-info img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #FFBA49;
+    transition: transform 0.3s ease;
+}
+
+.profile-info img:hover {
+    transform: scale(1.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-header {
+        padding: 12px 15px;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .datetime {
+        font-size: 14px;
+    }
+
+    .profile-info {
+        gap: 8px;
+    }
+
+    .profile-info p {
+        font-size: 14px;
+    }
+
+    .profile-info img {
+        width: 32px;
+        height: 32px;
+    }
+} 
