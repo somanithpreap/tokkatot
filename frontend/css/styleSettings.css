@@ -162,3 +162,155 @@ body {
     font-size: 24px;
   }
 }
+
+/* Sensor Controls */
+.sensor-controls {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 16px;
+    margin: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.sensor-controls h2 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.controls-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.control-card {
+    aspect-ratio: 1;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.control-card:hover {
+    transform: translateY(-5px);
+    border-color: #FFBA49;
+    box-shadow: 0 8px 16px rgba(255, 186, 73, 0.4);
+}
+
+.control-card .icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.control-card .icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.control-card p {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    margin: 10px 0;
+    text-align: center;
+}
+
+/* Switch Toggle */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    margin-top: 10px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #FFBA49;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Responsive Design for Controls */
+@media (max-width: 768px) {
+    .sensor-controls {
+        margin: 15px 10px;
+        padding: 15px;
+    }
+
+    .controls-grid {
+        gap: 10px;
+        padding: 5px;
+    }
+
+    .control-card {
+        padding: 15px;
+    }
+
+    .control-card .icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .control-card p {
+        font-size: 14px;
+        margin: 8px 0;
+    }
+
+    .switch {
+        width: 52px;
+        height: 30px;
+    }
+
+    .slider:before {
+        height: 22px;
+        width: 22px;
+    }
+}
