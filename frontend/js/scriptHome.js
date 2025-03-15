@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Fetch current temperature and humidity
 async function fetchCurrentData() {
 	try {
-		// Replace with your actual API endpoint
+		// Endpoint
 		const response = await fetch('/api/current-data');
 		const data = await response.json();
 		
@@ -104,7 +104,7 @@ async function fetchCurrentData() {
 // Fetch historical temperature data
 async function fetchHistoricalData() {
 	try {
-		// Replace with your actual API endpoint
+		// Endpoint
 		const response = await fetch('/api/historical-temperature');
 		const data = await response.json();
 		

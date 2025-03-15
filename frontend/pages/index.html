@@ -24,22 +24,29 @@
             <div id="header-placeholder"></div>
 
             <!-- Weather & Humidity Information -->
-            <div class="info-cards">
-                <div class="info-card temperature">
-                    <p class="info-title">សីតុណ្ហភាពក្នុងទ្រុង</p>
-                    <div class="info-value">
-                        <span id="current-temp">--</span>
-                        <span class="unit">°C</span>
+            <div class="info-section">
+                <h2>ព័ត៌មានបរិយាកាស</h2>
+                <div class="info-grid">
+                    <div class="info-card temperature">
+                        <span class="icon">
+                            <i class="material-icons-sharp">thermostat</i>
+                        </span>
+                        <p class="info-title">សីតុណ្ហភាពក្នុងទ្រុង</p>
+                        <div class="info-value">
+                            <span id="current-temp">--</span>
+                            <span class="unit">°C</span>
+                        </div>
                     </div>
-                    <i class="material-icons-sharp">thermostat</i>
-                </div>
-                <div class="info-card humidity">
-                    <p class="info-title">សំណើមក្នុងទ្រុង</p>
-                    <div class="info-value">
-                        <span id="current-humidity">--</span>
-                        <span class="unit">%</span>
+                    <div class="info-card humidity">
+                        <span class="icon">
+                            <i class="material-icons-sharp">water_drop</i>
+                        </span>
+                        <p class="info-title">សំណើមក្នុងទ្រុង</p>
+                        <div class="info-value">
+                            <span id="current-humidity">--</span>
+                            <span class="unit">%</span>
+                        </div>
                     </div>
-                    <i class="material-icons-sharp">water_drop</i>
                 </div>
             </div>
 
@@ -59,11 +66,8 @@
         </div>
         <script src="../js/index.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <!-- Load Header Dynamically -->
         <script src="../js/header.js"></script>
-        <!-- Load Home Page Dynamically -->
         <script src="../js/scriptHome.js"></script>
-        <!-- Load Navbar Dynamically -->
         <script src="../js/navbar.js"></script>
     </body>
 </html>
