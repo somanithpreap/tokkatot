@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"middleware/authentication"
+	"middleware/database"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -12,6 +13,11 @@ import (
 // ====== SETUP ROUTES & START SERVER ====== //
 func main() {
 	app := fiber.New()
+
+	// Initialize profile table
+	if err := database.InitProfileDB(authentication.DB); err != nil {
+		log.Fatal("Error initializing profile table:", err)
+	}
 
 	// Serve static files
 	app.Static("/assets", "../frontend/assets")
@@ -40,6 +46,14 @@ func main() {
 		}
 		return c.SendFile("../frontend/pages/signup.html")
 	})
+
+	app.Get("/profile", func(c *fiber.Ctx) error {
+		if authentication.ValidateCookie(c) != nil {
+			return c.Redirect("/login")
+		}
+		return c.SendFile("../frontend/pages/profile.html")
+	})
+
 	/*
 		app.Get("/das hboard", func(c *fiber.Ctx) error {
 			if authentication.ValidateCookie(c) == nil {
@@ -49,23 +63,28 @@ func main() {
 		})
 	*/
 	app.Get("/settings", func(c *fiber.Ctx) error {
-		if authentication.ValidateCookie(c) == nil {
-			return c.SendFile("../frontend/pages/settings.html")
+		if authentication.ValidateCookie(c) != nil {
+			return c.Redirect("/login")
 		}
-		return c.Redirect("/login")
+		return c.SendFile("../frontend/pages/settings.html")
 	})
 
 	// User authentication routes
 	app.Post("/register", authentication.RegisterHandler)
 	app.Post("/login", authentication.LoginHandler)
 
-	// Protected route
+	// Protected routes
 	backend := app.Group("/backend", func(c *fiber.Ctx) error {
 		if authentication.ValidateCookie(c) != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized access"})
 		}
 		return c.Next()
 	})
+
+	// Add profile routes to protected backend group
+	backend.Get("/profile", authentication.GetProfileHandler)
+	backend.Post("/profile", authentication.UpdateProfileHandler)
+
 	backend.Get("/test", func(c *fiber.Ctx) error {
 		return c.SendString("You have accessed the backend route!")
 	})
