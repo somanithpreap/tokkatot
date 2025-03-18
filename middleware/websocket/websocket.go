@@ -5,7 +5,7 @@ import (
 	"log"
 	"sync"
 
-	"middleware/authentication"
+	"middleware/api"
 
 	"github.com/gofiber/websocket/v2"
 )
@@ -22,9 +22,9 @@ type Message struct {
 func handleWebSocket(c *websocket.Conn) {
 	defer c.Close()
 
-	clientID := authentication.ValidateToken(c.Cookies("token"))
+	clientID := api.ValidateToken(c.Cookies("token"))
 	if clientID == "" {
-		log.Println("Unauthorized client")
+		log.Println("Unapiorized client")
 		c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.ClosePolicyViolation, "Invalid token"))
 		return
 	}

@@ -1,77 +1,235 @@
 <!doctype html>
 <html lang="km">
-    <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Tokkatot - Settings</title>
-        <link
-            href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
-            rel="stylesheet"
-        />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&display=swap"
-            rel="stylesheet"
-        />
-        <link rel="stylesheet" href="../css/styleSettings.css" />
-        <link rel="stylesheet" href="../css/styleHeader.css" />
-        <link rel="stylesheet" href="../css/stylenavbar.css" />
-    </head>
-    <body>
-        <div class="container">
-            <!-- Header Placeholder -->
-            <div id="header-placeholder"></div>
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>ការកំណត់ - Smart Poultry</title>
+		<link
+			href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp"
+			rel="stylesheet"
+		/>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="../css/styleSettings.css" />
+		<link rel="stylesheet" href="../css/styleHeader.css" />
+		<link rel="stylesheet" href="../css/stylenavbar.css" />
+	</head>
+	<body>
+		<div class="container">
+			<!-- Header Placeholder -->
+			<div id="header-placeholder"></div>
 
-            <!-- Sensor Controls -->
-            <div class="sensor-controls">
-                <h2>ការគ្រប់គ្រង</h2>
-                <div class="controls-grid">
-                    <div class="control-card">
-                        <span class="icon">
-                            <img src="../assets/icons/cooling-fan.png" alt="Fan" />
-                        </span>
-                        <p>កង្ហារត្រជាក់</p>
-                        <label class="switch">
-                            <input type="checkbox" id="fan-toggle" />
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="control-card">
-                        <span class="icon">
-                            <img src="../assets/icons/lamp.png" alt="Light" />
-                        </span>
-                        <p>អំពូលពងមាន់</p>
-                        <label class="switch">
-                            <input type="checkbox" id="light-toggle" />
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="control-card">
-                        <span class="icon">
-                            <img src="../assets/icons/feeding.png" alt="Feeding" />
-                        </span>
-                        <p>ទម្លាក់ចំណី</p>
-                        <label class="switch">
-                            <input type="checkbox" id="feed-toggle" />
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="control-card">
-                        <span class="icon">
-                            <img src="../assets/icons/faucet.png" alt="Water" />
-                        </span>
-                        <p>បើកទឹក</p>
-                        <label class="switch">
-                            <input type="checkbox" id="water-toggle" />
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <script src="../js/index.js"></script>
-        <script src="../js/header.js"></script>
-        <script src="../js/scriptSettings.js"></script>
-        <script src="../js/navbar.js"></script>
-    </body>
+			<section class="main-controls">
+				<h2>ការកំណត់ទូទៅ</h2>
+				<div class="control-cards">
+					<div class="control-card">
+						<span class="icon">
+							<i class="material-icons-sharp">auto_mode</i>
+						</span>
+						<p>ប្រព័ន្ធស្វ័យប្រវត្តិ</p>
+						<label class="switch">
+							<input type="checkbox" id="autoModeToggle" />
+							<span class="slider"></span>
+						</label>
+					</div>
+					<div class="control-card">
+						<span class="icon">
+							<i class="material-icons-sharp">schedule</i>
+						</span>
+						<p>កាលវិភាគ</p>
+						<label class="switch">
+							<input type="checkbox" id="scheduleModeToggle" />
+							<span class="slider"></span>
+						</label>
+					</div>
+				</div>
+			</section>
+
+			<section class="sensor-controls">
+				<h2>ការគ្រប់គ្រង</h2>
+				<div class="control-cards">
+					<div class="control-card">
+						<span class="icon">
+							<img
+								src="../assets/icons/cooling-fan.png"
+								alt="Fan"
+							/>
+						</span>
+						<p>កង្ហារត្រជាក់</p>
+						<label class="switch">
+							<input type="checkbox" id="fanToggle" />
+							<span class="slider"></span>
+						</label>
+					</div>
+					<div class="control-card">
+						<span class="icon">
+							<img src="../assets/icons/lamp.png" alt="Light" />
+						</span>
+						<p>អំពូលពងមាន់</p>
+						<label class="switch">
+							<input type="checkbox" id="lightToggle" />
+							<span class="slider"></span>
+						</label>
+					</div>
+					<div class="control-card">
+						<span class="icon">
+							<img
+								src="../assets/icons/feeding.png"
+								alt="Feeding"
+							/>
+						</span>
+						<p>ទម្លាក់ចំណី</p>
+						<label class="switch">
+							<input type="checkbox" id="feedToggle" />
+							<span class="slider"></span>
+						</label>
+					</div>
+					<div class="control-card">
+						<span class="icon">
+							<img src="../assets/icons/faucet.png" alt="Water" />
+						</span>
+						<p>បើកទឹក</p>
+						<label class="switch">
+							<input type="checkbox" id="waterToggle" />
+							<span class="slider"></span>
+						</label>
+					</div>
+				</div>
+			</section>
+
+			<!-- Schedule Configuration Modal -->
+			<div id="scheduleModal" class="modal">
+				<div class="modal-content">
+					<span class="close-button">&times;</span>
+					<h2>ការកំណត់កាលវិភាគ</h2>
+
+					<div class="schedule-section">
+						<h3>កាលវិភាគបើកភ្លើង</h3>
+						<div class="time-inputs">
+							<div class="input-group">
+								<label for="lightStart">ម៉ោងចាប់ផ្តើម:</label>
+								<input
+									type="time"
+									id="lightStart"
+									value="06:00"
+								/>
+							</div>
+							<div class="input-group">
+								<label for="lightEnd">ម៉ោងបិទ:</label>
+								<input
+									type="time"
+									id="lightEnd"
+									value="18:00"
+								/>
+							</div>
+						</div>
+					</div>
+
+					<div class="schedule-section">
+						<h3>កាលវិភាគចំណី</h3>
+						<div id="feedingTimes">
+							<div class="feeding-time">
+								<input type="time" value="07:00" />
+								<button class="remove-time">លុប</button>
+							</div>
+							<div class="feeding-time">
+								<input type="time" value="12:00" />
+								<button class="remove-time">លុប</button>
+							</div>
+							<div class="feeding-time">
+								<input type="time" value="17:00" />
+								<button class="remove-time">លុប</button>
+							</div>
+						</div>
+						<button id="addFeedingTime">បន្ថែមម៉ោង</button>
+					</div>
+
+					<div class="schedule-section">
+						<h3>ប្រព័ន្ធទឹក</h3>
+						<div class="input-group">
+							<label for="waterInterval"
+								>ចន្លោះពេលត្រួតពិនិត្យ (នាទី):</label
+							>
+							<input
+								type="number"
+								id="waterInterval"
+								value="60"
+								min="15"
+								max="120"
+							/>
+						</div>
+					</div>
+
+					<div class="threshold-section">
+						<h3>កម្រិតបរិស្ថាន</h3>
+						<div class="threshold-inputs">
+							<div class="input-group">
+								<label for="tempMin"
+									>សីតុណ្ហភាពអប្បបរមា (°C):</label
+								>
+								<input
+									type="number"
+									id="tempMin"
+									value="20"
+									min="15"
+									max="30"
+								/>
+							</div>
+							<div class="input-group">
+								<label for="tempMax"
+									>សីតុណ្ហភាពអតិបរមា (°C):</label
+								>
+								<input
+									type="number"
+									id="tempMax"
+									value="25"
+									min="20"
+									max="35"
+								/>
+							</div>
+							<div class="input-group">
+								<label for="humidityMin"
+									>សំណើមអប្បបរមា (%):</label
+								>
+								<input
+									type="number"
+									id="humidityMin"
+									value="40"
+									min="30"
+									max="60"
+								/>
+							</div>
+							<div class="input-group">
+								<label for="humidityMax"
+									>សំណើមអតិបរមា (%):</label
+								>
+								<input
+									type="number"
+									id="humidityMax"
+									value="60"
+									min="40"
+									max="70"
+								/>
+							</div>
+						</div>
+					</div>
+
+					<div class="modal-buttons">
+						<button id="saveSchedule">រក្សាទុក</button>
+						<button id="cancelSchedule">បោះបង់</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Notification Toast -->
+			<div id="notification" class="notification"></div>
+		</div>
+		<script src="../js/index.js"></script>
+		<script src="../js/scriptSettings.js"></script>
+		<script src="../js/header.js"></script>
+		<script src="../js/navbar.js"></script>
+	</body>
 </html>

@@ -1,0 +1,373 @@
+/* General Styles */
+:root {
+    --color-primary: #FFBA49;
+    --color-background: #20A39E;
+    --color-white: #ffffff;
+    --color-dark: #333333;
+    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --card-border-radius: 16px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Kantumruy Pro', sans-serif;
+}
+
+body {
+    background-color: var(--color-background);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* User Information Form */
+.user-info-section {
+    margin-bottom: 30px;
+}
+
+.user-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-dark);
+}
+
+.form-group input,
+.form-group select {
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    color: var(--color-dark);
+    background-color: var(--color-white);
+    transition: all 0.3s ease;
+    font-family: 'Kantumruy Pro', sans-serif;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 186, 73, 0.2);
+}
+
+.form-group input:hover,
+.form-group select:hover {
+    border-color: #ccc;
+}
+
+.location-group select {
+    width: 100%;
+}
+
+.save-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background-color: var(--color-primary);
+    color: var(--color-dark);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Kantumruy Pro', sans-serif;
+}
+
+.save-button:hover {
+    background-color: #ffc107;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 186, 73, 0.4);
+}
+
+.save-button:active {
+    transform: translateY(0);
+}
+
+.save-button .material-icons-sharp {
+    font-size: 20px;
+}
+
+/* Notification Toast */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 16px 24px;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: none;
+    z-index: 1000;
+    font-family: 'Kantumruy Pro', sans-serif;
+}
+
+.notification.show {
+    display: block;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive Design for Form */
+@media screen and (max-width: 768px) {
+    .user-form {
+        padding: 15px;
+    }
+
+    .form-group label {
+        font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .save-button {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}
+
+/* Profile Section */
+.profile-section {
+    background-color: var(--color-white);
+    padding: 30px;
+    border-radius: var(--card-border-radius);
+    margin: 20px auto;
+    box-shadow: var(--box-shadow);
+    max-width: 800px;
+}
+
+/* University Info */
+.university-info {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 20px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.university-logo {
+    width: 200px;
+    height: auto;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
+}
+
+.university-logo:hover {
+    transform: scale(1.05);
+}
+
+.university-info h2 {
+    font-size: 24px;
+    color: var(--color-dark);
+    margin-bottom: 10px;
+}
+
+/* Project Info */
+.project-info {
+    margin-bottom: 40px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+}
+
+.project-info h3 {
+    font-size: 20px;
+    color: var(--color-dark);
+    margin-bottom: 15px;
+}
+
+.project-info p {
+    font-size: 16px;
+    color: var(--color-dark);
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.project-info ul {
+    list-style: none;
+    padding-left: 20px;
+}
+
+.project-info ul li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 10px;
+    color: var(--color-dark);
+    line-height: 1.6;
+}
+
+.project-info ul li:before {
+    content: "•";
+    color: var(--color-primary);
+    font-size: 24px;
+    position: absolute;
+    left: 0;
+    top: -2px;
+}
+
+/* Support Info */
+.support-info {
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.support-info h3 {
+    font-size: 20px;
+    color: var(--color-dark);
+    margin-bottom: 20px;
+}
+
+.contact-cards {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.contact-card {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 200px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.contact-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--color-primary);
+    box-shadow: 0 8px 16px rgba(255, 186, 73, 0.4);
+}
+
+.contact-card .material-icons-sharp {
+    font-size: 24px;
+    color: var(--color-primary);
+}
+
+.contact-card p {
+    font-size: 18px;
+    color: var(--color-dark);
+    font-weight: 500;
+}
+
+/* University Link */
+.university-link {
+    text-align: center;
+}
+
+.university-link h3 {
+    font-size: 20px;
+    color: var(--color-dark);
+    margin-bottom: 20px;
+}
+
+.camtech-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--color-primary);
+    color: var(--color-dark);
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.camtech-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 186, 73, 0.4);
+    background-color: #ffc107;
+}
+
+.camtech-button .material-icons-sharp {
+    font-size: 24px;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .profile-section {
+        padding: 20px;
+        margin: 10px;
+    }
+
+    .university-info h2 {
+        font-size: 20px;
+    }
+
+    .university-logo {
+        width: 150px;
+    }
+
+    .project-info,
+    .support-info,
+    .university-link {
+        padding: 15px;
+    }
+
+    .project-info h3,
+    .support-info h3,
+    .university-link h3 {
+        font-size: 18px;
+    }
+
+    .contact-cards {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .contact-card {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .camtech-button {
+        width: 100%;
+        justify-content: center;
+    }
+} 

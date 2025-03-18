@@ -1,4 +1,4 @@
-package authentication
+package api
 
 import (
 	"errors"
@@ -96,7 +96,6 @@ func ValidateToken(raw_token string) string {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		return claims["client_id"].(string)
 	}
-
 	return ""
 }
 
