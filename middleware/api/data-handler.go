@@ -10,10 +10,10 @@ import (
 )
 
 var (
-	dataProvider = "https://192.168.0.4"
-	key = getRegKey()
-	timeout = 5 * time.Second
-	skipTLS = true
+	dataProvider = "https://10.0.0.2"
+	key          = getRegKey()
+	timeout      = 5 * time.Second
+	skipTLS      = true
 )
 
 func getDataHandler(c **fiber.Ctx, endpoint string) error {
