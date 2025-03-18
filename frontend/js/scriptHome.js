@@ -10,73 +10,75 @@ function handleAlert(data) {
 
 // Chart configuration
 const chartConfig = {
-	type: 'line',
+	type: "line",
 	data: {
 		labels: [],
-		datasets: [{
-			label: 'សីតុណ្ហភាព',
-			data: [],
-			borderColor: '#FFBA49',
-			backgroundColor: 'rgba(255, 186, 73, 0.1)',
-			borderWidth: 2,
-			fill: true,
-			tension: 0.4,
-			pointRadius: 3,
-			pointBackgroundColor: '#FFBA49'
-		}]
+		datasets: [
+			{
+				label: "សីតុណ្ហភាព",
+				data: [],
+				borderColor: "#FFBA49",
+				backgroundColor: "rgba(255, 186, 73, 0.1)",
+				borderWidth: 2,
+				fill: true,
+				tension: 0.4,
+				pointRadius: 3,
+				pointBackgroundColor: "#FFBA49",
+			},
+		],
 	},
 	options: {
 		responsive: true,
 		maintainAspectRatio: false,
 		plugins: {
 			legend: {
-				display: false
+				display: false,
 			},
 			tooltip: {
-				mode: 'index',
+				mode: "index",
 				intersect: false,
 				callbacks: {
-					label: function(context) {
+					label: function (context) {
 						return `សីតុណ្ហភាព: ${context.parsed.y}°C`;
-					}
-				}
-			}
+					},
+				},
+			},
 		},
 		scales: {
 			x: {
 				grid: {
-					display: false
+					display: false,
 				},
 				ticks: {
 					maxRotation: 0,
 					font: {
-						size: 10
-					}
-				}
+						size: 10,
+					},
+				},
 			},
 			y: {
 				beginAtZero: false,
 				grid: {
-					color: 'rgba(0, 0, 0, 0.1)'
+					color: "rgba(0, 0, 0, 0.1)",
 				},
 				ticks: {
 					font: {
-						size: 10
-					}
-				}
-			}
-		}
-	}
+						size: 10,
+					},
+				},
+			},
+		},
+	},
 };
 
 let temperatureChart;
 
 // Initialize chart
-document.addEventListener('DOMContentLoaded', () => {
-	const ctx = document.getElementById('temperatureChart');
+document.addEventListener("DOMContentLoaded", () => {
+	const ctx = document.getElementById("temperatureChart");
 	if (ctx) {
 		temperatureChart = new Chart(ctx, chartConfig);
-		
+
 		// Start data fetching
 		fetchCurrentData();
 		fetchHistoricalData();
@@ -91,13 +93,13 @@ document.addEventListener('DOMContentLoaded', () => {
 async function fetchCurrentData() {
 	try {
 		// Endpoint
-		const response = await fetch('/api/current-data');
+		const response = await fetch("/api/get-current-data");
 		const data = await response.json();
-		
+
 		updateCurrentValues(data);
 	} catch (error) {
-		console.error('Error fetching current data:', error);
-		showError('current');
+		console.error("Error fetching current data:", error);
+		showError("current");
 	}
 }
 
@@ -105,25 +107,25 @@ async function fetchCurrentData() {
 async function fetchHistoricalData() {
 	try {
 		// Endpoint
-		const response = await fetch('/api/historical-temperature');
+		const response = await fetch("/api/get-historical-data");
 		const data = await response.json();
-		
+
 		updateChart(data);
 	} catch (error) {
-		console.error('Error fetching historical data:', error);
-		showError('historical');
+		console.error("Error fetching historical data:", error);
+		showError("historical");
 	}
 }
 
 // Update current temperature and humidity values
 function updateCurrentValues(data) {
-	const tempElement = document.getElementById('current-temp');
-	const humidityElement = document.getElementById('current-humidity');
-	
+	const tempElement = document.getElementById("current-temp");
+	const humidityElement = document.getElementById("current-humidity");
+
 	if (data.temperature !== undefined && tempElement) {
 		tempElement.textContent = data.temperature.toFixed(1);
 	}
-	
+
 	if (data.humidity !== undefined && humidityElement) {
 		humidityElement.textContent = data.humidity.toFixed(1);
 	}
@@ -133,13 +135,13 @@ function updateCurrentValues(data) {
 function updateChart(data) {
 	if (!temperatureChart) return;
 
-	const timestamps = data.map(item => {
+	const timestamps = data.map((item) => {
 		const date = new Date(item.timestamp);
 		return formatTimestamp(date);
 	});
-	
-	const temperatures = data.map(item => item.temperature);
-	
+
+	const temperatures = data.map((item) => item.temperature);
+
 	temperatureChart.data.labels = timestamps;
 	temperatureChart.data.datasets[0].data = temperatures;
 	temperatureChart.update();
@@ -150,25 +152,25 @@ function formatTimestamp(date) {
 	const today = new Date();
 	const yesterday = new Date(today);
 	yesterday.setDate(yesterday.getDate() - 1);
-	
+
 	if (date.toDateString() === today.toDateString()) {
-		return `ថ្ងៃនេះ ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+		return `ថ្ងៃនេះ ${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
 	} else if (date.toDateString() === yesterday.toDateString()) {
-		return `ម្សិលមិញ ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+		return `ម្សិលមិញ ${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
 	} else {
-		return `${date.getDate()}/${date.getMonth() + 1} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+		return `${date.getDate()}/${date.getMonth() + 1} ${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
 	}
 }
 
 // Show error state
 function showError(type) {
-	if (type === 'current') {
-		const tempElement = document.getElementById('current-temp');
-		const humidityElement = document.getElementById('current-humidity');
-		if (tempElement) tempElement.textContent = '--';
-		if (humidityElement) humidityElement.textContent = '--';
-	} else if (type === 'historical') {
-		const graphWrapper = document.querySelector('.graph-wrapper');
-		if (graphWrapper) graphWrapper.classList.add('loading');
+	if (type === "current") {
+		const tempElement = document.getElementById("current-temp");
+		const humidityElement = document.getElementById("current-humidity");
+		if (tempElement) tempElement.textContent = "--";
+		if (humidityElement) humidityElement.textContent = "--";
+	} else if (type === "historical") {
+		const graphWrapper = document.querySelector(".graph-wrapper");
+		if (graphWrapper) graphWrapper.classList.add("loading");
 	}
 }
