@@ -324,8 +324,8 @@ input:checked + .slider:before {
 /* Notification Toast */
 .notification {
   position: fixed;
-  bottom: 120px;
-  right: 20px;
+  bottom: 760px;
+  right: auto;
   padding: 15px 25px;
   border-radius: 8px;
   color: white;
@@ -367,7 +367,7 @@ input:checked + .slider:before {
 @media screen and (max-width: 768px) {
   .control-cards {
       display: grid;
-      grid-template-columns: repeat(2, 1fr); /* Always two columns */
+      grid-template-rows: repeat(2, 1fr); /* Always two columns */
       gap: 10px; /* Adjust gap for smaller screens */
       padding: 10px;
       justify-content: center; /* Center the grid */

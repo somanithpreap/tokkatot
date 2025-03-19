@@ -115,8 +115,8 @@ body {
 /* Notification Toast */
 .notification {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 760px;
+    right: auto;
     padding: 16px 24px;
     background-color: #4CAF50;
     color: white;
