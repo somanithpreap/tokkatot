@@ -253,8 +253,10 @@ function showNotification(message, type) {
     notification.textContent = message;
     notification.className = `notification ${type} show`;
     
+    console.log('Notification will be removed after 3 seconds');
     setTimeout(() => {
         notification.classList.remove('show');
+        console.log('Notification removed');
     }, 3000);
 }
 
