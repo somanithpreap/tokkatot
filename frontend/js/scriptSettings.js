@@ -123,6 +123,9 @@ function handleScheduleMode(event) {
     if (systemState.scheduleMode) {
         startScheduling();
         showNotification('Schedule mode enabled', 'success');
+        
+        // Automatically open the schedule modal
+        openScheduleModal();
     } else {
         stopScheduling();
         showNotification('Schedule mode disabled', 'success');
