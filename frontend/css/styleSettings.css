@@ -324,7 +324,7 @@ input:checked + .slider:before {
 /* Notification Toast */
 .notification {
   position: fixed;
-  bottom: 760px;
+  bottom: 400px;
   right: auto;
   padding: 15px 25px;
   border-radius: 8px;
