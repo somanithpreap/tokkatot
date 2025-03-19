@@ -366,6 +366,44 @@ input:checked + .slider:before {
 /* Responsive Design */
 @media screen and (max-width: 768px) {
   .control-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); /* Always two columns */
+      gap: 10px; /* Adjust gap for smaller screens */
+      padding: 10px;
+  }
+
+  .control-card {
+      padding: 10px; /* Shrink padding for smaller screens */
+      aspect-ratio: 1; /* Maintain square aspect ratio */
+  }
+
+  .control-card .icon {
+      width: 40px; /* Adjust icon size */
+      height: 40px;
+  }
+
+  .control-card .icon img,
+  .control-card .icon i {
+      font-size: 24px; /* Adjust font size for icons */
+  }
+
+  .control-card p {
+      font-size: 14px; /* Adjust text size */
+  }
+
+  .main-controls,
+  .sensor-controls {
+      margin: 10px;
+      padding: 15px;
+  }
+
+  .main-controls h2,
+  .sensor-controls h2 {
+      font-size: 18px;
+      margin-bottom: 15px;
+  }
+
+  .control-cards {
       grid-template-columns: repeat(2, 1fr); /* Ensure two columns */
       gap: 15px;
       padding: 5px;
