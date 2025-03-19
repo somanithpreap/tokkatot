@@ -365,9 +365,12 @@ input:checked + .slider:before {
 
 /* Responsive Design */
 @media screen and (max-width: 768px) {
-  body {
-      padding: 10px;
+  .control-cards {
+      grid-template-columns: repeat(2, 1fr); /* Change to two columns */
+      gap: 15px;
+      padding: 5px;
   }
+}
 
   .main-controls,
   .sensor-controls {
