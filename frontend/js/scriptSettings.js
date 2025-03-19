@@ -86,11 +86,13 @@ function handleAutoMode(event) {
         // Disable manual controls
         disableManualControls(true);
         startAutoMonitoring();
+        console.log('Auto mode enabled notification triggered');
         showNotification('Auto mode enabled', 'success');
     } else {
         // Enable manual controls
         disableManualControls(false);
         stopAutoMonitoring();
+        console.log('Auto mode disabled notification triggered');
         showNotification('Auto mode disabled', 'success');
     }
 }
@@ -104,6 +106,7 @@ function startAutoMonitoring() {
             handleEnvironmentalControl(sensorData);
         } catch (error) {
             console.error('Error in auto monitoring:', error);
+            console.log('Error reading sensor data notification triggered');
             showNotification('Error reading sensor data', 'error');
         }
     }, 30000); // Check every 30 seconds
@@ -126,12 +129,14 @@ function handleScheduleMode(event) {
     
     if (systemState.scheduleMode) {
         startScheduling();
+        console.log('Schedule mode enabled notification triggered');
         showNotification('Schedule mode enabled', 'success');
         
         // Automatically open the schedule modal
         openScheduleModal();
     } else {
         stopScheduling();
+        console.log('Schedule mode disabled notification triggered');
         showNotification('Schedule mode disabled', 'success');
     }
 }
@@ -295,7 +300,9 @@ function saveScheduleSettings() {
     
     // Close modal and show notification
     scheduleModal.style.display = 'none';
-    showNotification('Schedule settings saved', 'success');
+        console.log('Schedule settings saved notification triggered');
+        showNotification('Schedule settings saved', 'success');
+
 }
 
 // Configuration Persistence
@@ -304,6 +311,7 @@ function saveConfiguration() {
         localStorage.setItem('tokkatotConfig', JSON.stringify(CONFIG));
     } catch (error) {
         console.error('Error saving configuration:', error);
+        console.log('Failed to save configuration notification triggered');
         showNotification('Failed to save configuration', 'error');
     }
 }
@@ -316,6 +324,7 @@ function loadConfiguration() {
         }
     } catch (error) {
         console.error('Error loading configuration:', error);
+        console.log('Failed to load configuration notification triggered');
         showNotification('Failed to load configuration', 'error');
     }
 }
