@@ -333,6 +333,7 @@ input:checked + .slider:before {
   transform: translateY(150%);
   transition: transform 0.3s ease;
   z-index: 1000;
+  box-shadow: none;
 }
 
 .notification.show {

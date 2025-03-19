@@ -54,6 +54,7 @@ lightToggle.addEventListener('change', () => handleDeviceToggle('light'));
 feedToggle.addEventListener('change', () => handleDeviceToggle('feed'));
 waterToggle.addEventListener('change', () => handleDeviceToggle('water'));
 
+openScheduleModal = () => scheduleModal.style.display = 'block';
 closeButton.addEventListener('click', () => scheduleModal.style.display = 'none');
 saveScheduleBtn.addEventListener('click', saveScheduleSettings);
 cancelScheduleBtn.addEventListener('click', () => scheduleModal.style.display = 'none');
