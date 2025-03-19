@@ -440,7 +440,6 @@ input:checked + .slider:before {
   .modal-buttons button {
       padding: 10px 20px;
   }
-}
 
 /* Header Styles */
 .header {
