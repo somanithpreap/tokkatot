@@ -367,7 +367,7 @@ input:checked + .slider:before {
 @media screen and (max-width: 768px) {
   .control-cards {
       display: grid;
-      grid-template-rows: auto; /* Always two columns */
+      grid-auto-rows: auto; /* Always two columns */
       gap: 5px; /* Adjust gap for smaller screens */
       padding: 5px;
       justify-content: center; /* Center the grid */
