@@ -323,7 +323,7 @@ function loadConfiguration() {
 // API Communication Functions
 async function getSensorData() {
     try {
-        const response = await fetch('http://localhost:5000/api/sensor-data');
+        const response = await fetch(`${getURL()}/api/sensor-data`);
         if (!response.ok) throw new Error('Failed to fetch sensor data');
         return await response.json();
     } catch (error) {
@@ -334,7 +334,7 @@ async function getSensorData() {
 
 async function setDeviceState(device, state) {
     try {
-        const response = await fetch('http://localhost:5000/api/control', {
+        const response = await fetch(`${getURL()}/api/control`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
