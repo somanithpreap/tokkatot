@@ -367,6 +367,8 @@ input:checked + .slider:before {
 @media screen and (max-width: 768px) {
   .control-cards {
       display: grid;
+      align-items: center;
+      justify-content: space-between;
       grid-template-columns: repeat(2, 1fr); /* Always two columns */
       gap: 10px; /* Adjust gap for smaller screens */
       padding: 10px;
@@ -406,6 +408,8 @@ input:checked + .slider:before {
 
   .control-cards {
       grid-template-columns: repeat(2, 1fr); /* Ensure two columns */
+      align-items: center;
+      justify-content: space-between;
       gap: 15px;
       padding: 5px;
   }
