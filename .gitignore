@@ -35,4 +35,6 @@ yarn-error.log*
 Thumbs.db
 
 /middleware/middleware
-/middleware/users.db
+/middleware/users.
+
+.idea/
