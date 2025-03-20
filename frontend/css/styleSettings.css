@@ -339,6 +339,7 @@ input:checked + .slider:before {
 
 .notification.show {
   transform: translateY(0);
+  display: block;
 }
 
 .notification.success {
