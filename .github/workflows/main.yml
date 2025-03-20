@@ -30,5 +30,5 @@ jobs:
           TLS_KEY: ${{ secrets.TLS_KEY }}
           TLS_CERT: ${{ secrets.TLS_CERT }}
         run: |
-          sudo systemctl restart middleware
-          sudo systemctl status middleware --no-pager
+          sudo systemctl restart tokkatot
+          systemctl status tokkatot --no-pager
