@@ -252,6 +252,7 @@ function updateUIState() {
 function showNotification(message, type) {
     notification.textContent = message;
     notification.className = `notification ${type} show`;
+    document.getElementById('showNotification').display = 'none';
     
     console.log('Notification will be removed after 3 seconds');
     setTimeout(() => {

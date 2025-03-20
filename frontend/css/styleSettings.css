@@ -334,10 +334,12 @@ input:checked + .slider:before {
   transition: transform 0.3s ease;
   z-index: 1000;
   box-shadow: none;
+  display: none;
 }
 
 .notification.show {
   transform: translateY(0);
+  display: block;
 }
 
 .notification.success {
