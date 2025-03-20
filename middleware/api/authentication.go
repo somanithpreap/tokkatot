@@ -18,7 +18,7 @@ import (
 var DB = database.InitDB()
 var LegalCharacters = regexp.MustCompile(`^[\p{L}\p{N}\p{M}\p{Zs}\p{Pd}\p{Pe}\p{Ps}\p{Pi}\p{Pf}]+$`)
 
-func getSecret() []byte {
+func GetSecret() []byte {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
 		log.Fatal("JWT_SECRET environment variable not set")
@@ -26,7 +26,7 @@ func getSecret() []byte {
 	return []byte(secret)
 }
 
-func getRegKey() string {
+func GetRegKey() string {
 	regKey := os.Getenv("REG_KEY")
 	if regKey == "" {
 		log.Fatal("REG_KEY environment variable not set")
@@ -52,7 +52,7 @@ func GenerateToken(username string, expire time.Time) (string, error) {
 		"exp":       expire.Unix(),
 	})
 
-	signedToken, err := token.SignedString(getSecret())
+	signedToken, err := token.SignedString(GetSecret())
 	return signedToken, err
 }
 
@@ -85,7 +85,7 @@ func ValidateToken(raw_token string) string {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method")
 		}
-		return getSecret(), nil
+		return GetSecret(), nil
 	})
 
 	if err != nil {
@@ -147,7 +147,7 @@ func RegisterHandler(c *fiber.Ctx) error {
 	}
 
 	// Check if registration key is valid
-	if regKey != getRegKey() {
+	if regKey != GetRegKey() {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid registration key"})
 	}
 

@@ -14,7 +14,7 @@ import (
 
 var (
 	dataProvider = "http://10.0.0.2"
-	key          = []byte(getRegKey())
+	key          = GetSecret()
 )
 
 func getDataHandler(c **fiber.Ctx, endpoint string) error {
