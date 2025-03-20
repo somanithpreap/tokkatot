@@ -31,4 +31,7 @@ jobs:
           TLS_CERT: ${{ secrets.TLS_CERT }}
         run: |
           cd middleware
+          chmod +x middleware
           nohup ./middleware > middleware.log 2>&1 &
+          sleep 5  # Wait for the process to start
+          pgrep -fl middleware || { echo "Middleware failed to start"; exit 1; }
