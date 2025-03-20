@@ -37,7 +37,7 @@ func getDataHandler(c **fiber.Ctx, endpoint string) error {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return (*c).JSON(fiber.Map{"data": data})
+	return (*c).JSON(fiber.Map{"data": string(data)})
 }
 
 func GetInitialStateHandler(c *fiber.Ctx) error {
