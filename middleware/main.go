@@ -78,8 +78,16 @@ func main() {
 	api_routes.Post("/profile", api.UpdateProfileHandler)
 
 	// Poultry system sensor data retrieval
+	api_routes.Get("/get-initial-state", api.GetInitialStateHandler)
 	api_routes.Get("/get-current-data", api.GetCurrentDataHandler)
 	api_routes.Get("/get-historical-data", api.GetHistoricalDataHandler)
+
+	// Poultry system control routes
+	api_routes.Get("/toggle-auto", api.ToggleAutoHandler)
+	api_routes.Get("/toggle-fan", api.ToggleFanHandler)
+	api_routes.Get("/toggle-bulb", api.ToggleBulbHandler)
+	api_routes.Get("/toggle-feeder", api.ToggleFeederHandler)
+	api_routes.Get("/toggle-water", api.ToggleWaterHandler)
 
 	// 404 Handler
 	app.Use(func(c *fiber.Ctx) error {
