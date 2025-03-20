@@ -25,7 +25,7 @@ func getDataHandler(c **fiber.Ctx, endpoint string) error {
 	if err != nil {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
