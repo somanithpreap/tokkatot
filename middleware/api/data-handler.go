@@ -40,7 +40,7 @@ func getDataHandler(c **fiber.Ctx, endpoint string) error {
 	return (*c).JSON(fiber.Map{"data": data})
 }
 
-func GetIntialStateHandler(c *fiber.Ctx) error {
+func GetInitialStateHandler(c *fiber.Ctx) error {
 	return getDataHandler(&c, "/get-initial-state")
 }
 
