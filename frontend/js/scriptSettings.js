@@ -41,6 +41,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Attach event listener for saving schedule settings
     saveScheduleButton.addEventListener("click", saveScheduleSettings);
+
+    // Launch schedule modal (if existing modal functionality exists)
+    document.getElementById("addFeedingTime").addEventListener("click", () =>
+        addFeedingTimeInput("")
+    );
 });
 
 // Fetch initial settings state from the backend
@@ -80,16 +85,30 @@ function updateUI(data) {
     document.getElementById("lightEnd").value =
         data.schedule.lighting.end || "18:00";
 
-    // Update feeding times
+    // Update feeding times schedule
     feedingTimesContainer.innerHTML = ""; // Clear existing feeding times
     data.schedule.feeding.forEach((time) => addFeedingTimeInput(time));
+
+    // Update water interval
+    document.getElementById("waterInterval").value =
+        data.schedule.waterInterval || 60;
+
+    // Update environmental thresholds
+    document.getElementById("tempMin").value =
+        data.schedule.tempThreshold.min || 20;
+    document.getElementById("tempMax").value =
+        data.schedule.tempThreshold.max || 25;
+    document.getElementById("humidityMin").value =
+        data.schedule.humThreshold.min || 40;
+    document.getElementById("humidityMax").value =
+        data.schedule.humThreshold.max || 60;
 }
 
 // Handle toggling Auto or Schedule mode
 async function handleModeToggle(endpoint, state) {
     try {
         const response = await fetch(`${API_BASE}/${endpoint}`, {
-            method: "GET"
+            method: "GET",
         });
 
         if (!response.ok) {
@@ -109,20 +128,17 @@ async function handleModeToggle(endpoint, state) {
         console.error(`Error toggling ${endpoint}:`, error);
         showNotification("Failed to update mode toggle.", "error");
 
-        // Revert the toggle state if the request failed
-        if (endpoint === "toggle-auto") {
-            autoModeToggle.checked = !state;
-        } else if (endpoint === "toggle-schedule") {
-            scheduleModeToggle.checked = !state;
-        }
+        // Revert the toggle state on error
+        const toggle = endpoint === "toggle-auto" ? autoModeToggle : scheduleModeToggle;
+        toggle.checked = !state;
     }
 }
 
-// Handle immediate toggling of devices (fan, bulb, feeder, water)
+// Handle immediate toggles (like fan, light, feeder, and water)
 async function handleImmediateToggle(device, state) {
     try {
         const response = await fetch(`${API_BASE}/toggle-${device}`, {
-            method: "GET"
+            method: "GET",
         });
 
         if (!response.ok) {
@@ -130,187 +146,71 @@ async function handleImmediateToggle(device, state) {
         }
 
         const result = await response.json();
-        console.log(`Toggled device ${device}:`, result);
+        console.log(`Toggled ${device}: `, result);
 
         showNotification(
-            `Device "${device}" is now ${state ? "ON" : "OFF"}.`,
+            `${device.charAt(0).toUpperCase() + device.slice(1)} ${
+                state ? "turned on" : "turned off"
+            }.`,
             "success"
         );
     } catch (error) {
         console.error(`Error toggling ${device}:`, error);
+        showNotification("Failed to update device state.", "error");
 
-        // Revert the toggle state if the request failed
+        // Revert the toggle state on error
         document.getElementById(`${device}Toggle`).checked = !state;
-
-        showNotification(`Failed to toggle "${device}".`, "error");
     }
 }
 
-// Save schedule settings
+// Handle saving updated schedule settings
 async function saveScheduleSettings() {
-    const lightStart = document.getElementById("lightStart").value;
-    const lightEnd = document.getElementById("lightEnd").value;
-
-    const feedingTimes = Array.from(
-        feedingTimesContainer.querySelectorAll("input[type=time]")
-    ).map((input) => input.value);
-
-    // Construct payload
-    const payload = {
-        schedule: {
-            lighting: { start: lightStart, end: lightEnd },
-            feeding: feedingTimes
-        }
-    };
-
     try {
-        const response = await fetch(`${API_BASE}/update-schedule`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
+        // Gather lighting schedule inputs
+        const lightStart = document.getElementById("lightStart").value;
+        const lightEnd = document.getElementById("lightEnd").value;
+
+        // Gather feeding schedule inputs
+        const feedingTimes = Array.from(
+            feedingTimesContainer.querySelectorAll("input[type='time']")
+        ).map((input) => input.value);
+
+        // Gather water interval input
+        const waterInterval = parseInt(
+            document.getElementById("waterInterval").value,
+            10
+        );
+
+        // Gather environmental thresholds
+        const tempMin = parseFloat(document.getElementById("tempMin").value);
+        const tempMax = parseFloat(document.getElementById("tempMax").value);
+        const humidityMin = parseFloat(
+            document.getElementById("humidityMin").value
+        );
+        const humidityMax = parseFloat(
+            document.getElementById("humidityMax").value
+        );
+
+        // Create payload
+        const payload = {
+            lighting: {
+                start: lightStart,
+                end: lightEnd,
             },
-            body: JSON.stringify(payload)
-        });
+            feeding: feedingTimes,
+            waterInterval: waterInterval,
+            tempThreshold: {
+                min: tempMin,
+                max: tempMax,
+            },
+            humThreshold: {
+                min: humidityMin,
+                max: humidityMax,
+            },
+        };
 
-        if (!response.ok) {
-            throw new Error("Failed to save schedule settings.");
-        }
+        console.log("Saving schedule settings with payload:", payload);
 
-        const result = await response.json();
-        console.log("Saved schedule settings:", result);
-
-        showNotification("Schedule updated successfully!", "success");
-    } catch (error) {
-        console.error("Error saving schedule settings:", error);
-        showNotification("Failed to update schedule.", "error");
-    }
-}
-
-// Add a new feeding time input
-function addFeedingTimeInput(defaultValue = "") {
-    const row = document.createElement("div");
-    row.className = "feeding-time";
-    row.innerHTML = `
-    <input type="time" value="${defaultValue}" />
-    <button class="remove-time">Remove</button>
-  `;
-    row.querySelector(".remove-time").addEventListener("click", () =>
-        row.remove()
-    );
-    feedingTimesContainer.appendChild(row);
-}
-
-// Show notifications for user feedback
-function showNotification(message, type) {
-    notification.textContent = message;
-    notification.className = `notification ${type}`;
-    notification.style.display = "block";
-    setTimeout(() => {
-        notification.style.display = "none";
-    }, 3000);
-}
-
-async function fetchSchedule() {
-    try {
-        // Fetch data from the backend
-        const response = await fetch(`${API_BASE}/schedule`);
-        if (!response.ok) {
-            throw new Error("Failed to fetch schedule.");
-        }
-
-        const data = await response.json();
-        console.log("Fetched schedule:", data);
-
-        // Populate lighting schedule
-        document.getElementById("lightStart").value = data.schedule.lighting.start;
-        document.getElementById("lightEnd").value = data.schedule.lighting.end;
-
-        // Populate feeding times
-        const feedingTimesContainer = document.getElementById("feedingTimes");
-        feedingTimesContainer.innerHTML = ""; // Clear existing feeding items
-        data.schedule.feeding.forEach((time) => addFeedingTimeInput(time));
-
-        // Populate water control interval
-        document.getElementById("waterInterval").value = data.schedule.waterInterval;
-
-        // Populate temperature and humidity thresholds
-        document.getElementById("tempMin").value = data.schedule.tempThreshold.min;
-        document.getElementById("tempMax").value = data.schedule.tempThreshold.max;
-        document.getElementById("humidityMin").value = data.schedule.humThreshold.min;
-        document.getElementById("humidityMax").value = data.schedule.humThreshold.max;
-
-    } catch (error) {
-        console.error("Error fetching schedule:", error);
-        showNotification("Unable to load schedule!", "error");
-    }
-}
-
-// Helper function to add feeding time dynamically
-function addFeedingTimeInput(time = "") {
-    const feedingTimesContainer = document.getElementById("feedingTimes");
-
-    const feedingTimeDiv = document.createElement("div");
-    feedingTimeDiv.classList.add("feeding-time");
-
-    const input = document.createElement("input");
-    input.type = "time";
-    input.value = time;
-
-    const removeButton = document.createElement("button");
-    removeButton.classList.add("remove-time");
-    removeButton.textContent = "លុប"; // "Remove" in Khmer
-    removeButton.addEventListener("click", () => feedingTimeDiv.remove());
-
-    feedingTimeDiv.appendChild(input);
-    feedingTimeDiv.appendChild(removeButton);
-
-    feedingTimesContainer.appendChild(feedingTimeDiv);
-}
-
-// Fetch schedule data when the modal is opened
-document.addEventListener("DOMContentLoaded", () => {
-    fetchSchedule();
-});
-
-async function saveScheduleSettings() {
-    // Gather lighting data
-    const lightStart = document.getElementById("lightStart").value;
-    const lightEnd = document.getElementById("lightEnd").value;
-
-    // Gather feeding schedule
-    const feedingTimes = Array.from(
-        document.getElementById("feedingTimes").querySelectorAll("input[type='time']")
-    ).map((input) => input.value);
-
-    // Gather water interval
-    const waterInterval = parseInt(document.getElementById("waterInterval").value, 10);
-
-    // Gather temperature and humidity thresholds
-    const tempMin = parseFloat(document.getElementById("tempMin").value);
-    const tempMax = parseFloat(document.getElementById("tempMax").value);
-    const humidityMin = parseFloat(document.getElementById("humidityMin").value);
-    const humidityMax = parseFloat(document.getElementById("humidityMax").value);
-
-    // Create payload to send to the backend
-    const payload = {
-        lighting: {
-            start: lightStart,
-            end: lightEnd,
-        },
-        feeding: feedingTimes,
-        waterInterval: waterInterval,
-        tempThreshold: {
-            min: tempMin,
-            max: tempMax,
-        },
-        humThreshold: {
-            min: humidityMin,
-            max: humidityMax,
-        },
-    };
-
-    try {
-        // Send payload to the backend
         const response = await fetch(`${API_BASE}/schedule`, {
             method: "POST",
             headers: {
@@ -320,24 +220,43 @@ async function saveScheduleSettings() {
         });
 
         if (!response.ok) {
-            throw new Error("Failed to save schedule.");
+            throw new Error("Failed to save the schedule settings.");
         }
 
         const result = await response.json();
-        console.log("Schedule updated successfully:", result);
+        console.log("Schedule saved successfully:", result);
 
-        // Show success notification
         showNotification("Schedule updated successfully!", "success");
     } catch (error) {
         console.error("Error saving schedule:", error);
-        showNotification("Failed to save schedule!", "error");
+        showNotification("Failed to save schedule settings.", "error");
     }
 }
 
-// Add save button event listener
-document.getElementById("saveSchedule").addEventListener("click", saveScheduleSettings);
+// Helper function to dynamically add a feeding time row
+function addFeedingTimeInput(time = "") {
+    const feedingTimeDiv = document.createElement("div");
+    feedingTimeDiv.classList.add("feeding-time");
 
-// Add cancel button event listener
-document.getElementById("cancelSchedule").addEventListener("click", () => {
-    showNotification("Schedule changes discarded.", "info");
-});
+    const input = document.createElement("input");
+    input.type = "time";
+    input.value = time;
+
+    const removeButton = document.createElement("button");
+    removeButton.textContent = "លុប"; // "Remove" in Khmer
+    removeButton.classList.add("remove-time");
+    removeButton.addEventListener("click", () => feedingTimeDiv.remove());
+
+    feedingTimeDiv.appendChild(input);
+    feedingTimeDiv.appendChild(removeButton);
+    feedingTimesContainer.appendChild(feedingTimeDiv);
+}
+
+// Helper function to display notifications
+function showNotification(message, type) {
+    notification.textContent = message;
+    notification.className = `notification ${type}`;
+    setTimeout(() => {
+        notification.className = "notification"; // Clear notification
+    }, 3000);
+}
