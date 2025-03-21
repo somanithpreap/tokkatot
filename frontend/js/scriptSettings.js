@@ -209,3 +209,135 @@ function showNotification(message, type) {
         notification.style.display = "none";
     }, 3000);
 }
+
+async function fetchSchedule() {
+    try {
+        // Fetch data from the backend
+        const response = await fetch(`${API_BASE}/schedule`);
+        if (!response.ok) {
+            throw new Error("Failed to fetch schedule.");
+        }
+
+        const data = await response.json();
+        console.log("Fetched schedule:", data);
+
+        // Populate lighting schedule
+        document.getElementById("lightStart").value = data.schedule.lighting.start;
+        document.getElementById("lightEnd").value = data.schedule.lighting.end;
+
+        // Populate feeding times
+        const feedingTimesContainer = document.getElementById("feedingTimes");
+        feedingTimesContainer.innerHTML = ""; // Clear existing feeding items
+        data.schedule.feeding.forEach((time) => addFeedingTimeInput(time));
+
+        // Populate water control interval
+        document.getElementById("waterInterval").value = data.schedule.waterInterval;
+
+        // Populate temperature and humidity thresholds
+        document.getElementById("tempMin").value = data.schedule.tempThreshold.min;
+        document.getElementById("tempMax").value = data.schedule.tempThreshold.max;
+        document.getElementById("humidityMin").value = data.schedule.humThreshold.min;
+        document.getElementById("humidityMax").value = data.schedule.humThreshold.max;
+
+    } catch (error) {
+        console.error("Error fetching schedule:", error);
+        showNotification("Unable to load schedule!", "error");
+    }
+}
+
+// Helper function to add feeding time dynamically
+function addFeedingTimeInput(time = "") {
+    const feedingTimesContainer = document.getElementById("feedingTimes");
+
+    const feedingTimeDiv = document.createElement("div");
+    feedingTimeDiv.classList.add("feeding-time");
+
+    const input = document.createElement("input");
+    input.type = "time";
+    input.value = time;
+
+    const removeButton = document.createElement("button");
+    removeButton.classList.add("remove-time");
+    removeButton.textContent = "លុប"; // "Remove" in Khmer
+    removeButton.addEventListener("click", () => feedingTimeDiv.remove());
+
+    feedingTimeDiv.appendChild(input);
+    feedingTimeDiv.appendChild(removeButton);
+
+    feedingTimesContainer.appendChild(feedingTimeDiv);
+}
+
+// Fetch schedule data when the modal is opened
+document.addEventListener("DOMContentLoaded", () => {
+    fetchSchedule();
+});
+
+async function saveScheduleSettings() {
+    // Gather lighting data
+    const lightStart = document.getElementById("lightStart").value;
+    const lightEnd = document.getElementById("lightEnd").value;
+
+    // Gather feeding schedule
+    const feedingTimes = Array.from(
+        document.getElementById("feedingTimes").querySelectorAll("input[type='time']")
+    ).map((input) => input.value);
+
+    // Gather water interval
+    const waterInterval = parseInt(document.getElementById("waterInterval").value, 10);
+
+    // Gather temperature and humidity thresholds
+    const tempMin = parseFloat(document.getElementById("tempMin").value);
+    const tempMax = parseFloat(document.getElementById("tempMax").value);
+    const humidityMin = parseFloat(document.getElementById("humidityMin").value);
+    const humidityMax = parseFloat(document.getElementById("humidityMax").value);
+
+    // Create payload to send to the backend
+    const payload = {
+        lighting: {
+            start: lightStart,
+            end: lightEnd,
+        },
+        feeding: feedingTimes,
+        waterInterval: waterInterval,
+        tempThreshold: {
+            min: tempMin,
+            max: tempMax,
+        },
+        humThreshold: {
+            min: humidityMin,
+            max: humidityMax,
+        },
+    };
+
+    try {
+        // Send payload to the backend
+        const response = await fetch(`${API_BASE}/schedule`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to save schedule.");
+        }
+
+        const result = await response.json();
+        console.log("Schedule updated successfully:", result);
+
+        // Show success notification
+        showNotification("Schedule updated successfully!", "success");
+    } catch (error) {
+        console.error("Error saving schedule:", error);
+        showNotification("Failed to save schedule!", "error");
+    }
+}
+
+// Add save button event listener
+document.getElementById("saveSchedule").addEventListener("click", saveScheduleSettings);
+
+// Add cancel button event listener
+document.getElementById("cancelSchedule").addEventListener("click", () => {
+    showNotification("Schedule changes discarded.", "info");
+});
