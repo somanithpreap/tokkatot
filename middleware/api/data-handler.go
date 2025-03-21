@@ -89,7 +89,7 @@ func toggleHandler(c **fiber.Ctx, endpoint string) error {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	newState, err := utils.DecryptAESGCM(string(body), key)
+	newState, err := utils.DecryptAESGCM(string(verifyBody), key)
 	if err != nil {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
