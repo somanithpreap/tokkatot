@@ -12,8 +12,6 @@
 }
 
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
   font-family: 'Kantumruy Pro', sans-serif;
 }
@@ -21,12 +19,9 @@
 body {
   background-color: var(--color-background);
   min-height: 100vh;
-  padding: 20px;
 }
 
 .container {
-  padding: 20px;
-  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -324,8 +319,8 @@ input:checked + .slider:before {
 /* Notification Toast */
 .notification {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 400px;
+  right: auto;
   padding: 15px 25px;
   border-radius: 8px;
   color: white;
@@ -333,7 +328,7 @@ input:checked + .slider:before {
   transform: translateY(150%);
   transition: transform 0.3s ease;
   z-index: 1000;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
   display: none;
 }
 
@@ -367,8 +362,30 @@ input:checked + .slider:before {
 
 /* Responsive Design */
 @media screen and (max-width: 768px) {
-  body {
-      padding: 10px;
+  .control-cards {
+      display: grid;
+      grid-auto-rows: auto; /* Always two columns */
+      gap: 5px; /* Adjust gap for smaller screens */
+      justify-content: center; /* Center the grid */
+  }
+
+  .control-card {
+      padding: 10px; /* Shrink padding for smaller screens */
+      aspect-ratio: 1; /* Maintain square aspect ratio */
+  }
+
+  .control-card .icon {
+      width: 40px; /* Adjust icon size */
+      height: 40px;
+  }
+
+  .control-card .icon img,
+  .control-card .icon i {
+      font-size: 24px; /* Adjust font size for icons */
+  }
+
+  .control-card p {
+      font-size: 14px; /* Adjust text size */
   }
 
   .main-controls,
@@ -381,63 +398,6 @@ input:checked + .slider:before {
   .sensor-controls h2 {
       font-size: 18px;
       margin-bottom: 15px;
-  }
-
-  .control-cards {
-      grid-template-columns: 1fr;
-      gap: 15px;
-      padding: 5px;
-  }
-
-  .control-card {
-      padding: 15px;
-  }
-
-  .control-card .icon {
-      width: 36px;
-      height: 36px;
-  }
-
-  .control-card .icon img,
-  .control-card .icon i {
-      font-size: 28px;
-  }
-
-  .control-card p {
-      font-size: 14px;
-      margin: 8px 0;
-  }
-
-  .switch {
-      width: 52px;
-      height: 30px;
-  }
-
-  .slider:before {
-      height: 22px;
-      width: 22px;
-  }
-
-  .modal-content {
-      width: 95%;
-      margin: 10% auto;
-      padding: 15px;
-  }
-
-  .schedule-section {
-      padding: 10px;
-  }
-
-  .schedule-section h3 {
-      font-size: 16px;
-  }
-
-  .input-group input {
-      padding: 8px;
-  }
-
-  .modal-buttons button {
-      padding: 10px 20px;
   }
 }
 

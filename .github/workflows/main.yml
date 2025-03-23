@@ -1,0 +1,34 @@
+name: Build and Run Middleware & Web Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-run:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.22.2
+
+      - name: Build Middleware
+        run: |
+          cd middleware
+          go build
+
+      - name: Run Middleware with Environment Variables
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          REG_KEY: ${{ secrets.REG_KEY }}
+          TLS_KEY: ${{ secrets.TLS_KEY }}
+          TLS_CERT: ${{ secrets.TLS_CERT }}
+        run: |
+          sudo systemctl restart tokkatot
+          systemctl status tokkatot --no-pager

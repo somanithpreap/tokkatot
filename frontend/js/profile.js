@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Load user data from backend API
 async function loadUserData() {
 	try {
-		const response = await fetch("/api/profile");
+		const response = await fetch(`${getURL()}/api/profile`);
 		if (!response.ok) {
 			throw new Error("Failed to fetch profile");
 		}
@@ -46,7 +46,7 @@ userInfoForm.addEventListener("submit", async (e) => {
 	};
 
 	try {
-		const response = await fetch("/api/profile", {
+		const response = await fetch(`${getURL()}/api/profile`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",

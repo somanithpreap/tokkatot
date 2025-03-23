@@ -115,13 +115,12 @@ body {
 /* Notification Toast */
 .notification {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 400px;
+    right: auto;
     padding: 16px 24px;
     background-color: #4CAF50;
     color: white;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     display: none;
     z-index: 1000;
     font-family: 'Kantumruy Pro', sans-serif;

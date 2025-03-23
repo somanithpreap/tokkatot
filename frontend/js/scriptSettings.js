@@ -1,357 +1,262 @@
-// Configuration object for system settings
-const CONFIG = {
-    temperature: {
-        min: 20,
-        max: 25
-    },
-    humidity: {
-        min: 40,
-        max: 60
-    },
-    schedule: {
-        lighting: {
-            start: '06:00',
-            end: '18:00'
-        },
-        feeding: ['07:00', '12:00', '17:00'],
-        waterInterval: 60 // minutes
-    }
-};
-
-// System state object
-const systemState = {
-    autoMode: false,
-    scheduleMode: false,
-    devices: {
-        fan: false,
-        light: false,
-        feed: false,
-        water: false
-    },
-    monitoring: null,
-    scheduling: null
-};
+// Configuration for backend API base
+const API_BASE = "/api";
 
 // DOM Elements
-const autoModeToggle = document.getElementById('autoModeToggle');
-const scheduleModeToggle = document.getElementById('scheduleModeToggle');
-const fanToggle = document.getElementById('fanToggle');
-const lightToggle = document.getElementById('lightToggle');
-const feedToggle = document.getElementById('feedToggle');
-const waterToggle = document.getElementById('waterToggle');
-const scheduleModal = document.getElementById('scheduleModal');
-const closeButton = document.querySelector('.close-button');
-const saveScheduleBtn = document.getElementById('saveSchedule');
-const cancelScheduleBtn = document.getElementById('cancelSchedule');
-const addFeedingTimeBtn = document.getElementById('addFeedingTime');
-const notification = document.getElementById('notification');
+const autoModeToggle = document.getElementById("autoModeToggle");
+const scheduleModeToggle = document.getElementById("scheduleModeToggle");
+const fanToggle = document.getElementById("fanToggle");
+const lightToggle = document.getElementById("lightToggle");
+const feederToggle = document.getElementById("feedToggle");
+const waterToggle = document.getElementById("waterToggle");
+const feedingTimesContainer = document.getElementById("feedingTimes");
+const saveScheduleButton = document.getElementById("saveSchedule");
+const notification = document.getElementById("notification");
 
-// Event Listeners
-autoModeToggle.addEventListener('change', handleAutoMode);
-scheduleModeToggle.addEventListener('change', handleScheduleMode);
-fanToggle.addEventListener('change', () => handleDeviceToggle('fan'));
-lightToggle.addEventListener('change', () => handleDeviceToggle('light'));
-feedToggle.addEventListener('change', () => handleDeviceToggle('feed'));
-waterToggle.addEventListener('change', () => handleDeviceToggle('water'));
+// Initialize the system on page load
+document.addEventListener("DOMContentLoaded", () => {
+    // Fetch and display initial settings
+    fetchInitialSettings();
 
-closeButton.addEventListener('click', () => scheduleModal.style.display = 'none');
-saveScheduleBtn.addEventListener('click', saveScheduleSettings);
-cancelScheduleBtn.addEventListener('click', () => scheduleModal.style.display = 'none');
-addFeedingTimeBtn.addEventListener('click', addFeedingTimeInput);
+    // Attach event listeners for toggles
+    autoModeToggle.addEventListener("change", () =>
+        handleModeToggle("toggle-auto", autoModeToggle.checked)
+    );
+    scheduleModeToggle.addEventListener("change", () =>
+        handleModeToggle("toggle-schedule", scheduleModeToggle.checked)
+    );
 
-// Initialize the system
-function initializeSystem() {
-    // Load saved configuration if any
-    loadConfiguration();
-    
-    // Update UI with current state
-    updateUIState();
-    
-    // Start monitoring if auto mode was enabled
-    if (systemState.autoMode) {
-        startAutoMonitoring();
-    }
-    
-    // Start scheduling if schedule mode was enabled
-    if (systemState.scheduleMode) {
-        startScheduling();
-    }
-}
+    // Attach event listeners for immediate toggles
+    fanToggle.addEventListener("change", () =>
+        handleImmediateToggle("fan", fanToggle.checked)
+    );
+    lightToggle.addEventListener("change", () =>
+        handleImmediateToggle("bulb", lightToggle.checked)
+    );
+    feederToggle.addEventListener("change", () =>
+        handleImmediateToggle("feeder", feederToggle.checked)
+    );
+    waterToggle.addEventListener("change", () =>
+        handleImmediateToggle("water", waterToggle.checked)
+    );
 
-// Auto Mode Functions
-function handleAutoMode(event) {
-    systemState.autoMode = event.target.checked;
-    
-    if (systemState.autoMode) {
-        // Disable manual controls
-        disableManualControls(true);
-        startAutoMonitoring();
-        showNotification('Auto mode enabled', 'success');
-    } else {
-        // Enable manual controls
-        disableManualControls(false);
-        stopAutoMonitoring();
-        showNotification('Auto mode disabled', 'success');
-    }
-}
+    // Attach event listener for saving schedule settings
+    saveScheduleButton.addEventListener("click", saveScheduleSettings);
 
-function startAutoMonitoring() {
-    if (systemState.monitoring) return;
-    
-    systemState.monitoring = setInterval(async () => {
-        try {
-            const sensorData = await getSensorData();
-            handleEnvironmentalControl(sensorData);
-        } catch (error) {
-            console.error('Error in auto monitoring:', error);
-            showNotification('Error reading sensor data', 'error');
-        }
-    }, 30000); // Check every 30 seconds
-}
+    // Launch schedule modal (if existing modal functionality exists)
+    document.getElementById("addFeedingTime").addEventListener("click", () =>
+        addFeedingTimeInput("")
+    );
+});
 
-function stopAutoMonitoring() {
-    if (systemState.monitoring) {
-        clearInterval(systemState.monitoring);
-        systemState.monitoring = null;
-    }
-}
-
-// Schedule Mode Functions
-function handleScheduleMode(event) {
-    systemState.scheduleMode = event.target.checked;
-    
-    if (systemState.scheduleMode) {
-        startScheduling();
-        showNotification('Schedule mode enabled', 'success');
-    } else {
-        stopScheduling();
-        showNotification('Schedule mode disabled', 'success');
-    }
-}
-
-function startScheduling() {
-    if (systemState.scheduling) return;
-    
-    // Check schedule every minute
-    systemState.scheduling = setInterval(() => {
-        const now = new Date();
-        const currentTime = now.toTimeString().slice(0, 5);
-        
-        // Check lighting schedule
-        handleLightingSchedule(currentTime);
-        
-        // Check feeding schedule
-        handleFeedingSchedule(currentTime);
-        
-        // Check water system
-        handleWaterSchedule(now);
-    }, 60000);
-}
-
-function stopScheduling() {
-    if (systemState.scheduling) {
-        clearInterval(systemState.scheduling);
-        systemState.scheduling = null;
-    }
-}
-
-// Device Control Functions
-async function handleDeviceToggle(device) {
-    if (systemState.autoMode) return; // Prevent manual control in auto mode
-    
-    const toggle = document.getElementById(`${device}Toggle`);
-    const newState = toggle.checked;
-    
+// Fetch initial settings state from the backend
+async function fetchInitialSettings() {
     try {
-        await setDeviceState(device, newState);
-        systemState.devices[device] = newState;
-        showNotification(`${device} ${newState ? 'enabled' : 'disabled'}`, 'success');
+        const response = await fetch(`${API_BASE}/get-initial-state`);
+        if (!response.ok) {
+            throw new Error("Failed to fetch initial state.");
+        }
+
+        const data = await response.json();
+        console.log("Fetched initial state:", data);
+
+        // Update the UI based on the fetched data
+        updateUI(data);
+    } catch (error) {
+        console.error("Error fetching initial state:", error);
+        showNotification("Unable to load initial settings!", "error");
+    }
+}
+
+// Update the UI based on retrieved settings
+function updateUI(data) {
+    // Update mode toggles
+    autoModeToggle.checked = data.autoMode;
+    scheduleModeToggle.checked = data.scheduleMode;
+
+    // Update immediate toggles
+    fanToggle.checked = data.devices.fan;
+    lightToggle.checked = data.devices.light;
+    feederToggle.checked = data.devices.feed;
+    waterToggle.checked = data.devices.water;
+
+    // Update schedule settings
+    document.getElementById("lightStart").value =
+        data.schedule.lighting.start || "06:00";
+    document.getElementById("lightEnd").value =
+        data.schedule.lighting.end || "18:00";
+
+    // Update feeding times schedule
+    feedingTimesContainer.innerHTML = ""; // Clear existing feeding times
+    data.schedule.feeding.forEach((time) => addFeedingTimeInput(time));
+
+    // Update water interval
+    document.getElementById("waterInterval").value =
+        data.schedule.waterInterval || 60;
+
+    // Update environmental thresholds
+    document.getElementById("tempMin").value =
+        data.schedule.tempThreshold.min || 20;
+    document.getElementById("tempMax").value =
+        data.schedule.tempThreshold.max || 25;
+    document.getElementById("humidityMin").value =
+        data.schedule.humThreshold.min || 40;
+    document.getElementById("humidityMax").value =
+        data.schedule.humThreshold.max || 60;
+}
+
+// Handle toggling Auto or Schedule mode
+async function handleModeToggle(endpoint, state) {
+    try {
+        const response = await fetch(`${API_BASE}/${endpoint}`, {
+            method: "GET",
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to toggle ${endpoint}.`);
+        }
+
+        const result = await response.json();
+        console.log(`Toggled ${endpoint}: `, result);
+
+        showNotification(
+            `${endpoint === "toggle-auto" ? "Auto Mode" : "Schedule Mode"} ${
+                state ? "enabled" : "disabled"
+            }.`,
+            "success"
+        );
+    } catch (error) {
+        console.error(`Error toggling ${endpoint}:`, error);
+        showNotification("Failed to update mode toggle.", "error");
+
+        // Revert the toggle state on error
+        const toggle = endpoint === "toggle-auto" ? autoModeToggle : scheduleModeToggle;
+        toggle.checked = !state;
+    }
+}
+
+// Handle immediate toggles (like fan, light, feeder, and water)
+async function handleImmediateToggle(device, state) {
+    try {
+        const response = await fetch(`${API_BASE}/toggle-${device}`, {
+            method: "GET",
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to toggle ${device}.`);
+        }
+
+        const result = await response.json();
+        console.log(`Toggled ${device}: `, result);
+
+        showNotification(
+            `${device.charAt(0).toUpperCase() + device.slice(1)} ${
+                state ? "turned on" : "turned off"
+            }.`,
+            "success"
+        );
     } catch (error) {
         console.error(`Error toggling ${device}:`, error);
-        toggle.checked = !newState; // Revert toggle state
-        showNotification(`Failed to control ${device}`, 'error');
+        showNotification("Failed to update device state.", "error");
+
+        // Revert the toggle state on error
+        document.getElementById(`${device}Toggle`).checked = !state;
     }
 }
 
-// Environmental Control Functions
-async function handleEnvironmentalControl(sensorData) {
-    const { temperature, humidity } = sensorData;
-    
-    // Temperature control
-    if (temperature > CONFIG.temperature.max) {
-        await setDeviceState('fan', true);
-    } else if (temperature < CONFIG.temperature.min) {
-        await setDeviceState('fan', false);
+// Handle saving updated schedule settings
+async function saveScheduleSettings() {
+    try {
+        // Gather lighting schedule inputs
+        const lightStart = document.getElementById("lightStart").value;
+        const lightEnd = document.getElementById("lightEnd").value;
+
+        // Gather feeding schedule inputs
+        const feedingTimes = Array.from(
+            feedingTimesContainer.querySelectorAll("input[type='time']")
+        ).map((input) => input.value);
+
+        // Gather water interval input
+        const waterInterval = parseInt(
+            document.getElementById("waterInterval").value,
+            10
+        );
+
+        // Gather environmental thresholds
+        const tempMin = parseFloat(document.getElementById("tempMin").value);
+        const tempMax = parseFloat(document.getElementById("tempMax").value);
+        const humidityMin = parseFloat(
+            document.getElementById("humidityMin").value
+        );
+        const humidityMax = parseFloat(
+            document.getElementById("humidityMax").value
+        );
+
+        // Create payload
+        const payload = {
+            lighting: {
+                start: lightStart,
+                end: lightEnd,
+            },
+            feeding: feedingTimes,
+            waterInterval: waterInterval,
+            tempThreshold: {
+                min: tempMin,
+                max: tempMax,
+            },
+            humThreshold: {
+                min: humidityMin,
+                max: humidityMax,
+            },
+        };
+
+        console.log("Saving schedule settings with payload:", payload);
+
+        const response = await fetch(`${API_BASE}/schedule`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to save the schedule settings.");
+        }
+
+        const result = await response.json();
+        console.log("Schedule saved successfully:", result);
+
+        showNotification("Schedule updated successfully!", "success");
+    } catch (error) {
+        console.error("Error saving schedule:", error);
+        showNotification("Failed to save schedule settings.", "error");
     }
-    
-    // Update UI
-    updateUIState();
 }
 
-// Schedule Control Functions
-function handleLightingSchedule(currentTime) {
-    const { start, end } = CONFIG.schedule.lighting;
-    const shouldBeOn = currentTime >= start && currentTime <= end;
-    
-    if (systemState.devices.light !== shouldBeOn) {
-        setDeviceState('light', shouldBeOn);
-    }
+// Helper function to dynamically add a feeding time row
+function addFeedingTimeInput(time = "") {
+    const feedingTimeDiv = document.createElement("div");
+    feedingTimeDiv.classList.add("feeding-time");
+
+    const input = document.createElement("input");
+    input.type = "time";
+    input.value = time;
+
+    const removeButton = document.createElement("button");
+    removeButton.textContent = "លុប"; // "Remove" in Khmer
+    removeButton.classList.add("remove-time");
+    removeButton.addEventListener("click", () => feedingTimeDiv.remove());
+
+    feedingTimeDiv.appendChild(input);
+    feedingTimeDiv.appendChild(removeButton);
+    feedingTimesContainer.appendChild(feedingTimeDiv);
 }
 
-function handleFeedingSchedule(currentTime) {
-    if (CONFIG.schedule.feeding.includes(currentTime)) {
-        setDeviceState('feed', true);
-        // Turn off feed after 1 minute
-        setTimeout(() => setDeviceState('feed', false), 60000);
-    }
-}
-
-function handleWaterSchedule(now) {
-    const minutes = now.getMinutes();
-    if (minutes % CONFIG.schedule.waterInterval === 0) {
-        setDeviceState('water', true);
-        // Turn off water after 5 minutes
-        setTimeout(() => setDeviceState('water', false), 300000);
-    }
-}
-
-// UI Functions
-function disableManualControls(disabled) {
-    fanToggle.disabled = disabled;
-    lightToggle.disabled = disabled;
-    feedToggle.disabled = disabled;
-    waterToggle.disabled = disabled;
-}
-
-function updateUIState() {
-    // Update toggle states
-    autoModeToggle.checked = systemState.autoMode;
-    scheduleModeToggle.checked = systemState.scheduleMode;
-    
-    Object.entries(systemState.devices).forEach(([device, state]) => {
-        const toggle = document.getElementById(`${device}Toggle`);
-        if (toggle) toggle.checked = state;
-    });
-    
-    // Update disabled states
-    disableManualControls(systemState.autoMode);
-}
-
+// Helper function to display notifications
 function showNotification(message, type) {
     notification.textContent = message;
-    notification.className = `notification ${type} show`;
-    
+    notification.className = `notification ${type}`;
     setTimeout(() => {
-        notification.classList.remove('show');
+        notification.className = "notification"; // Clear notification
     }, 3000);
 }
-
-// Schedule Modal Functions
-function addFeedingTimeInput() {
-    const feedingTimes = document.getElementById('feedingTimes');
-    const newTime = document.createElement('div');
-    newTime.className = 'feeding-time';
-    newTime.innerHTML = `
-        <input type="time" value="12:00">
-        <button class="remove-time">Remove</button>
-    `;
-    
-    newTime.querySelector('.remove-time').addEventListener('click', () => {
-        newTime.remove();
-    });
-    
-    feedingTimes.appendChild(newTime);
-}
-
-function saveScheduleSettings() {
-    // Update lighting schedule
-    CONFIG.schedule.lighting.start = document.getElementById('lightStart').value;
-    CONFIG.schedule.lighting.end = document.getElementById('lightEnd').value;
-    
-    // Update feeding schedule
-    const feedingInputs = document.querySelectorAll('#feedingTimes input[type="time"]');
-    CONFIG.schedule.feeding = Array.from(feedingInputs).map(input => input.value);
-    
-    // Update water interval
-    CONFIG.schedule.waterInterval = parseInt(document.getElementById('waterInterval').value);
-    
-    // Update temperature thresholds
-    CONFIG.temperature.min = parseInt(document.getElementById('tempMin').value);
-    CONFIG.temperature.max = parseInt(document.getElementById('tempMax').value);
-    
-    // Update humidity thresholds
-    CONFIG.humidity.min = parseInt(document.getElementById('humidityMin').value);
-    CONFIG.humidity.max = parseInt(document.getElementById('humidityMax').value);
-    
-    // Save configuration
-    saveConfiguration();
-    
-    // Close modal and show notification
-    scheduleModal.style.display = 'none';
-    showNotification('Schedule settings saved', 'success');
-}
-
-// Configuration Persistence
-function saveConfiguration() {
-    try {
-        localStorage.setItem('tokkatotConfig', JSON.stringify(CONFIG));
-    } catch (error) {
-        console.error('Error saving configuration:', error);
-        showNotification('Failed to save configuration', 'error');
-    }
-}
-
-function loadConfiguration() {
-    try {
-        const savedConfig = localStorage.getItem('tokkatotConfig');
-        if (savedConfig) {
-            Object.assign(CONFIG, JSON.parse(savedConfig));
-        }
-    } catch (error) {
-        console.error('Error loading configuration:', error);
-        showNotification('Failed to load configuration', 'error');
-    }
-}
-
-// API Communication Functions
-async function getSensorData() {
-    try {
-        const response = await fetch('http://localhost:5000/api/sensor-data');
-        if (!response.ok) throw new Error('Failed to fetch sensor data');
-        return await response.json();
-    } catch (error) {
-        console.error('Error fetching sensor data:', error);
-        throw error;
-    }
-}
-
-async function setDeviceState(device, state) {
-    try {
-        const response = await fetch('http://localhost:5000/api/control', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                device,
-                state
-            })
-        });
-        
-        if (!response.ok) throw new Error(`Failed to set ${device} state`);
-        
-        // Update local state
-        systemState.devices[device] = state;
-        
-        // Update UI
-        const toggle = document.getElementById(`${device}Toggle`);
-        if (toggle) toggle.checked = state;
-        
-    } catch (error) {
-        console.error(`Error setting ${device} state:`, error);
-        throw error;
-    }
-}
-
-// Initialize the system when the page loads
-window.addEventListener('load', initializeSystem);

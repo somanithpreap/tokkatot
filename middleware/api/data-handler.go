@@ -1,54 +1,47 @@
 package api
 
 import (
-	"crypto/tls"
+	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"io"
 	"net/http"
-	"time"
+
+	"middleware/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 var (
-	dataProvider = "https://192.168.0.4"
-	key = getRegKey()
-	timeout = 5 * time.Second
-	skipTLS = true
+	dataProvider = "http://10.0.0.2"
+	key          = GetSecret()
 )
 
 func getDataHandler(c **fiber.Ctx, endpoint string) error {
-	client := &http.Client{Timeout: timeout}
-
-	if skipTLS {
-		client.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}
+	resp, err := http.Get(dataProvider + endpoint)
+	if resp.StatusCode != http.StatusOK {
+		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to get data from data provider"})
 	}
-
-	url := dataProvider + endpoint
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	req.Header.Set("X-Reg-Key", key)
-
-	resp, err := client.Do(req)
 	if err != nil {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to retrieve data"})
-	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return (*c).Send(body)
+	data, err := utils.DecryptAESGCM(string(body), key)
+	if err != nil {
+		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return (*c).JSON(fiber.Map{"data": string(data)})
+}
+
+func GetInitialStateHandler(c *fiber.Ctx) error {
+	return getDataHandler(&c, "/get-initial-state")
 }
 
 func GetCurrentDataHandler(c *fiber.Ctx) error {
@@ -57,4 +50,69 @@ func GetCurrentDataHandler(c *fiber.Ctx) error {
 
 func GetHistoricalDataHandler(c *fiber.Ctx) error {
 	return getDataHandler(&c, "/get-historical-data")
+}
+
+func toggleHandler(c **fiber.Ctx, endpoint string) error {
+	resp, err := http.Get(dataProvider + endpoint)
+	if resp.StatusCode != http.StatusOK {
+		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to get data from data provider"})
+	}
+	if err != nil {
+		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	challenge, err := utils.DecryptAESGCM(string(body), key)
+	if err != nil {
+		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	hash := sha256.Sum256(challenge)
+	hashHex := hex.EncodeToString(hash[:])
+
+	verifyResp, err := http.Post(dataProvider+endpoint+"/verify", "text/plain", bytes.NewBufferString(hashHex))
+	if err != nil {
+		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	defer verifyResp.Body.Close()
+
+	verifyBody, err := io.ReadAll(verifyResp.Body)
+	if verifyResp.StatusCode != http.StatusOK {
+		return (*c).Status(verifyResp.StatusCode).JSON(fiber.Map{"error": string(verifyBody)})
+	}
+	if err != nil {
+		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	newState, err := utils.DecryptAESGCM(string(verifyBody), key)
+	if err != nil {
+		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return (*c).Status(fiber.StatusOK).JSON(fiber.Map{"state": string(newState)})
+}
+
+func ToggleAutoHandler(c *fiber.Ctx) error {
+	return toggleHandler(&c, "/toggle-auto")
+}
+
+func ToggleFanHandler(c *fiber.Ctx) error {
+	return toggleHandler(&c, "/toggle-fan")
+}
+
+func ToggleBulbHandler(c *fiber.Ctx) error {
+	return toggleHandler(&c, "/toggle-bulb")
+}
+
+func ToggleFeederHandler(c *fiber.Ctx) error {
+	return toggleHandler(&c, "/toggle-feeder")
+}
+
+func ToggleWaterHandler(c *fiber.Ctx) error {
+	return toggleHandler(&c, "/toggle-water")
 }
