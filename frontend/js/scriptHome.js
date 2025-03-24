@@ -94,10 +94,10 @@ async function fetchCurrentData() {
 	try {
 		// Endpoint
 		const response = await fetch("/api/get-current-data");
-		const data = await response.json();
-		console.log(data.data);
+		let data = await response.json();
+		data = JSON.parse(data.data);
 
-		updateCurrentValues(JSON.parse(data.data));
+		updateCurrentValues(data);
 	} catch (error) {
 		console.error("Error fetching current data:", error);
 		showError("current");
@@ -109,9 +109,10 @@ async function fetchHistoricalData() {
 	try {
 		// Endpoint
 		const response = await fetch("/api/get-historical-data");
-		const data = await response.json();
+		let data = await response.json();
+		data = JSON.parse(data.data);
 
-		updateChart(JSON.parse(data.data));
+		updateChart(data);
 	} catch (error) {
 		console.error("Error fetching historical data:", error);
 		showError("historical");
