@@ -84,8 +84,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		fetchHistoricalData();
 
 		// Set up intervals for updates
-		setInterval(fetchCurrentData, 60000); // Update current data every minute
-		setInterval(fetchHistoricalData, 300000); // Update historical data every 5 minutes
+		setInterval(fetchCurrentData, 1000); // Update current data every second
+		setInterval(fetchHistoricalData, 5000); // Update historical data every 5 seconds
 	}
 });
 
@@ -95,8 +95,9 @@ async function fetchCurrentData() {
 		// Endpoint
 		const response = await fetch("/api/get-current-data");
 		const data = await response.json();
+		console.log(data.data);
 
-		updateCurrentValues(data);
+		updateCurrentValues(JSON.parse(data.data));
 	} catch (error) {
 		console.error("Error fetching current data:", error);
 		showError("current");
@@ -110,7 +111,7 @@ async function fetchHistoricalData() {
 		const response = await fetch("/api/get-historical-data");
 		const data = await response.json();
 
-		updateChart(data);
+		updateChart(JSON.parse(data.data));
 	} catch (error) {
 		console.error("Error fetching historical data:", error);
 		showError("historical");
