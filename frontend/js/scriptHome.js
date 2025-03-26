@@ -151,16 +151,17 @@ function updateChart(data) {
 
 // Format timestamp for chart labels
 function formatTimestamp(date) {
-	const today = new Date();
-	const yesterday = new Date(today);
-	yesterday.setDate(yesterday.getDate() - 1);
+	const now = new Date();
+	const diffInMinutes = Math.floor((now - date) / (1000 * 60));
 
-	if (date.toDateString() === today.toDateString()) {
-		return `ថ្ងៃនេះ ${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
-	} else if (date.toDateString() === yesterday.toDateString()) {
-		return `ម្សិលមិញ ${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
+	if (diffInMinutes < 60) {
+		return `${diffInMinutes} នាទីមុន`; // X minutes ago
+	} else if (diffInMinutes < 1440) {
+		const hours = Math.floor(diffInMinutes / 60);
+		return `${hours} ម៉ោងមុន`; // X hours ago
 	} else {
-		return `${date.getDate()}/${date.getMonth() + 1} ${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
+		const days = Math.floor(diffInMinutes / 1440);
+		return `${days} ថ្ងៃមុន`; // X days ago
 	}
 }
 
