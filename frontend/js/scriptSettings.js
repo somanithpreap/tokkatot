@@ -21,9 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	autoModeToggle.addEventListener("change", () =>
 		handleModeToggle("toggle-auto", autoModeToggle.checked),
 	);
-	scheduleModeToggle.addEventListener("change", () =>
-		handleModeToggle("toggle-schedule", scheduleModeToggle.checked),
-	);
+	// scheduleModeToggle.addEventListener("change", () =>
+	// 	handleModeToggle("toggle-schedule", scheduleModeToggle.checked),
+	// );
 
 	// Attach event listeners for immediate toggles
 	fanToggle.addEventListener("change", () =>
