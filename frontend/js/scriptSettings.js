@@ -1,6 +1,3 @@
-// Configuration for backend API base
-const API_BASE = "/api";
-
 // DOM Elements
 const autoModeToggle = document.getElementById("autoModeToggle");
 const scheduleModeToggle = document.getElementById("scheduleModeToggle");
@@ -20,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Attach event listeners for toggles
     autoModeToggle.addEventListener("change", async () => {
         const state = autoModeToggle.checked;
-        await handleModeToggle("toggle-auto", state);
+        await handleModeToggle("/api/toggle-auto", state);
         if (state) {
             showNotification("Auto Mode enabled. Adjusting automatically.", "success");
         } else {
@@ -30,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     scheduleModeToggle.addEventListener("change", () => {
         const state = scheduleModeToggle.checked;
-        handleModeToggle("toggle-schedule", state);
+        handleModeToggle("/api/toggle-schedule", state);
         if (state) {
             showNotification("Schedule Mode enabled. Configure your settings.", "info");
         } else {
@@ -40,16 +37,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Attach event listeners for immediate toggles
     fanToggle.addEventListener("change", () =>
-        handleImmediateToggle("fan", fanToggle.checked),
+        handleImmediateToggle("/api/toggle-fan", fanToggle.checked),
     );
     lightToggle.addEventListener("change", () =>
-        handleImmediateToggle("bulb", lightToggle.checked),
+        handleImmediateToggle("/api/toggle-bulb", lightToggle.checked),
     );
     feederToggle.addEventListener("change", () =>
-        handleImmediateToggle("feeder", feederToggle.checked),
+        handleImmediateToggle("/api/toggle-feeder", feederToggle.checked),
     );
     waterToggle.addEventListener("change", () =>
-        handleImmediateToggle("water", waterToggle.checked),
+        handleImmediateToggle("/api/toggle-water", waterToggle.checked),
     );
 
     // Attach event listener for saving schedule settings
@@ -64,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Fetch initial settings state from the backend
 async function fetchInitialSettings() {
     try {
-        const response = await fetch(`${API_BASE}/get-initial-state`);
+        const response = await fetch("/api/get-initial-state");
         if (!response.ok) {
             throw new Error("Failed to fetch initial state.");
         }
@@ -121,7 +118,7 @@ function updateUI(data) {
 // Handle toggling Auto or Schedule mode
 async function handleModeToggle(endpoint, state) {
     try {
-        const response = await fetch(`${API_BASE}/${endpoint}`, {
+        const response = await fetch(endpoint, {
             method: "GET",
         });
 
@@ -134,7 +131,7 @@ async function handleModeToggle(endpoint, state) {
         console.log(`Toggled ${endpoint}: `, result);
 
         showNotification(
-            `${endpoint === "toggle-auto" ? "Auto Mode" : "Schedule Mode"} ${
+            `${endpoint.includes("toggle-auto") ? "Auto Mode" : "Schedule Mode"} ${
                 state ? "enabled" : "disabled"
             }.`,
             "success",
@@ -145,36 +142,37 @@ async function handleModeToggle(endpoint, state) {
 
         // Revert the toggle state on error
         const toggle =
-            endpoint === "toggle-auto" ? autoModeToggle : scheduleModeToggle;
+            endpoint.includes("toggle-auto") ? autoModeToggle : scheduleModeToggle;
         toggle.checked = !state;
     }
 }
 
 // Handle immediate toggles (like fan, light, feeder, and water)
-async function handleImmediateToggle(device, state) {
+async function handleImmediateToggle(endpoint, state) {
     try {
-        const response = await fetch(`${API_BASE}/toggle-${device}`, {
+        const response = await fetch(endpoint, {
             method: "GET",
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to toggle ${device}.`);
+            throw new Error(`Failed to toggle ${endpoint}.`);
         }
 
         let result = await response.json();
         result = JSON.parse(result.state);
 
         showNotification(
-            `${device.charAt(0).toUpperCase() + device.slice(1)} ${
+            `${endpoint.split("-")[1].charAt(0).toUpperCase() + endpoint.split("-")[1].slice(1)} ${
                 state ? "turned on" : "turned off"
             }.`,
             "success",
         );
     } catch (error) {
-        console.error(`Error toggling ${device}:`, error);
+        console.error(`Error toggling ${endpoint}:`, error);
         showNotification("Failed to update device state.", "error");
 
         // Revert the toggle state on error
+        const device = endpoint.split("-")[1];
         document.getElementById(`${device}Toggle`).checked = !state;
     }
 }
@@ -227,7 +225,7 @@ async function saveScheduleSettings() {
 
         console.log("Saving schedule settings with payload:", payload);
 
-        const response = await fetch(`${API_BASE}/schedule`, {
+        const response = await fetch("/api/schedule", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
