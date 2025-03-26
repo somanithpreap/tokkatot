@@ -56,11 +56,10 @@ func GenerateToken(username string, expire time.Time) (string, error) {
 	return signedToken, err
 }
 
-const expiration = 6 * 30 * 24 * time.Hour // 6 months
+const expiration = 0 // Token expires immediately when the user leaves the app
 
 func SetCookie(c **fiber.Ctx, username string, expire time.Time) error {
 	// Generate JWT token
-	expire = time.Now().Add(expiration)
 	signedToken, err := GenerateToken(username, expire)
 	if err != nil {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token"})
@@ -70,7 +69,7 @@ func SetCookie(c **fiber.Ctx, username string, expire time.Time) error {
 	(*c).Cookie(&fiber.Cookie{
 		Name:    "token",
 		Value:   signedToken,
-		Expires: expire, // 6 months
+		Expires: expire, // immediately after leaving the app
 	})
 	return nil
 }
@@ -83,7 +82,7 @@ func ValidateToken(raw_token string) string {
 	token, err := jwt.Parse(raw_token, func(token *jwt.Token) (interface{}, error) {
 		// Ensure the signing method is HMAC
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method")
+			return nil, fmt.Errorf("unexpected signing method")
 		}
 		return GetSecret(), nil
 	})
@@ -105,7 +104,7 @@ func ValidateCookie(c *fiber.Ctx) error {
 	cookie := c.Cookies("token")
 	validToken := ValidateToken(cookie)
 	if validToken == "" {
-		return errors.New("Token is not set or invalid")
+		return errors.New("token is not set or invalid")
 	}
 	return nil
 }
