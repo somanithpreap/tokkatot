@@ -21,9 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	autoModeToggle.addEventListener("change", () =>
 		handleModeToggle("toggle-auto", autoModeToggle.checked),
 	);
-	// scheduleModeToggle.addEventListener("change", () =>
-	// 	handleModeToggle("toggle-schedule", scheduleModeToggle.checked),
-	// );
+	scheduleModeToggle.addEventListener("change", () =>
+		handleModeToggle("toggle-schedule", scheduleModeToggle.checked),
+	);
 
 	// Attach event listeners for immediate toggles
 	fanToggle.addEventListener("change", () =>
@@ -72,7 +72,7 @@ async function fetchInitialSettings() {
 function updateUI(data) {
 	// Update mode toggles
 	autoModeToggle.checked = data.automation;
-	// scheduleModeToggle.checked = data.scheduleMode;
+	scheduleModeToggle.checked = data.scheduleMode;
 
 	// Update immediate toggles
 	fanToggle.checked = data.fan;
@@ -80,29 +80,29 @@ function updateUI(data) {
 	feederToggle.checked = data.feeder;
 	waterToggle.checked = data.water;
 
-	// // Update schedule settings
-	// document.getElementById("lightStart").value =
-	// 	data.schedule.lighting.start || "06:00";
-	// document.getElementById("lightEnd").value =
-	// 	data.schedule.lighting.end || "18:00";
+	// Update schedule settings
+	document.getElementById("lightStart").value =
+		data.schedule.lighting.start || "06:00";
+	document.getElementById("lightEnd").value =
+		data.schedule.lighting.end || "18:00";
 
-	// // Update feeding times schedule
-	// feedingTimesContainer.innerHTML = ""; // Clear existing feeding times
-	// data.schedule.feeding.forEach((time) => addFeedingTimeInput(time));
+	// Update feeding times schedule
+	feedingTimesContainer.innerHTML = ""; // Clear existing feeding times
+		data.schedule.feeding.forEach((time) => addFeedingTimeInput(time));
 
-	// // Update water interval
-	// document.getElementById("waterInterval").value =
-	// 	data.schedule.waterInterval || 60;
+	// Update water interval
+	document.getElementById("waterInterval").value =
+		data.schedule.waterInterval || 60;
 
-	// // Update environmental thresholds
-	// document.getElementById("tempMin").value =
-	// 	data.schedule.tempThreshold.min || 20;
-	// document.getElementById("tempMax").value =
-	// 	data.schedule.tempThreshold.max || 25;
-	// document.getElementById("humidityMin").value =
-	// 	data.schedule.humThreshold.min || 40;
-	// document.getElementById("humidityMax").value =
-	// 	data.schedule.humThreshold.max || 60;
+	// Update environmental thresholds
+	document.getElementById("tempMin").value =
+		data.schedule.tempThreshold.min || 20;
+	document.getElementById("tempMax").value =
+		data.schedule.tempThreshold.max || 25;
+	document.getElementById("humidityMin").value =
+		data.schedule.humThreshold.min || 40;
+	document.getElementById("humidityMax").value =
+ 		data.schedule.humThreshold.max || 60;
 }
 
 // Handle toggling Auto or Schedule mode
