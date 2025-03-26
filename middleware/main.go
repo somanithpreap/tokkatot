@@ -10,14 +10,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// ====== SETUP ROUTES & START SERVER ====== //
 func main() {
 	app := fiber.New()
 
-	// Initialize profile table
-	if err := database.InitProfileDB(api.DB); err != nil {
-		log.Fatal("Error initializing profile table:", err)
-	}
+	// Initialize database
+	api.DB = database.InitDB()
 
 	// Serve static files
 	app.Static("/assets", "../frontend/assets")
@@ -25,6 +22,7 @@ func main() {
 	app.Static("/css", "../frontend/css")
 	app.Static("/js", "../frontend/js")
 
+	// Authentication and static page routes
 	app.Get("/login", func(c *fiber.Ctx) error {
 		if api.ValidateCookie(c) == nil {
 			return c.Redirect("/")
@@ -32,7 +30,6 @@ func main() {
 		return c.SendFile("../frontend/pages/login.html")
 	})
 
-	// Home page route
 	app.Get("/", func(c *fiber.Ctx) error {
 		if api.ValidateCookie(c) != nil {
 			return c.Redirect("/login")
@@ -61,41 +58,47 @@ func main() {
 		return c.SendFile("../frontend/pages/settings.html")
 	})
 
-	// User auth routes
+	// User authentication routes
 	app.Post("/register", api.RegisterHandler)
 	app.Post("/login", api.LoginHandler)
 
-	// API routes require authentication and authorization
-	api_routes := app.Group("/api", func(c *fiber.Ctx) error {
+	// API routes (protected by authentication)
+	apiRoutes := app.Group("/api", func(c *fiber.Ctx) error {
 		if api.ValidateCookie(c) != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized access"})
 		}
 		return c.Next()
 	})
 
-	// Add profile routes to protected backend group
-	api_routes.Get("/profile", api.GetProfileHandler)
-	api_routes.Post("/profile", api.UpdateProfileHandler)
+	// Profile routes
+	apiRoutes.Get("/profile", api.GetProfileHandler)
+	apiRoutes.Post("/profile", api.UpdateProfileHandler)
 
 	// Poultry system sensor data retrieval
-	api_routes.Get("/get-initial-state", api.GetInitialStateHandler)
-	api_routes.Get("/get-current-data", api.GetCurrentDataHandler)
-	api_routes.Get("/get-historical-data", api.GetHistoricalDataHandler)
+	apiRoutes.Get("/get-initial-state", api.GetInitialStateHandler)
+	apiRoutes.Get("/get-current-data", api.GetCurrentDataHandler)
+	apiRoutes.Get("/get-historical-data", api.GetHistoricalDataHandler)
 
 	// Poultry system control routes
-	api_routes.Get("/toggle-auto", api.ToggleAutoHandler)
-	api_routes.Get("/toggle-fan", api.ToggleFanHandler)
-	api_routes.Get("/toggle-bulb", api.ToggleBulbHandler)
-	api_routes.Get("/toggle-feeder", api.ToggleFeederHandler)
-	api_routes.Get("/toggle-water", api.ToggleWaterHandler)
+	apiRoutes.Get("/toggle-auto", api.ToggleAutoHandler)
+	apiRoutes.Get("/toggle-fan", api.ToggleFanHandler)
+	apiRoutes.Get("/toggle-bulb", api.ToggleBulbHandler)
+	apiRoutes.Get("/toggle-feeder", api.ToggleFeederHandler)
+	apiRoutes.Get("/toggle-water", api.ToggleWaterHandler)
+
+	// Schedule management routes
+	apiRoutes.Post("/schedule", api.SaveScheduleHandler) // Save schedule
+	apiRoutes.Get("/schedule", api.GetScheduleHandler)   // Retrieve schedule
 
 	// 404 Handler
 	app.Use(func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).SendFile("../frontend/pages/404.html")
 	})
 
+	// Close the database connection when the application shuts down
 	defer api.DB.Close()
 
+	// Start the server
 	log.Println("Server is running on port 4000")
 	log.Fatal(app.ListenTLS(":4000", os.Getenv("TLS_CERT"), os.Getenv("TLS_KEY")))
 }

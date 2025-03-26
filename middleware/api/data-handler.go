@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 
+	"middleware/database"
 	"middleware/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,13 +18,11 @@ var (
 	key          = GetSecret()
 )
 
+// ====== DATA HANDLERS ====== //
 func getDataHandler(c **fiber.Ctx, endpoint string) error {
 	resp, err := http.Get(dataProvider + endpoint)
-	if resp.StatusCode != http.StatusOK {
+	if err != nil || resp.StatusCode != http.StatusOK {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to get data from data provider"})
-	}
-	if err != nil {
-		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	defer resp.Body.Close()
 
@@ -52,13 +51,11 @@ func GetHistoricalDataHandler(c *fiber.Ctx) error {
 	return getDataHandler(&c, "/get-historical-data")
 }
 
+// ====== TOGGLE HANDLERS ====== //
 func toggleHandler(c **fiber.Ctx, endpoint string) error {
 	resp, err := http.Get(dataProvider + endpoint)
-	if resp.StatusCode != http.StatusOK {
-		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to get data from data provider"})
-	}
-	if err != nil {
-		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to toggle device"})
 	}
 	defer resp.Body.Close()
 
@@ -76,15 +73,12 @@ func toggleHandler(c **fiber.Ctx, endpoint string) error {
 	hashHex := hex.EncodeToString(hash[:])
 
 	verifyResp, err := http.Post(dataProvider+endpoint+"/verify", "text/plain", bytes.NewBufferString(hashHex))
-	if err != nil {
-		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	if err != nil || verifyResp.StatusCode != http.StatusOK {
+		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to verify toggle"})
 	}
 	defer verifyResp.Body.Close()
 
 	verifyBody, err := io.ReadAll(verifyResp.Body)
-	if verifyResp.StatusCode != http.StatusOK {
-		return (*c).Status(verifyResp.StatusCode).JSON(fiber.Map{"error": string(verifyBody)})
-	}
 	if err != nil {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -115,4 +109,28 @@ func ToggleFeederHandler(c *fiber.Ctx) error {
 
 func ToggleWaterHandler(c *fiber.Ctx) error {
 	return toggleHandler(&c, "/toggle-water")
+}
+
+// ====== SCHEDULE HANDLERS ====== //
+func SaveScheduleHandler(c *fiber.Ctx) error {
+	var schedule database.Schedule
+	if err := c.BodyParser(&schedule); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid schedule data"})
+	}
+
+	// Save schedule to database
+	if err := database.SaveSchedule(DB, schedule); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to save schedule"})
+	}
+
+	return c.JSON(fiber.Map{"message": "Schedule saved successfully"})
+}
+
+func GetScheduleHandler(c *fiber.Ctx) error {
+	schedule, err := database.GetSchedule(DB)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to retrieve schedule"})
+	}
+
+	return c.JSON(schedule)
 }
