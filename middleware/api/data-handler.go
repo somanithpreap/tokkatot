@@ -116,7 +116,3 @@ func ToggleFeederHandler(c *fiber.Ctx) error {
 func ToggleWaterHandler(c *fiber.Ctx) error {
 	return toggleHandler(&c, "/toggle-water")
 }
-
-func ToggleScheduleHandler(c *fiber.Ctx) error {
-	return toggleHandler(&c, "/toggle-schedule")
-}

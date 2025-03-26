@@ -88,7 +88,6 @@ func main() {
 	api_routes.Get("/toggle-bulb", api.ToggleBulbHandler)
 	api_routes.Get("/toggle-feeder", api.ToggleFeederHandler)
 	api_routes.Get("/toggle-water", api.ToggleWaterHandler)
-	api_routes.Get("/toggle-schedule", api.ToggleScheduleHandler)
 
 	// 404 Handler
 	app.Use(func(c *fiber.Ctx) error {
