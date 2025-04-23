@@ -81,6 +81,7 @@ func main() {
 
 	// Poultry system control routes
 	apiRoutes.Get("/toggle-auto", api.ToggleAutoHandler)
+	apiRoutes.Get("/toggle-belt", api.ToggleBeltHandler)
 	apiRoutes.Get("/toggle-fan", api.ToggleFanHandler)
 	apiRoutes.Get("/toggle-bulb", api.ToggleBulbHandler)
 	apiRoutes.Get("/toggle-feeder", api.ToggleFeederHandler)
@@ -90,7 +91,7 @@ func main() {
 	/* apiRoutes.Post("/schedule", api.SaveScheduleHandler)      // Save schedule
 	apiRoutes.Get("/toggle-schedule", api.GetScheduleHandler) // Retrieve schedule
 	*/
-	
+
 	// 404 Handler
 	app.Use(func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).SendFile("../frontend/pages/404.html")

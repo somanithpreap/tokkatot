@@ -95,6 +95,10 @@ func ToggleAutoHandler(c *fiber.Ctx) error {
 	return toggleHandler(&c, "/toggle-auto")
 }
 
+func ToggleBeltHandler(c *fiber.Ctx) error {
+    return toggleHandler(&c, "/toggle-belt")
+}
+
 func ToggleFanHandler(c *fiber.Ctx) error {
 	return toggleHandler(&c, "/toggle-fan")
 }
