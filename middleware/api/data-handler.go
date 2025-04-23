@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"middleware/database"
+	// "middleware/database"
 	"middleware/utils"
 
 	"github.com/gofiber/fiber/v2"

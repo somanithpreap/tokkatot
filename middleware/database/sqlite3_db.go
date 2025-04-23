@@ -3,7 +3,8 @@ package database
 import (
 	"database/sql"
 	"log"
-	"strings"
+
+	// "strings"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -26,20 +27,20 @@ type UserProfile struct {
 }
 
 /* type Schedule struct {
-	Lighting struct {
-		Start string `json:"start"`
-		End   string `json:"end"`
-	} `json:"lighting"`
-	Feeding       []string `json:"feeding"`
-	WaterInterval int      `json:"waterInterval"`
-	TempThreshold struct {
-		Min float64 `json:"min"`
-		Max float64 `json:"max"`
-	} `json:"tempThreshold"`
-	HumThreshold struct {
-		Min float64 `json:"min"`
-		Max float64 `json:"max"`
-	} `json:"humThreshold"`
+    Lighting struct {
+        Start string `json:"start"`
+        End   string `json:"end"`
+    } `json:"lighting"`
+    Feeding       []string `json:"feeding"`
+    WaterInterval int      `json:"waterInterval"`
+    TempThreshold struct {
+        Min float64 `json:"min"`
+        Max float64 `json:"max"`
+    } `json:"tempThreshold"`
+    HumThreshold struct {
+        Min float64 `json:"min"`
+        Max float64 `json:"max"`
+    } `json:"humThreshold"`
 } */
 
 // ====== INITIALIZE DATABASE ====== //
@@ -70,28 +71,28 @@ func InitDB() *sql.DB {
 	// Initialize profiles table
 	InitProfileDB(db)
 
-/*	// Create Schedules table
-	createSchedulesTable := `
-    CREATE TABLE IF NOT EXISTS schedules (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        lighting_start TEXT NOT NULL,
-        lighting_end TEXT NOT NULL,
-        feeding_times TEXT NOT NULL,
-        water_interval INTEGER NOT NULL,
-        temp_min REAL NOT NULL,
-        temp_max REAL NOT NULL,
-        hum_min REAL NOT NULL,
-        hum_max REAL NOT NULL
-    );
-    `
-	_, err = db.Exec(createSchedulesTable)
-	if err != nil {
-		log.Fatal("Error creating schedules table:", err)
-	}
+	// Create Schedules table
+	/* createSchedulesTable := `
+	   CREATE TABLE IF NOT EXISTS schedules (
+	       id INTEGER PRIMARY KEY AUTOINCREMENT,
+	       lighting_start TEXT NOT NULL,
+	       lighting_end TEXT NOT NULL,
+	       feeding_times TEXT NOT NULL,
+	       water_interval INTEGER NOT NULL,
+	       temp_min REAL NOT NULL,
+	       temp_max REAL NOT NULL,
+	       hum_min REAL NOT NULL,
+	       hum_max REAL NOT NULL
+	   );
+	   `
+	   _, err = db.Exec(createSchedulesTable)
+	   if err != nil {
+	       log.Fatal("Error creating schedules table:", err)
+	   } */
 
 	log.Println("Database initialized successfully")
 	return db
-} */
+}
 
 // Initialize profiles table
 func InitProfileDB(db *sql.DB) error {
@@ -153,9 +154,9 @@ func GetProfile(db *sql.DB, userID int) (UserProfile, error) {
 	return profile, err
 }
 
-// SaveSchedule saves or updates the schedule in the database
-/* func SaveSchedule(db *sql.DB, schedule Schedule) error {
-	query := `
+/* // SaveSchedule saves or updates the schedule in the database
+func SaveSchedule(db *sql.DB, schedule Schedule) error {
+    query := `
     INSERT INTO schedules (lighting_start, lighting_end, feeding_times, water_interval, temp_min, temp_max, hum_min, hum_max)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
@@ -169,53 +170,53 @@ func GetProfile(db *sql.DB, userID int) (UserProfile, error) {
         hum_max = excluded.hum_max;
     `
 
-	// Convert feeding times array to a comma-separated string
-	feedingTimes := strings.Join(schedule.Feeding, ",")
+    // Convert feeding times array to a comma-separated string
+    feedingTimes := strings.Join(schedule.Feeding, ",")
 
-	_, err := db.Exec(query,
-		schedule.Lighting.Start,
-		schedule.Lighting.End,
-		feedingTimes,
-		schedule.WaterInterval,
-		schedule.TempThreshold.Min,
-		schedule.TempThreshold.Max,
-		schedule.HumThreshold.Min,
-		schedule.HumThreshold.Max,
-	)
+    _, err := db.Exec(query,
+        schedule.Lighting.Start,
+        schedule.Lighting.End,
+        feedingTimes,
+        schedule.WaterInterval,
+        schedule.TempThreshold.Min,
+        schedule.TempThreshold.Max,
+        schedule.HumThreshold.Min,
+        schedule.HumThreshold.Max,
+    )
 
-	return err
+    return err
 }
 
 // GetSchedule retrieves the schedule from the database
 func GetSchedule(db *sql.DB) (Schedule, error) {
-	var schedule Schedule
-	query := `
+    var schedule Schedule
+    query := `
     SELECT lighting_start, lighting_end, feeding_times, water_interval, temp_min, temp_max, hum_min, hum_max
     FROM schedules
     LIMIT 1
     `
 
-	var feedingTimes string
-	err := db.QueryRow(query).Scan(
-		&schedule.Lighting.Start,
-		&schedule.Lighting.End,
-		&feedingTimes,
-		&schedule.WaterInterval,
-		&schedule.TempThreshold.Min,
-		&schedule.TempThreshold.Max,
-		&schedule.HumThreshold.Min,
-		&schedule.HumThreshold.Max,
-	)
+    var feedingTimes string
+    err := db.QueryRow(query).Scan(
+        &schedule.Lighting.Start,
+        &schedule.Lighting.End,
+        &feedingTimes,
+        &schedule.WaterInterval,
+        &schedule.TempThreshold.Min,
+        &schedule.TempThreshold.Max,
+        &schedule.HumThreshold.Min,
+        &schedule.HumThreshold.Max,
+    )
 
-	if err == sql.ErrNoRows {
-		// Return an empty schedule if no rows exist
-		return schedule, nil
-	} else if err != nil {
-		return schedule, err
-	}
+    if err == sql.ErrNoRows {
+        // Return an empty schedule if no rows exist
+        return schedule, nil
+    } else if err != nil {
+        return schedule, err
+    }
 
-	// Convert feeding times string back to an array
-	schedule.Feeding = strings.Split(feedingTimes, ",")
+    // Convert feeding times string back to an array
+    schedule.Feeding = strings.Split(feedingTimes, ",")
 
-	return schedule, nil
+    return schedule, nil
 } */
