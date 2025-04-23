@@ -87,9 +87,10 @@ func main() {
 	apiRoutes.Get("/toggle-water", api.ToggleWaterHandler)
 
 	// Schedule management routes
-	apiRoutes.Post("/schedule", api.SaveScheduleHandler)      // Save schedule
+	/* apiRoutes.Post("/schedule", api.SaveScheduleHandler)      // Save schedule
 	apiRoutes.Get("/toggle-schedule", api.GetScheduleHandler) // Retrieve schedule
-
+	*/
+	
 	// 404 Handler
 	app.Use(func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).SendFile("../frontend/pages/404.html")

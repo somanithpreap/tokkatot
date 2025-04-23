@@ -25,7 +25,7 @@ type UserProfile struct {
 	Province    string `json:"province"`
 }
 
-type Schedule struct {
+/* type Schedule struct {
 	Lighting struct {
 		Start string `json:"start"`
 		End   string `json:"end"`
@@ -40,7 +40,7 @@ type Schedule struct {
 		Min float64 `json:"min"`
 		Max float64 `json:"max"`
 	} `json:"humThreshold"`
-}
+} */
 
 // ====== INITIALIZE DATABASE ====== //
 func InitDB() *sql.DB {
@@ -70,7 +70,7 @@ func InitDB() *sql.DB {
 	// Initialize profiles table
 	InitProfileDB(db)
 
-	// Create Schedules table
+/*	// Create Schedules table
 	createSchedulesTable := `
     CREATE TABLE IF NOT EXISTS schedules (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,7 +91,7 @@ func InitDB() *sql.DB {
 
 	log.Println("Database initialized successfully")
 	return db
-}
+} */
 
 // Initialize profiles table
 func InitProfileDB(db *sql.DB) error {
@@ -154,7 +154,7 @@ func GetProfile(db *sql.DB, userID int) (UserProfile, error) {
 }
 
 // SaveSchedule saves or updates the schedule in the database
-func SaveSchedule(db *sql.DB, schedule Schedule) error {
+/* func SaveSchedule(db *sql.DB, schedule Schedule) error {
 	query := `
     INSERT INTO schedules (lighting_start, lighting_end, feeding_times, water_interval, temp_min, temp_max, hum_min, hum_max)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -218,4 +218,4 @@ func GetSchedule(db *sql.DB) (Schedule, error) {
 	schedule.Feeding = strings.Split(feedingTimes, ",")
 
 	return schedule, nil
-}
+} */

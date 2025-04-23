@@ -112,7 +112,7 @@ func ToggleWaterHandler(c *fiber.Ctx) error {
 }
 
 // ====== SCHEDULE HANDLERS ====== //
-func SaveScheduleHandler(c *fiber.Ctx) error {
+/* func SaveScheduleHandler(c *fiber.Ctx) error {
 	var schedule database.Schedule
 	if err := c.BodyParser(&schedule); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid schedule data"})
@@ -133,4 +133,4 @@ func GetScheduleHandler(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(schedule)
-}
+} */
