@@ -6,7 +6,7 @@ const fanToggle = document.getElementById("fanToggle");
 const lightToggle = document.getElementById("lightToggle");
 const feederToggle = document.getElementById("feedToggle");
 const waterToggle = document.getElementById("waterToggle");
-const feedingTimesContainer = document.getElementById("feedingTimes");
+// const feedingTimesContainer = document.getElementById("feedingTimes");
 // const saveScheduleButton = document.getElementById("saveSchedule");
 const notification = document.getElementById("notification");
 
