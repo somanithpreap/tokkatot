@@ -1,0 +1,366 @@
+#include <WiFi.h>
+#include <WebServer.h>
+#include <ArduinoJson.h>
+#include <mbedtls/aes.h>
+#include <mbedtls/gcm.h>
+#include <mbedtls/sha256.h>
+#include <esp_random.h>
+#include "arduino_base64.hpp"
+
+#include <DHT.h>
+#include <Servo.h>
+
+#define WaterSensorPower_PIN 35
+#define WaterSensorSignal_PIN 34
+#define DHTTYPE DHT22
+#define DHT22_PIN 32
+#define GasSensorDO_PIN 23
+#define GasSensorAO_PIN 25
+
+#define Conveyer_PIN 12
+#define ServoMotor_PIN 13
+#define Fan_PIN 14
+#define LightBulb_PIN 27
+#define WaterPump_PIN 26
+
+DHT dht22(DHT22_PIN, DHTTYPE);
+Servo servoMotor;
+
+// Constants and initial values
+const char* ssid = "Smart Poultry 1.0.0-0001";
+const char* password = "skibiditoilet168";
+
+IPAddress local_ip(10, 0, 0, 2);
+IPAddress gateway(10, 0, 0, 1);
+IPAddress subnet(255, 255, 255, 0);
+
+WebServer server(80);
+
+const uint8_t AES_KEY[16] = {0x6c, 0x23, 0x54, 0x4e, 0x3b, 0x7c, 0x56, 0x4c, 0x57, 0x41, 0x7c, 0x6e, 0x62, 0x64, 0x5e, 0x6f};
+uint8_t challenge[16];
+
+int waterSensorValue = 0;
+
+// State variables
+bool autoMode = false;
+bool fanState = false;
+bool bulbState = false;
+bool feederState = false;
+bool pumpState = false;
+bool conveyerState = false;
+
+// Structure to store sensor readings
+struct SensorData {
+  unsigned long timestamp;
+  float temperature;
+  float humidity;
+};
+
+// Circular Queue for Historical Data
+const int QUEUE_SIZE = 10;
+SensorData historyQueue[QUEUE_SIZE];
+int queueIndex = 0;
+int queueCount = 0;
+
+SensorData getSensorData() {
+  SensorData data;
+
+  // Read temperature and humidity from DHT22
+  float humidity  = dht22.readHumidity(); // read humidity
+  float temp = dht22.readTemperature(); // read temperature in celsius
+
+  // check whether the reading is successful or not
+  if (isnan(temp) || isnan(humidity)) {
+    Serial.println("Failed to read from DHT22 sensor!");
+  } else {
+    Serial.print("Humidity: ");
+    Serial.print(humidity);
+    Serial.print("%");
+    Serial.print("  |  ");
+    Serial.print("Temperature: ");
+    Serial.print(temp);
+    Serial.println("°C");
+  }
+
+  data.timestamp = millis() / 1000;
+  data.temperature = temp;
+  data.humidity = humidity;
+  return data;
+}
+
+// Function to simulate sensor data
+SensorData getFakeSensorData() {
+  SensorData data;
+  data.timestamp = millis() / 1000; // Convert to seconds
+  data.temperature = random(28, 35) + random(0, 99) / 100.0; // 28.00°C - 34.99°C
+  data.humidity = random(40, 60) + random(0, 99) / 100.0;  // 40.00% - 59.99%
+  return data;
+}
+
+// Add data to circular queue
+void enqueue(SensorData data) {
+  historyQueue[queueIndex] = data;
+  queueIndex = (queueIndex + 1) % QUEUE_SIZE;
+  if (queueCount < QUEUE_SIZE) queueCount++;
+}
+
+void HandleGetInitialState() {
+  SensorData currentData = getFakeSensorData();
+  enqueue(currentData);
+  String response = "{\"timestamp\":" + String(currentData.timestamp) +
+       ",\"temperature\":" + String(currentData.temperature) +
+       ",\"humidity\":" + String(currentData.humidity) +
+       ",\"automation\":" + (autoMode ? "true" : "false") +
+       ",\"fan\":" + (fanState ? "true" : "false") +
+       ",\"lightbulb\":" + (bulbState ? "true" : "false") +
+       ",\"feeder\":" + (feederState ? "true" : "false") +
+       ",\"water\":" + (pumpState ? "true" : "false") + "}";
+  SendEncryptedResponse(200, (uint8_t*)response.c_str(), response.length());
+}
+
+// Handle /get-current-data
+void HandleGetCurrentData() {
+  SensorData currentData = getFakeSensorData();
+  enqueue(currentData);
+  String response = "{\"timestamp\":" + String(currentData.timestamp) +
+       ",\"temperature\":" + String(currentData.temperature) +
+       ",\"humidity\":" + String(currentData.humidity) + "}";
+  SendEncryptedResponse(200, (uint8_t*)response.c_str(), response.length());
+}
+// Handle /get-historical-data
+void HandleGetHistoricalData() {
+  String response = "[";
+  for (int i = 0; i < queueCount; i++) {
+    int index = (queueIndex - queueCount + i + QUEUE_SIZE) % QUEUE_SIZE;
+    response += "{\"timestamp\":" + String(historyQueue[index].timestamp) +
+          ",\"temperature\":" + String(historyQueue[index].temperature) +
+          ",\"humidity\":" + String(historyQueue[index].humidity) + "}";
+    if (i < queueCount - 1) response += ",";
+  }
+  response += "]";
+  SendEncryptedResponse(200, (uint8_t*)response.c_str(), response.length());
+}
+
+void generateChallenge() {
+  for (char i = 0; i < 16; i++)
+    challenge[i] = esp_random() % 256;
+}
+
+String Base64_encode(uint8_t *input, size_t inputLength) {
+  char output[base64::encodeLength(inputLength)];
+  base64::encode(input, inputLength, output);
+  return String(output);
+}
+
+String AES_encrypt(const uint8_t *plaintext, size_t len, uint8_t *iv, uint8_t *tag) {
+  // Generate a random IV (12 bytes for GCM)
+  for (int i = 0; i < 12; i++) iv[i] = esp_random() % 256;
+
+  mbedtls_gcm_context gcm;
+  mbedtls_gcm_init(&gcm);
+  mbedtls_gcm_setkey(&gcm, MBEDTLS_CIPHER_ID_AES, AES_KEY, 128);
+
+  std::vector<uint8_t> ciphertext(len);
+
+  // Encrypt the plaintext
+  mbedtls_gcm_crypt_and_tag(&gcm, MBEDTLS_GCM_ENCRYPT, len, iv, 12, NULL, 0,
+                plaintext, ciphertext.data(), 16, tag);
+  mbedtls_gcm_free(&gcm);
+
+  return Base64_encode(ciphertext.data(), len);
+}
+
+String HashSHA256(const uint8_t *data, size_t len) {
+    uint8_t hash[32];
+    mbedtls_sha256(data, len, hash, 0);
+
+    char hashStr[65]; // 32 bytes * 2 chars per byte + 1 null terminator
+    for (int i = 0; i < 32; i++) {
+        sprintf(&hashStr[i * 2], "%02x", hash[i]); // Always 2 hex digits
+    }
+
+    return String(hashStr);
+}
+
+void SendEncryptedResponse(short statusCode, const uint8_t *data, size_t dataLen) {
+  uint8_t iv[12], tag[16];
+  String encryptedData = AES_encrypt(data, dataLen, iv, tag);
+  
+  String response = "{\"data\":\"" + encryptedData +
+      "\",\"iv\":\"" + Base64_encode(iv, 12) +
+      "\",\"tag\":\"" + Base64_encode(tag, 16) + "\"}";
+  server.send(statusCode, "application/json", response);
+}
+
+void HandleToggleRequest() {
+  generateChallenge();
+  SendEncryptedResponse(200, challenge, 16);
+}
+
+void HandleToggleVerification(bool &state) {
+  if (server.method() != HTTP_POST) {
+    server.send(405, "text/plain", "Method Not Allowed");
+    return;
+  }
+
+  if (!server.hasArg("plain")) {
+    server.send(400, "text/plain", "Bad Request");
+    return;
+  }
+
+  String challengeHash = HashSHA256(challenge, 16);
+  String receivedHash = server.arg("plain");  // Read raw POST body
+
+  if (challengeHash != receivedHash) {
+    server.send(401, "text/plain", "Unauthorized access");
+    return;
+  }
+
+  state = !state;
+  // Send control signals
+
+  SendEncryptedResponse(200, (uint8_t*)(state ? "true" : "false"), (state ? 4 : 5));
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  dht22.begin();
+  servoMotor.attach(ServoMotor_PIN);
+
+  pinMode(GasSensorDO_PIN, INPUT);
+  // pinMode(WaterSensorPower_PIN, OUTPUT);
+
+  pinMode(Conveyer_PIN, OUTPUT);
+  pinMode(Fan_PIN, OUTPUT);
+  pinMode(LightBulb_PIN, OUTPUT);
+  pinMode(WaterPump_PIN, OUTPUT);
+
+  //digitalWrite(WaterSensorPower_PIN, LOW); // Turn the sensor OFF by default
+  
+  // Turn all elements off by default
+  digitalWrite(Conveyer_PIN, HIGH);
+  digitalWrite(Fan_PIN, HIGH);
+  digitalWrite(LightBulb_PIN, HIGH); // Turn on lightbulb
+  digitalWrite(WaterPump_PIN, HIGH);
+
+  // WiFi.begin(ssid, password);
+  
+  // // Check if the connection is successful
+  // while (WiFi.status() != WL_CONNECTED) {
+  //   delay(500);
+  //   Serial.print(".");
+  // }
+  
+  // // Set static IP
+  // if (!WiFi.config(local_ip, gateway, subnet))
+  //   Serial.println("Static IP configuration failed!");
+
+  // // Print the assigned IP address
+  // Serial.println("Connected to Wi-Fi");
+  // Serial.print("IP address: ");
+  // Serial.println(WiFi.localIP());
+  // // Set up routes
+  // server.on("/get-initial-state", HTTP_GET, HandleGetInitialState);
+  // server.on("/get-current-data", HTTP_GET, HandleGetCurrentData);
+  // server.on("/get-historical-data", HTTP_GET, HandleGetHistoricalData);
+
+  // server.on("/toggle-auto", HTTP_GET, HandleToggleRequest);
+  // server.on("/toggle-fan", HTTP_GET, HandleToggleRequest);
+  // server.on("/toggle-bulb", HTTP_GET, HandleToggleRequest);
+  // server.on("/toggle-feeder", HTTP_GET, HandleToggleRequest);
+  // server.on("/toggle-water", HTTP_GET, HandleToggleRequest);
+  // server.on("/toggle-conveyer", HTTP_GET, HandleToggleRequest);
+
+  // server.on("/toggle-auto/verify", HTTP_POST, []() { HandleToggleVerification(autoMode); });
+  // server.on("/toggle-fan/verify", HTTP_POST, []() { HandleToggleVerification(fanState); });
+  // server.on("/toggle-bulb/verify", HTTP_POST, []() { HandleToggleVerification(bulbState); });
+  // server.on("/toggle-feeder/verify", HTTP_POST, []() { HandleToggleVerification(feederState); });
+  // server.on("/toggle-water/verify", HTTP_POST, []() { HandleToggleVerification(pumpState); });
+  // server.on("/toggle-conveyer/verify", HTTP_POST, []() { HandleToggleVerification(conveyerState); });
+
+  // server.begin();
+  // Serial.println("HTTP Server started on port 80");
+
+  analogSetAttenuation(ADC_11db); // Set the ADC attenuation to 11 dB (up to ~3.3V input)
+
+  Serial.print("Warming up the MQ Sensor");
+  for (int i = 1; i <= 20; i++) {
+    delay(1000);
+    Serial.print(".");
+  }
+  Serial.println("MQ Sensor is ready!");
+}
+
+void loop() {
+  // Read temperature and humidity from DHT22
+  // float humidity  = dht22.readHumidity(); // read humidity
+  // float temp = dht22.readTemperature(); // read temperature in celsius
+
+  // // check whether the reading is successful or not
+  // if (isnan(temp) || isnan(humidity)) {
+  //   Serial.println("Failed to read from DHT22 sensor!");
+  // } else {
+  //   Serial.print("Humidity: ");
+  //   Serial.print(humidity);
+  //   Serial.print("%");
+  //   Serial.print("  |  ");
+  //   Serial.print("Temperature: ");
+  //   Serial.print(temp);
+  //   Serial.println("°C");
+  // }
+
+  // Detect gas presence
+  //int gasState = digitalRead(GasSensorDO_PIN);
+  //int gasValue = analogRead(GasSensorAO_PIN);
+
+  // if (gasState == HIGH)
+  //   Serial.println("Gas is not present");
+  // else
+  //   Serial.println("Gas is PRESENT!");
+
+  // Serial.print("MQ sensor AO value: ");
+  // Serial.println(gasValue);
+
+  // Read from water level sensor
+  //digitalWrite(WaterSensorPower_PIN, HIGH);  // turn the sensor ON
+  // delay(10);
+  //waterSensorValue = analogRead(WaterSensorSignal_PIN); // read the analog value from sensor
+  //digitalWrite(WaterSensorPower_PIN, LOW);   // turn the sensor OFF
+  // Serial.print("Water sensor value: ");
+  // Serial.println(waterSensorValue);
+
+  // Serial.print("\n");
+  
+  // delay(1990);
+
+  digitalWrite(Conveyer_PIN, LOW);
+  delay(5000);
+  digitalWrite(Conveyer_PIN, HIGH);
+
+  digitalWrite(Fan_PIN, LOW);
+  delay(5000);
+  digitalWrite(Fan_PIN, HIGH);
+
+  digitalWrite(LightBulb_PIN, LOW);
+  delay(5000);
+  digitalWrite(LightBulb_PIN, HIGH);
+
+  digitalWrite(WaterPump_PIN, LOW);
+  delay(5000);
+  digitalWrite(WaterPump_PIN, HIGH);
+
+  for (int pos = 0; pos <= 45; pos += 1) {
+    // in steps of 1 degree
+    servoMotor.write(pos);
+    delay(15); // waits 15ms to reach the position
+  }
+
+  // rotates from 180 degrees to 0 degrees
+  for (int pos = 45; pos >= 0; pos -= 1) {
+    servoMotor.write(pos);
+    delay(15); // waits 15ms to reach the position
+  }
+
+  // server.handleClient();
+}
