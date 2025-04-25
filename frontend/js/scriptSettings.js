@@ -308,4 +308,4 @@ setInterval(async () => {
 	} catch (error) {
 		console.error("Error fetching state:", error);
 	}
-}, 3000); // Poll every 3 seconds
+}, 1000); // Poll every seconds
