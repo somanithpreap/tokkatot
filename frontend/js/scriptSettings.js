@@ -15,32 +15,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	// Fetch and display initial settings
 	fetchInitialSettings();
 
+	autoModeToggle.preventDefault();
 	// Attach event listeners for toggles
 	autoModeToggle.addEventListener("change", async () => {
 		const state = autoModeToggle.checked;
-		await handleModeToggle("/api/toggle-auto", state);
-		if (state) {
-			// Turn off all immediate toggles
-			beltToggle.checked = false;
-			fanToggle.checked = false;
-			lightToggle.checked = false;
-			feederToggle.checked = false;
-			waterToggle.checked = false;
-
-			// Optionally, send requests to turn off these toggles on the backend
-			await handleImmediateToggle("/api/toggle-belt", false);
-			await handleImmediateToggle("/api/toggle-fan", false);
-			await handleImmediateToggle("/api/toggle-bulb", false);
-			await handleImmediateToggle("/api/toggle-feeder", false);
-			await handleImmediateToggle("/api/toggle-water", false);
-
-			showNotification(
-				"Auto Mode enabled. All manual controls are turned off.",
-				"success",
-			);
-		} else {
-			showNotification("Auto Mode disabled.", "info");
-		}
+		await handleModeToggle("/api/toggle-auto", autoModeToggle);
+		showNotification(
+			"Auto Mode enabled. All manual controls are turned off.",
+			"success",
+		);
 	});
 
 	//scheduleModeToggle.addEventListener("change", () => {
@@ -89,9 +72,6 @@ async function fetchInitialSettings() {
 
 		let data = await response.json();
 		data = JSON.parse(data.data);
-		console.log("Fetched initial state:", data);
-
-		// Update the UI based on the fetched data
 		updateUI(data);
 	} catch (error) {
 		console.error("Error fetching initial state:", error);
@@ -150,6 +130,8 @@ async function handleModeToggle(endpoint, state) {
 
 		let result = await response.json();
 		result = JSON.parse(result.state);
+		state.checked = Boolean(result);
+
 		console.log(`Toggled ${endpoint}: `, result);
 
 		showNotification(`Auto Mode ${state ? "enabled" : "disabled"}.`, "success");
@@ -308,4 +290,4 @@ setInterval(async () => {
 	} catch (error) {
 		console.error("Error fetching state:", error);
 	}
-}, 1000); // Poll every seconds
+}, 1000); // Poll every second
