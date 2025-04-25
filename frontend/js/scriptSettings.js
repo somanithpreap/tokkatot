@@ -15,10 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	// Fetch and display initial settings
 	fetchInitialSettings();
 
-	autoModeToggle.preventDefault();
 	// Attach event listeners for toggles
 	autoModeToggle.addEventListener("change", async () => {
-		const state = autoModeToggle.checked;
 		await handleModeToggle("/api/toggle-auto", autoModeToggle);
 		showNotification(
 			"Auto Mode enabled. All manual controls are turned off.",
