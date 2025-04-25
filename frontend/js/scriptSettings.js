@@ -141,9 +141,13 @@ async function handleModeToggle(endpoint, state) {
 	}
 }
 
-// Handle immediate toggles (like belt, fan, light, feeder, and water)
+// Update the immediate toggle handler to ensure proper synchronization
 async function handleImmediateToggle(endpoint, state) {
 	try {
+		// Optimistically update the UI
+		const toggleElement = document.querySelector(`[data-endpoint='${endpoint}']`);
+		if (toggleElement) toggleElement.checked = state;
+
 		const response = await fetch(endpoint, {
 			method: "GET",
 		});
@@ -155,9 +159,12 @@ async function handleImmediateToggle(endpoint, state) {
 		let result = await response.json();
 		result = JSON.parse(result.state);
 
+		// Ensure the UI reflects the actual state from the backend
+		if (toggleElement) toggleElement.checked = result;
+
 		showNotification(
 			`${endpoint.split("-")[1].charAt(0).toUpperCase() + endpoint.split("-")[1].slice(1)} ${
-				state.checked ? "turned on" : "turned off"
+				result ? "turned on" : "turned off"
 			}.`,
 			"success",
 		);
@@ -166,8 +173,8 @@ async function handleImmediateToggle(endpoint, state) {
 		showNotification("Failed to update device state.", "error");
 
 		// Revert the toggle state on error
-		const device = endpoint.split("-")[1];
-		document.getElementById(`${device}Toggle`).checked = !state;
+		const toggleElement = document.querySelector(`[data-endpoint='${endpoint}']`);
+		if (toggleElement) toggleElement.checked = !state;
 	}
 }
 
