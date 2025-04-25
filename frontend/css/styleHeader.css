@@ -1,3 +1,14 @@
+@font-face {
+  font-family: 'Kantumruy Pro';
+  src: url('../assets/fonts/KantumruyPro-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 700;
+  font-style: normal;
+}
+
+* {
+  font-family: 'Kantumruy Pro', sans-serif;
+}
+
 /* Header Styles */
 .main-header {
     display: flex;
@@ -81,4 +92,4 @@
         width: 32px;
         height: 32px;
     }
-} 
+}

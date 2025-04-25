@@ -8,137 +8,140 @@
   --card-border-radius: 16px;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&display=swap');
+@font-face {
+  font-family: 'Kantumruy Pro';
+  src: url('../assets/fonts/KantumruyPro-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 700;
+  font-style: normal;
+}
+
 * {
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-font-family: 'Kantumruy Pro', sans-serif;
+  font-family: 'Kantumruy Pro', sans-serif;
 }
 
 body {
-background-color: var(--color-background);
-min-height: 100vh;
-padding: 20px;
+  background-color: var(--color-background);
+  min-height: 100vh;
+  padding: 20px;
 }
 
 /* Header */
 header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-background: #FFBA49;
-color: white;
-padding: 15px 20px;
-border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #FFBA49;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 10px;
 }
 
 header div {
-display: flex;
-align-items: center;
-gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 header img {
-width: 40px;
-height: 40px;
-border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
 }
 
 /* Weather & Gas Information */
 div > div {
-background: white;
-padding: 15px;
-margin: 10px 0;
-border-radius: 10px;
-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background: white;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 div > div i {
-font-size: 24px;
-color: #EF5B5B;
+  font-size: 24px;
+  color: #EF5B5B;
 }
 
 /* Navigation Icons */
 div > p {
-font-weight: bold;
-margin-top: 15px;
+  font-weight: bold;
+  margin-top: 15px;
 }
 
 .material-icons-sharp {
-font-size: 30px;
-margin: 10px;
-cursor: pointer;
-color: #FFBA49;
+  font-size: 30px;
+  margin: 10px;
+  cursor: pointer;
+  color: #FFBA49;
 }
 
 /* Sensor Controls */
 .sensor-controls {
-background: white;
-padding: 20px;
-border-radius: 10px;
-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-margin-top: 20px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-top: 20px;
 }
 
 .control-card {
-display: flex;
-align-items: center;
-justify-content: space-between;
-background: #E3F2FD;
-padding: 15px;
-border-radius: 10px;
-margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #E3F2FD;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
 }
 
 .control-card .icon img {
-width: 40px;
+  width: 40px;
 }
 
 /* Toggle Switch */
 .switch {
-position: relative;
-display: inline-block;
-width: 40px;
-height: 20px;
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
 }
 
 .switch input {
-opacity: 0;
-width: 0;
-height: 0;
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
 .slider {
-position: absolute;
-cursor: pointer;
-top: 0;
-left: 0;
-right: 0;
-bottom: 0;
-background-color: #ccc;
-border-radius: 20px;
-transition: 0.4s;
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  border-radius: 20px;
+  transition: 0.4s;
 }
 
 .slider:before {
-position: absolute;
-content: "";
-height: 14px;
-width: 14px;
-left: 3px;
-bottom: 3px;
-background-color: white;
-border-radius: 50%;
-transition: 0.4s;
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.4s;
 }
 
 input:checked + .slider {
-background-color: #4CAF50;
+  background-color: #4CAF50;
 }
 
 input:checked + .slider:before {
-transform: translateX(20px);
+  transform: translateX(20px);
 }
 
 /* Responsive Design */

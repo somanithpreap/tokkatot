@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"middleware/database"
+	// "middleware/database"
 	"middleware/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -95,6 +95,10 @@ func ToggleAutoHandler(c *fiber.Ctx) error {
 	return toggleHandler(&c, "/toggle-auto")
 }
 
+func ToggleBeltHandler(c *fiber.Ctx) error {
+    return toggleHandler(&c, "/toggle-belt")
+}
+
 func ToggleFanHandler(c *fiber.Ctx) error {
 	return toggleHandler(&c, "/toggle-fan")
 }
@@ -112,7 +116,7 @@ func ToggleWaterHandler(c *fiber.Ctx) error {
 }
 
 // ====== SCHEDULE HANDLERS ====== //
-func SaveScheduleHandler(c *fiber.Ctx) error {
+/* func SaveScheduleHandler(c *fiber.Ctx) error {
 	var schedule database.Schedule
 	if err := c.BodyParser(&schedule); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid schedule data"})
@@ -133,4 +137,4 @@ func GetScheduleHandler(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(schedule)
-}
+} */

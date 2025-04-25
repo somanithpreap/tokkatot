@@ -1,12 +1,13 @@
 // DOM Elements
 const autoModeToggle = document.getElementById("autoModeToggle");
-const scheduleModeToggle = document.getElementById("scheduleModeToggle");
+// const scheduleModeToggle = document.getElementById("scheduleModeToggle");
+const beltToggle = document.getElementById("beltToggle");
 const fanToggle = document.getElementById("fanToggle");
 const lightToggle = document.getElementById("lightToggle");
 const feederToggle = document.getElementById("feedToggle");
 const waterToggle = document.getElementById("waterToggle");
-const feedingTimesContainer = document.getElementById("feedingTimes");
-const saveScheduleButton = document.getElementById("saveSchedule");
+// const feedingTimesContainer = document.getElementById("feedingTimes");
+// const saveScheduleButton = document.getElementById("saveSchedule");
 const notification = document.getElementById("notification");
 
 // Initialize the system on page load
@@ -25,17 +26,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    scheduleModeToggle.addEventListener("change", () => {
-        const state = scheduleModeToggle.checked;
+    //scheduleModeToggle.addEventListener("change", () => {
+    /*    const state = scheduleModeToggle.checked;
         handleModeToggle("/api/toggle-schedule", state);
         if (state) {
             showNotification("Schedule Mode enabled. Configure your settings.", "info");
         } else {
             showNotification("Schedule Mode disabled.", "info");
         }
-    });
+    }); */
 
     // Attach event listeners for immediate toggles
+    beltToggle.addEventListener("change", () =>
+        handleImmediateToggle("/api/toggle-belt", beltToggle.checked),
+    );
     fanToggle.addEventListener("change", () =>
         handleImmediateToggle("/api/toggle-fan", fanToggle.checked),
     );
@@ -50,12 +54,12 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // Attach event listener for saving schedule settings
-    saveScheduleButton.addEventListener("click", saveScheduleSettings);
+  /*  saveScheduleButton.addEventListener("click", saveScheduleSettings);
 
     // Launch schedule modal (if existing modal functionality exists)
     document
         .getElementById("addFeedingTime")
-        .addEventListener("click", () => addFeedingTimeInput(""));
+        .addEventListener("click", () => addFeedingTimeInput("")); */
 });
 
 // Fetch initial settings state from the backend
@@ -82,16 +86,17 @@ async function fetchInitialSettings() {
 function updateUI(data) {
     // Update mode toggles
     autoModeToggle.checked = data.automation;
-    scheduleModeToggle.checked = data.scheduleMode;
+    // scheduleModeToggle.checked = data.scheduleMode;
 
     // Update immediate toggles
+    beltToggle.checked = data.belt;
     fanToggle.checked = data.fan;
     lightToggle.checked = data.lightbulb;
     feederToggle.checked = data.feeder;
     waterToggle.checked = data.water;
 
     // Update schedule settings
-    document.getElementById("lightStart").value =
+  /*  document.getElementById("lightStart").value =
         data.schedule.lighting.start || "06:00";
     document.getElementById("lightEnd").value =
         data.schedule.lighting.end || "18:00";
@@ -112,10 +117,10 @@ function updateUI(data) {
     document.getElementById("humidityMin").value =
         data.schedule.humThreshold.min || 40;
     document.getElementById("humidityMax").value =
-        data.schedule.humThreshold.max || 60;
+        data.schedule.humThreshold.max || 60; */
 }
 
-// Handle toggling Auto or Schedule mode
+// Handle toggling Auto Mode
 async function handleModeToggle(endpoint, state) {
     try {
         const response = await fetch(endpoint, {
@@ -131,23 +136,19 @@ async function handleModeToggle(endpoint, state) {
         console.log(`Toggled ${endpoint}: `, result);
 
         showNotification(
-            `${endpoint.includes("toggle-auto") ? "Auto Mode" : "Schedule Mode"} ${
-                state ? "enabled" : "disabled"
-            }.`,
+            `Auto Mode ${state ? "enabled" : "disabled"}.`,
             "success",
         );
     } catch (error) {
         console.error(`Error toggling ${endpoint}:`, error);
-        showNotification("Failed to update mode toggle.", "error");
+        showNotification("Failed to update Auto Mode toggle.", "error");
 
         // Revert the toggle state on error
-        const toggle =
-            endpoint.includes("toggle-auto") ? autoModeToggle : scheduleModeToggle;
-        toggle.checked = !state;
+        autoModeToggle.checked = !state;
     }
 }
 
-// Handle immediate toggles (like fan, light, feeder, and water)
+// Handle immediate toggles (like belt, fan, light, feeder, and water)
 async function handleImmediateToggle(endpoint, state) {
     try {
         const response = await fetch(endpoint, {
@@ -178,7 +179,7 @@ async function handleImmediateToggle(endpoint, state) {
 }
 
 // Handle saving updated schedule settings
-async function saveScheduleSettings() {
+/* async function saveScheduleSettings() {
     try {
         // Gather lighting schedule inputs
         const lightStart = document.getElementById("lightStart").value;
@@ -248,7 +249,7 @@ async function saveScheduleSettings() {
 }
 
 // Helper function to dynamically add a feeding time row
-function addFeedingTimeInput(time = "") {
+ function addFeedingTimeInput(time = "") {
     const feedingTimeDiv = document.createElement("div");
     feedingTimeDiv.classList.add("feeding-time");
 
@@ -264,7 +265,7 @@ function addFeedingTimeInput(time = "") {
     feedingTimeDiv.appendChild(input);
     feedingTimeDiv.appendChild(removeButton);
     feedingTimesContainer.appendChild(feedingTimeDiv);
-}
+} */
 
 // Helper function to display notifications
 function showNotification(message, type) {
