@@ -175,7 +175,7 @@ async function handleImmediateToggle(endpoint, state) {
 
 		let result = await response.json();
 		result = JSON.parse(result.state);
-		state.checked = result;
+		state.checked = Boolean(result);
 
 		showNotification(
 			`${endpoint.split("-")[1].charAt(0).toUpperCase() + endpoint.split("-")[1].slice(1)} ${
@@ -301,11 +301,11 @@ setInterval(async () => {
 
 		let data = await response.json();
 		data = JSON.parse(data.data);
-		console.log("Fetched current data:", data);
+		console.log("Fetched state:", data);
 
 		// Update the UI based on the fetched data
 		updateUI(data);
 	} catch (error) {
-		console.error("Error fetching current data:", error);
+		console.error("Error fetching state:", error);
 	}
-}, 1000); // Poll every second
+}, 3000); // Poll every 3 seconds
