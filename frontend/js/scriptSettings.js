@@ -128,7 +128,6 @@ async function handleModeToggle(endpoint, state) {
 
 		let result = await response.json();
 		result = JSON.parse(result.state);
-		state.checked = Boolean(result);
 
 		console.log(`Toggled ${endpoint}: `, result);
 
@@ -155,7 +154,6 @@ async function handleImmediateToggle(endpoint, state) {
 
 		let result = await response.json();
 		result = JSON.parse(result.state);
-		state.checked = Boolean(result);
 
 		showNotification(
 			`${endpoint.split("-")[1].charAt(0).toUpperCase() + endpoint.split("-")[1].slice(1)} ${
