@@ -10,45 +10,49 @@ const waterToggle = document.getElementById("waterToggle");
 // const saveScheduleButton = document.getElementById("saveSchedule");
 const notification = document.getElementById("notification");
 
-// Initialize the system on page load
+// Ensure proper initialization of toggles and fix conveyor (belt) logic
+async function initializeToggles() {
+	try {
+		const response = await fetch("/api/get-initial-state");
+		if (!response.ok) {
+			throw new Error("Failed to fetch initial state.");
+		}
+
+		let data = await response.json();
+		data = JSON.parse(data.data);
+
+		// Initialize toggles based on the fetched data
+		autoModeToggle.checked = data.automation;
+		beltToggle.checked = data.belt;
+		fanToggle.checked = data.fan;
+		lightToggle.checked = data.lightbulb;
+		feederToggle.checked = data.feeder;
+		waterToggle.checked = data.water;
+	} catch (error) {
+		console.error("Error initializing toggles:", error);
+		showNotification("Failed to initialize toggles.", "error");
+	}
+}
+
+// Call initializeToggles on page load
 document.addEventListener("DOMContentLoaded", () => {
-	// Fetch and display initial settings
-	fetchInitialSettings();
+	initializeToggles();
 
 	// Attach event listeners for toggles
-	autoModeToggle.addEventListener("change", async () => {
-		await handleModeToggle("/api/toggle-auto", autoModeToggle);
-		showNotification(
-			"Auto Mode enabled. All manual controls are turned off.",
-			"success",
-		);
-	});
-
-	//scheduleModeToggle.addEventListener("change", () => {
-	/*    const state = scheduleModeToggle.checked;
-        handleModeToggle("/api/toggle-schedule", state);
-        if (state) {
-            showNotification("Schedule Mode enabled. Configure your settings.", "info");
-        } else {
-            showNotification("Schedule Mode disabled.", "info");
-        }
-    }); */
-
-	// Attach event listeners for immediate toggles
 	beltToggle.addEventListener("change", () =>
-		handleImmediateToggle("/api/toggle-belt", beltToggle),
+		handleImmediateToggle("/api/toggle-belt", beltToggle.checked)
 	);
 	fanToggle.addEventListener("change", () =>
-		handleImmediateToggle("/api/toggle-fan", fanToggle),
+		handleImmediateToggle("/api/toggle-fan", fanToggle.checked)
 	);
 	lightToggle.addEventListener("change", () =>
-		handleImmediateToggle("/api/toggle-bulb", lightToggle),
+		handleImmediateToggle("/api/toggle-bulb", lightToggle.checked)
 	);
 	feederToggle.addEventListener("change", () =>
-		handleImmediateToggle("/api/toggle-feeder", feederToggle),
+		handleImmediateToggle("/api/toggle-feeder", feederToggle.checked)
 	);
 	waterToggle.addEventListener("change", () =>
-		handleImmediateToggle("/api/toggle-water", waterToggle),
+		handleImmediateToggle("/api/toggle-water", waterToggle.checked)
 	);
 
 	// Attach event listener for saving schedule settings
@@ -59,23 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
         .getElementById("addFeedingTime")
         .addEventListener("click", () => addFeedingTimeInput("")); */
 });
-
-// Fetch initial settings state from the backend
-async function fetchInitialSettings() {
-	try {
-		const response = await fetch("/api/get-initial-state");
-		if (!response.ok) {
-			throw new Error("Failed to fetch initial state.");
-		}
-
-		let data = await response.json();
-		data = JSON.parse(data.data);
-		updateUI(data);
-	} catch (error) {
-		console.error("Error fetching initial state:", error);
-		showNotification("Unable to load initial settings!", "error");
-	}
-}
 
 // Update the UI based on retrieved settings
 function updateUI(data) {
