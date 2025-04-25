@@ -20,7 +20,21 @@ document.addEventListener("DOMContentLoaded", () => {
         const state = autoModeToggle.checked;
         await handleModeToggle("/api/toggle-auto", state);
         if (state) {
-            showNotification("Auto Mode enabled. Adjusting automatically.", "success");
+            // Turn off all immediate toggles
+            beltToggle.checked = false;
+            fanToggle.checked = false;
+            lightToggle.checked = false;
+            feederToggle.checked = false;
+            waterToggle.checked = false;
+
+            // Optionally, send requests to turn off these toggles on the backend
+            await handleImmediateToggle("/api/toggle-belt", false);
+            await handleImmediateToggle("/api/toggle-fan", false);
+            await handleImmediateToggle("/api/toggle-bulb", false);
+            await handleImmediateToggle("/api/toggle-feeder", false);
+            await handleImmediateToggle("/api/toggle-water", false);
+
+            showNotification("Auto Mode enabled. All manual controls are turned off.", "success");
         } else {
             showNotification("Auto Mode disabled.", "info");
         }
@@ -275,3 +289,22 @@ function showNotification(message, type) {
         notification.className = "notification"; // Clear notification
     }, 3000);
 }
+
+// Add periodic polling to sync the state of the toggles
+setInterval(async () => {
+    try {
+        const response = await fetch("/api/get-current-data");
+        if (!response.ok) {
+            throw new Error("Failed to fetch current data.");
+        }
+
+        let data = await response.json();
+        data = JSON.parse(data.data);
+        console.log("Fetched current data:", data);
+
+        // Update the UI based on the fetched data
+        updateUI(data);
+    } catch (error) {
+        console.error("Error fetching current data:", error);
+    }
+}, 3000); // Poll every 3 seconds

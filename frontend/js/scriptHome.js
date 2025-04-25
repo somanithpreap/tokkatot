@@ -173,7 +173,5 @@ function showError(type) {
 		if (tempElement) tempElement.textContent = "--";
 		if (humidityElement) humidityElement.textContent = "--";
 	} else if (type === "historical") {
-		const graphWrapper = document.querySelector(".graph-wrapper");
-		if (graphWrapper) graphWrapper.classList.add("loading");
 	}
 }
