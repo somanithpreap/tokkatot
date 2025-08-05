@@ -28,6 +28,8 @@ async function initializeToggles() {
 		lightToggle.checked = data.lightbulb;
 		feederToggle.checked = data.feeder;
 		waterToggle.checked = data.water;
+
+		updateManualControlsState(data.automation);
 	} catch (error) {
 		console.error("Error initializing toggles:", error);
 		showNotification("Failed to initialize toggles.", "error");
@@ -38,21 +40,26 @@ async function initializeToggles() {
 document.addEventListener("DOMContentLoaded", () => {
 	initializeToggles();
 
+	// Auto mode toggle event listener
+	autoModeToggle.addEventListener("change", () =>
+		handleModeToggle("/api/toggle-auto", autoModeToggle.checked)
+	);
+
 	// Attach event listeners for toggles
 	beltToggle.addEventListener("change", () =>
-		handleImmediateToggle("/api/toggle-belt", beltToggle.checked)
+		handleImmediateToggle("/api/toggle-belt", beltToggle.checked, beltToggle)
 	);
 	fanToggle.addEventListener("change", () =>
-		handleImmediateToggle("/api/toggle-fan", fanToggle.checked)
+		handleImmediateToggle("/api/toggle-fan", fanToggle.checked, fanToggle)
 	);
 	lightToggle.addEventListener("change", () =>
-		handleImmediateToggle("/api/toggle-bulb", lightToggle.checked)
+		handleImmediateToggle("/api/toggle-bulb", lightToggle.checked, lightToggle)
 	);
 	feederToggle.addEventListener("change", () =>
-		handleImmediateToggle("/api/toggle-feeder", feederToggle.checked)
+		handleImmediateToggle("/api/toggle-feeder", feederToggle.checked, feederToggle)
 	);
 	waterToggle.addEventListener("change", () =>
-		handleImmediateToggle("/api/toggle-water", waterToggle.checked)
+		handleImmediateToggle("/api/toggle-water", waterToggle.checked, waterToggle)
 	);
 
 	// Attach event listener for saving schedule settings
@@ -76,6 +83,8 @@ function updateUI(data) {
 	lightToggle.checked = data.lightbulb;
 	feederToggle.checked = data.feeder;
 	waterToggle.checked = data.water;
+
+	updateManualControlsState(data.automation);
 
 	// Update schedule settings
 	/*  document.getElementById("lightStart").value =
@@ -102,6 +111,16 @@ function updateUI(data) {
         data.schedule.humThreshold.max || 60; */
 }
 
+// Disable manual controls when auto mode is ON
+function updateManualControlsState(disabled) {
+	beltToggle.disabled = disabled;
+	fanToggle.disabled = disabled;
+	lightToggle.disabled = disabled;
+	feederToggle.disabled = disabled;
+	waterToggle.disabled = disabled;
+}
+
+
 // Handle toggling Auto Mode
 async function handleModeToggle(endpoint, state) {
 	try {
@@ -117,6 +136,7 @@ async function handleModeToggle(endpoint, state) {
 		result = JSON.parse(result.state);
 
 		console.log(`Toggled ${endpoint}: `, result);
+		updateManualControlsState(result);
 
 		showNotification(`Auto Mode ${state ? "enabled" : "disabled"}.`, "success");
 	} catch (error) {
@@ -129,11 +149,10 @@ async function handleModeToggle(endpoint, state) {
 }
 
 // Update the immediate toggle handler to ensure proper synchronization
-async function handleImmediateToggle(endpoint, state) {
+async function handleImmediateToggle(endpoint, state, toggleElement) {
 	try {
 		// Optimistically update the UI
-		const toggleElement = document.querySelector(`[data-endpoint='${endpoint}']`);
-		if (toggleElement) toggleElement.checked = state;
+		toggleElement.checked = state;
 
 		const response = await fetch(endpoint, {
 			method: "GET",
@@ -147,7 +166,7 @@ async function handleImmediateToggle(endpoint, state) {
 		result = JSON.parse(result.state);
 
 		// Ensure the UI reflects the actual state from the backend
-		if (toggleElement) toggleElement.checked = result;
+		toggleElement.checked = result;
 
 		showNotification(
 			`${endpoint.split("-")[1].charAt(0).toUpperCase() + endpoint.split("-")[1].slice(1)} ${
@@ -160,8 +179,7 @@ async function handleImmediateToggle(endpoint, state) {
 		showNotification("Failed to update device state.", "error");
 
 		// Revert the toggle state on error
-		const toggleElement = document.querySelector(`[data-endpoint='${endpoint}']`);
-		if (toggleElement) toggleElement.checked = !state;
+		toggleElement.checked = !state;
 	}
 }
 
