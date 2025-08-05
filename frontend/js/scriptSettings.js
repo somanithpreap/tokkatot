@@ -10,51 +10,53 @@ const waterToggle = document.getElementById("waterToggle");
 // const saveScheduleButton = document.getElementById("saveSchedule");
 const notification = document.getElementById("notification");
 
-// Initialize the system on page load
+// Ensure proper initialization of toggles and fix conveyor (belt) logic
+async function initializeToggles() {
+	try {
+		const response = await fetch("/api/get-initial-state");
+		if (!response.ok) {
+			throw new Error("Failed to fetch initial state.");
+		}
+
+		let data = await response.json();
+		data = JSON.parse(data.data);
+
+		// Initialize toggles based on the fetched data
+		autoModeToggle.checked = data.automation;
+		beltToggle.checked = data.belt;
+		fanToggle.checked = data.fan;
+		lightToggle.checked = data.lightbulb;
+		feederToggle.checked = data.feeder;
+		waterToggle.checked = data.water;
+	} catch (error) {
+		console.error("Error initializing toggles:", error);
+		showNotification("Failed to initialize toggles.", "error");
+	}
+}
+
+// Call initializeToggles on page load
 document.addEventListener("DOMContentLoaded", () => {
-    // Fetch and display initial settings
-    fetchInitialSettings();
+	initializeToggles();
 
-    // Attach event listeners for toggles
-    autoModeToggle.addEventListener("change", async () => {
-        const state = autoModeToggle.checked;
-        await handleModeToggle("/api/toggle-auto", state);
-        if (state) {
-            showNotification("Auto Mode enabled. Adjusting automatically.", "success");
-        } else {
-            showNotification("Auto Mode disabled.", "info");
-        }
-    });
+	// Attach event listeners for toggles
+	beltToggle.addEventListener("change", () =>
+		handleImmediateToggle("/api/toggle-belt", beltToggle.checked)
+	);
+	fanToggle.addEventListener("change", () =>
+		handleImmediateToggle("/api/toggle-fan", fanToggle.checked)
+	);
+	lightToggle.addEventListener("change", () =>
+		handleImmediateToggle("/api/toggle-bulb", lightToggle.checked)
+	);
+	feederToggle.addEventListener("change", () =>
+		handleImmediateToggle("/api/toggle-feeder", feederToggle.checked)
+	);
+	waterToggle.addEventListener("change", () =>
+		handleImmediateToggle("/api/toggle-water", waterToggle.checked)
+	);
 
-    //scheduleModeToggle.addEventListener("change", () => {
-    /*    const state = scheduleModeToggle.checked;
-        handleModeToggle("/api/toggle-schedule", state);
-        if (state) {
-            showNotification("Schedule Mode enabled. Configure your settings.", "info");
-        } else {
-            showNotification("Schedule Mode disabled.", "info");
-        }
-    }); */
-
-    // Attach event listeners for immediate toggles
-    beltToggle.addEventListener("change", () =>
-        handleImmediateToggle("/api/toggle-belt", beltToggle.checked),
-    );
-    fanToggle.addEventListener("change", () =>
-        handleImmediateToggle("/api/toggle-fan", fanToggle.checked),
-    );
-    lightToggle.addEventListener("change", () =>
-        handleImmediateToggle("/api/toggle-bulb", lightToggle.checked),
-    );
-    feederToggle.addEventListener("change", () =>
-        handleImmediateToggle("/api/toggle-feeder", feederToggle.checked),
-    );
-    waterToggle.addEventListener("change", () =>
-        handleImmediateToggle("/api/toggle-water", waterToggle.checked),
-    );
-
-    // Attach event listener for saving schedule settings
-  /*  saveScheduleButton.addEventListener("click", saveScheduleSettings);
+	// Attach event listener for saving schedule settings
+	/*  saveScheduleButton.addEventListener("click", saveScheduleSettings);
 
     // Launch schedule modal (if existing modal functionality exists)
     document
@@ -62,41 +64,21 @@ document.addEventListener("DOMContentLoaded", () => {
         .addEventListener("click", () => addFeedingTimeInput("")); */
 });
 
-// Fetch initial settings state from the backend
-async function fetchInitialSettings() {
-    try {
-        const response = await fetch("/api/get-initial-state");
-        if (!response.ok) {
-            throw new Error("Failed to fetch initial state.");
-        }
-
-        let data = await response.json();
-        data = JSON.parse(data.data);
-        console.log("Fetched initial state:", data);
-
-        // Update the UI based on the fetched data
-        updateUI(data);
-    } catch (error) {
-        console.error("Error fetching initial state:", error);
-        showNotification("Unable to load initial settings!", "error");
-    }
-}
-
 // Update the UI based on retrieved settings
 function updateUI(data) {
-    // Update mode toggles
-    autoModeToggle.checked = data.automation;
-    // scheduleModeToggle.checked = data.scheduleMode;
+	// Update mode toggles
+	autoModeToggle.checked = data.automation;
+	// scheduleModeToggle.checked = data.scheduleMode;
 
-    // Update immediate toggles
-    beltToggle.checked = data.belt;
-    fanToggle.checked = data.fan;
-    lightToggle.checked = data.lightbulb;
-    feederToggle.checked = data.feeder;
-    waterToggle.checked = data.water;
+	// Update immediate toggles
+	beltToggle.checked = data.belt;
+	fanToggle.checked = data.fan;
+	lightToggle.checked = data.lightbulb;
+	feederToggle.checked = data.feeder;
+	waterToggle.checked = data.water;
 
-    // Update schedule settings
-  /*  document.getElementById("lightStart").value =
+	// Update schedule settings
+	/*  document.getElementById("lightStart").value =
         data.schedule.lighting.start || "06:00";
     document.getElementById("lightEnd").value =
         data.schedule.lighting.end || "18:00";
@@ -122,60 +104,65 @@ function updateUI(data) {
 
 // Handle toggling Auto Mode
 async function handleModeToggle(endpoint, state) {
-    try {
-        const response = await fetch(endpoint, {
-            method: "GET",
-        });
+	try {
+		const response = await fetch(endpoint, {
+			method: "GET",
+		});
 
-        if (!response.ok) {
-            throw new Error(`Failed to toggle ${endpoint}.`);
-        }
+		if (!response.ok) {
+			throw new Error(`Failed to toggle ${endpoint}.`);
+		}
 
-        let result = await response.json();
-        result = JSON.parse(result.state);
-        console.log(`Toggled ${endpoint}: `, result);
+		let result = await response.json();
+		result = JSON.parse(result.state);
 
-        showNotification(
-            `Auto Mode ${state ? "enabled" : "disabled"}.`,
-            "success",
-        );
-    } catch (error) {
-        console.error(`Error toggling ${endpoint}:`, error);
-        showNotification("Failed to update Auto Mode toggle.", "error");
+		console.log(`Toggled ${endpoint}: `, result);
 
-        // Revert the toggle state on error
-        autoModeToggle.checked = !state;
-    }
+		showNotification(`Auto Mode ${state ? "enabled" : "disabled"}.`, "success");
+	} catch (error) {
+		console.error(`Error toggling ${endpoint}:`, error);
+		showNotification("Failed to update Auto Mode toggle.", "error");
+
+		// Revert the toggle state on error
+		autoModeToggle.checked = !state;
+	}
 }
 
-// Handle immediate toggles (like belt, fan, light, feeder, and water)
+// Update the immediate toggle handler to ensure proper synchronization
 async function handleImmediateToggle(endpoint, state) {
-    try {
-        const response = await fetch(endpoint, {
-            method: "GET",
-        });
+	try {
+		// Optimistically update the UI
+		const toggleElement = document.querySelector(`[data-endpoint='${endpoint}']`);
+		if (toggleElement) toggleElement.checked = state;
 
-        if (!response.ok) {
-            throw new Error(`Failed to toggle ${endpoint}.`);
-        }
+		const response = await fetch(endpoint, {
+			method: "GET",
+		});
 
-        let result = await response.json();
-        result = JSON.parse(result.state);
+		if (!response.ok) {
+			throw new Error(`Failed to toggle ${endpoint}.`);
+		}
 
-        showNotification(
-            `${endpoint.split("-")[1].charAt(0).toUpperCase() + endpoint.split("-")[1].slice(1)} ${
-                state ? "turned on" : "turned off"
-            }.`,
-            "success",
-        );
-    } catch (error) {
-        console.error(`Error toggling ${endpoint}:`, error);
-        showNotification("Failed to update device state.", "error");
+		let result = await response.json();
+		result = JSON.parse(result.state);
 
-        // Revert the toggle state on error
-        const device = endpoint.split("-")[1];
-        document.getElementById(`${device}Toggle`).checked = !state;
-    }
+		// Ensure the UI reflects the actual state from the backend
+		if (toggleElement) toggleElement.checked = result;
+
+		showNotification(
+			`${endpoint.split("-")[1].charAt(0).toUpperCase() + endpoint.split("-")[1].slice(1)} ${
+				result ? "turned on" : "turned off"
+			}.`,
+			"success",
+		);
+	} catch (error) {
+		console.error(`Error toggling ${endpoint}:`, error);
+		showNotification("Failed to update device state.", "error");
+
+		// Revert the toggle state on error
+		const toggleElement = document.querySelector(`[data-endpoint='${endpoint}']`);
+		if (toggleElement) toggleElement.checked = !state;
+	}
 }
 
 // Handle saving updated schedule settings
@@ -269,9 +256,28 @@ async function handleImmediateToggle(endpoint, state) {
 
 // Helper function to display notifications
 function showNotification(message, type) {
-    notification.textContent = message;
-    notification.className = `notification ${type}`;
-    setTimeout(() => {
-        notification.className = "notification"; // Clear notification
-    }, 3000);
+	notification.textContent = message;
+	notification.className = `notification ${type}`;
+	setTimeout(() => {
+		notification.className = "notification"; // Clear notification
+	}, 3000);
 }
+
+// Add periodic polling to sync the state of the toggles
+setInterval(async () => {
+	try {
+		const response = await fetch("/api/get-initial-state");
+		if (!response.ok) {
+			throw new Error("Failed to fetch current data.");
+		}
+
+		let data = await response.json();
+		data = JSON.parse(data.data);
+		console.log("Fetched state:", data);
+
+		// Update the UI based on the fetched data
+		updateUI(data);
+	} catch (error) {
+		console.error("Error fetching state:", error);
+	}
+}, 1000); // Poll every second
