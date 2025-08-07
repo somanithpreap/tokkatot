@@ -291,20 +291,20 @@ function showNotification(message, type) {
 }
 
 // Add periodic polling to sync the state of the toggles
-setInterval(async () => {
-    try {
-        const response = await fetch("/api/get-current-data");
-        if (!response.ok) {
-            throw new Error("Failed to fetch current data.");
-        }
+// setInterval(async () => {
+//     try {
+//         const response = await fetch("/api/get-current-data");
+//         if (!response.ok) {
+//             throw new Error("Failed to fetch current data.");
+//         }
 
-        let data = await response.json();
-        data = JSON.parse(data.data);
-        console.log("Fetched current data:", data);
+//         let data = await response.json();
+//         data = JSON.parse(data.data);
+//         console.log("Fetched current data:", data);
 
-        // Update the UI based on the fetched data
-        updateUI(data);
-    } catch (error) {
-        console.error("Error fetching current data:", error);
-    }
-}, 3000); // Poll every 3 seconds
+//         // Update the UI based on the fetched data
+//         updateUI(data);
+//     } catch (error) {
+//         console.error("Error fetching current data:", error);
+//     }
+// }, 3000); // Poll every 3 seconds

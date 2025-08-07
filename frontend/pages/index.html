@@ -43,16 +43,20 @@
                 </div>
             </div>
 
-            <!-- Temperature Graph Section -->
+            <!-- Temperature & Humidity Graph Section -->
             <div class="graph-container">
-                <h3>ប្រវត្តិសីតុណ្ហភាព</h3>
+                <h3>ប្រវត្តិសីតុណ្ហភាព និងសំណើម</h3>
                 <div class="graph-wrapper">
                     <canvas id="temperatureChart"></canvas>
                 </div>
                 <div class="graph-legend">
                     <div class="legend-item">
-                        <span class="legend-color"></span>
+                        <span class="legend-color temperature-color"></span>
                         <span class="legend-text">សីតុណ្ហភាព (°C)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color humidity-color"></span>
+                        <span class="legend-text">សំណើម (%)</span>
                     </div>
                 </div>
             </div>
