@@ -14,9 +14,18 @@ import (
 )
 
 var (
-	dataProvider = "http://10.0.0.2"
-	key          = GetSecret()
+	dataProvider   = "http://10.0.0.2"
+	key            []byte
+	keyInitialized = false
 )
+
+func getKey() []byte {
+	if !keyInitialized {
+		key = GetSecret()
+		keyInitialized = true
+	}
+	return key
+}
 
 // ====== DATA HANDLERS ====== //
 func getDataHandler(c **fiber.Ctx, endpoint string) error {
@@ -31,7 +40,7 @@ func getDataHandler(c **fiber.Ctx, endpoint string) error {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	data, err := utils.DecryptAESGCM(string(body), key)
+	data, err := utils.DecryptAESGCM(string(body), getKey())
 	if err != nil {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -64,7 +73,7 @@ func toggleHandler(c **fiber.Ctx, endpoint string) error {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	challenge, err := utils.DecryptAESGCM(string(body), key)
+	challenge, err := utils.DecryptAESGCM(string(body), getKey())
 	if err != nil {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -83,7 +92,7 @@ func toggleHandler(c **fiber.Ctx, endpoint string) error {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	newState, err := utils.DecryptAESGCM(string(verifyBody), key)
+	newState, err := utils.DecryptAESGCM(string(verifyBody), getKey())
 	if err != nil {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -96,7 +105,7 @@ func ToggleAutoHandler(c *fiber.Ctx) error {
 }
 
 func ToggleBeltHandler(c *fiber.Ctx) error {
-    return toggleHandler(&c, "/toggle-belt")
+	return toggleHandler(&c, "/toggle-belt")
 }
 
 func ToggleFanHandler(c *fiber.Ctx) error {

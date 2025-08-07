@@ -6,7 +6,7 @@ import (
 
 	// "strings"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite" // Pure Go SQLite driver
 )
 
 type User struct {
@@ -47,7 +47,7 @@ type UserProfile struct {
 func InitDB() *sql.DB {
 	var db *sql.DB // Database connection
 	var err error
-	db, err = sql.Open("sqlite3", "users.db")
+	db, err = sql.Open("sqlite", "users.db") // Changed from "sqlite3" to "sqlite"
 	if err != nil {
 		log.Fatal(err)
 	}

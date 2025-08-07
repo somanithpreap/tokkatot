@@ -18,6 +18,8 @@ yarn.lock
 .env.development.local
 .env.test.local
 .env.production.local
+venv*/
+.venv*/
 
 # Logs
 *.log
@@ -39,3 +41,7 @@ Thumbs.db
 
 .idea/
 .idea
+
+# Certificates
+/certs
+/certs/*.pem

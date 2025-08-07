@@ -3,59 +3,106 @@ package main
 import (
 	"log"
 	"os"
+	"path/filepath"
 
 	"middleware/api"
 	"middleware/database"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load environment variables from .env file
+	// Check if we're in tokkatot directory, then look for .env in middleware subdirectory
+	currentDir, _ := os.Getwd()
+	var envPath string
+
+	if filepath.Base(currentDir) == "middleware" {
+		envPath = ".env"
+	} else {
+		envPath = "middleware/.env"
+	}
+
+	if err := godotenv.Load(envPath); err != nil {
+		log.Printf("No .env file found at %s, using system environment variables", envPath)
+	} else {
+		log.Printf("Loaded environment variables from %s", envPath)
+	}
+
+	// Get absolute paths for frontend files
+	// First get the current working directory
+	currentDir, err := os.Getwd()
+	if err != nil {
+		log.Fatal("Could not get current working directory:", err)
+	}
+
+	log.Println("Current working directory:", currentDir)
+
+	// Check if we're in the middleware directory or the parent tokkatot directory
+	var frontendPath string
+	if filepath.Base(currentDir) == "middleware" {
+		// We're in middleware, go up one level to tokkatot, then into frontend
+		frontendPath = filepath.Join(filepath.Dir(currentDir), "frontend")
+	} else {
+		// We're likely in the tokkatot directory already, just add frontend
+		frontendPath = filepath.Join(currentDir, "frontend")
+	}
+
+	log.Println("Calculated frontend path:", frontendPath)
+
+	// Verify the path exists
+	if _, err := os.Stat(frontendPath); os.IsNotExist(err) {
+		log.Fatal("Frontend directory not found at: ", frontendPath)
+	}
+
+	log.Println("Frontend path resolved successfully to:", frontendPath)
+
 	app := fiber.New()
 
 	// Initialize database
 	api.DB = database.InitDB()
 
-	// Serve static files
-	app.Static("/assets", "../frontend/assets")
-	app.Static("/components", "../frontend/components")
-	app.Static("/css", "../frontend/css")
-	app.Static("/js", "../frontend/js")
+	// Serve static files with absolute paths
+	app.Static("/assets", filepath.Join(frontendPath, "assets"))
+	app.Static("/components", filepath.Join(frontendPath, "components"))
+	app.Static("/css", filepath.Join(frontendPath, "css"))
+	app.Static("/js", filepath.Join(frontendPath, "js"))
 
 	// Authentication and static page routes
 	app.Get("/login", func(c *fiber.Ctx) error {
 		if api.ValidateCookie(c) == nil {
 			return c.Redirect("/")
 		}
-		return c.SendFile("../frontend/pages/login.html")
+		return c.SendFile(filepath.Join(frontendPath, "pages", "login.html"))
 	})
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		if api.ValidateCookie(c) != nil {
 			return c.Redirect("/login")
 		}
-		return c.SendFile("../frontend/pages/index.html")
+		return c.SendFile(filepath.Join(frontendPath, "pages", "index.html"))
 	})
 
 	app.Get("/register", func(c *fiber.Ctx) error {
 		if api.ValidateCookie(c) == nil {
 			return c.Redirect("/")
 		}
-		return c.SendFile("../frontend/pages/signup.html")
+		return c.SendFile(filepath.Join(frontendPath, "pages", "signup.html"))
 	})
 
 	app.Get("/profile", func(c *fiber.Ctx) error {
 		if api.ValidateCookie(c) != nil {
 			return c.Redirect("/login")
 		}
-		return c.SendFile("../frontend/pages/profile.html")
+		return c.SendFile(filepath.Join(frontendPath, "pages", "profile.html"))
 	})
 
 	app.Get("/settings", func(c *fiber.Ctx) error {
 		if api.ValidateCookie(c) != nil {
 			return c.Redirect("/login")
 		}
-		return c.SendFile("../frontend/pages/settings.html")
+		return c.SendFile(filepath.Join(frontendPath, "pages", "settings.html"))
 	})
 
 	// User authentication routes
@@ -87,6 +134,11 @@ func main() {
 	apiRoutes.Get("/toggle-feeder", api.ToggleFeederHandler)
 	apiRoutes.Get("/toggle-water", api.ToggleWaterHandler)
 
+	// AI Disease Detection routes
+	apiRoutes.Get("/ai/health", api.AIHealthCheckHandler)
+	apiRoutes.Post("/ai/predict-disease", api.PredictDiseaseHandler)
+	apiRoutes.Get("/ai/disease-info", api.GetDiseaseInfoHandler)
+
 	// Schedule management routes
 	/* apiRoutes.Post("/schedule", api.SaveScheduleHandler)      // Save schedule
 	apiRoutes.Get("/toggle-schedule", api.GetScheduleHandler) // Retrieve schedule
@@ -102,5 +154,4 @@ func main() {
 
 	// Start the server
 	log.Println("Server is running on port 4000")
-	log.Fatal(app.ListenTLS(":4000", os.Getenv("TLS_CERT"), os.Getenv("TLS_KEY")))
 }

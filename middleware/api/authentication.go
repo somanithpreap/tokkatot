@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -8,14 +9,12 @@ import (
 	"regexp"
 	"time"
 
-	"middleware/database"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
-var DB = database.InitDB()
+var DB *sql.DB
 var LegalCharacters = regexp.MustCompile(`^[\p{L}\p{N}\p{M}\p{Zs}\p{Pd}\p{Pe}\p{Ps}\p{Pi}\p{Pf}]+$`)
 
 func GetSecret() []byte {
