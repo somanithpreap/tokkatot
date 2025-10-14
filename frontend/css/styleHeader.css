@@ -1,3 +1,16 @@
+/*
+==============================================
+TOKKATOT - HEADER COMPONENT STYLES
+==============================================
+Smart Poultry System - Header Styling
+Author: CamTech University Students
+Description: Header component with datetime and profile info
+==============================================
+*/
+
+/* ===========================================
+   FONT CONFIGURATION
+   =========================================== */
 @font-face {
   font-family: 'Kantumruy Pro';
   src: url('../assets/fonts/KantumruyPro-VariableFont_wght.ttf') format('truetype');
@@ -5,35 +18,80 @@
   font-style: normal;
 }
 
+/* ===========================================
+   CSS CUSTOM PROPERTIES (VARIABLES)
+   =========================================== */
+:root {
+  /* Color Palette */
+  --header-bg-color: #ffffff;
+  --header-text-color: #333333;
+  --header-accent-color: #FFBA49;
+  --header-accent-hover: #ffc107;
+  --header-hover-bg: rgba(255, 186, 73, 0.1);
+  
+  /* Layout Values */
+  --header-border-radius: 16px;
+  --header-padding: 15px 20px;
+  --header-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --transition-duration: 0.3s;
+  
+  /* Typography */
+  --header-font-size: 16px;
+  --header-font-weight: 500;
+}
+
+/* ===========================================
+   GLOBAL FONT SETTING
+   =========================================== */
 * {
   font-family: 'Kantumruy Pro', sans-serif;
 }
 
-/* Header Styles */
+/* ===========================================
+   MAIN HEADER CONTAINER
+   =========================================== */
 .main-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
-    background-color: #fff;
-    border-radius: 16px;
+    padding: var(--header-padding);
+    background-color: var(--header-bg-color);
+    border-radius: var(--header-border-radius);
     margin-bottom: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--header-shadow);
+    transition: box-shadow var(--transition-duration) ease;
 }
 
+.main-header:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ===========================================
+   DATETIME DISPLAY SECTION
+   =========================================== */
 .datetime {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 16px;
-    color: #333;
+    font-size: var(--header-font-size);
+    color: var(--header-text-color);
 }
 
 .datetime b {
-    font-weight: 500;
+    font-weight: var(--header-font-weight);
     margin: 0 4px;
+    color: var(--header-accent-color);
 }
 
+/* Emoji styling for better visual hierarchy */
+.datetime > *:first-child,
+.datetime > *:nth-child(3) {
+    font-size: 18px;
+}
+
+/* ===========================================
+   PROFILE INFO SECTION
+   =========================================== */
 .profile-info {
     display: flex;
     align-items: center;
@@ -41,47 +99,79 @@
     text-decoration: none;
     padding: 8px;
     border-radius: 8px;
-    transition: all 0.3s ease;
+    transition: all var(--transition-duration) ease;
 }
 
 .profile-info:hover {
-    background-color: rgba(255, 186, 73, 0.1);
+    background-color: var(--header-hover-bg);
     transform: translateY(-2px);
 }
 
-.profile-info p {
-    font-size: 16px;
-    color: #333;
+.profile-info:focus {
+    outline: 2px solid var(--header-accent-color);
+    outline-offset: 2px;
 }
 
+.profile-info p {
+    font-size: var(--header-font-size);
+    color: var(--header-text-color);
+    margin: 0;
+    transition: color var(--transition-duration) ease;
+}
+
+.profile-info:hover p {
+    color: var(--header-accent-color);
+}
+
+/* Profile username styling */
+.profile-info span {
+    font-weight: var(--header-font-weight);
+}
+
+/* ===========================================
+   PROFILE IMAGE STYLING
+   =========================================== */
 .profile-info img {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 2px solid #FFBA49;
-    transition: transform 0.3s ease;
+    border: 2px solid var(--header-accent-color);
+    transition: transform var(--transition-duration) ease,
+                border-color var(--transition-duration) ease;
+    object-fit: cover;
 }
 
 .profile-info:hover img {
     transform: scale(1.1);
-    border-color: #ffc107;
+    border-color: var(--header-accent-hover);
 }
 
-/* Responsive Design */
+/* ===========================================
+   RESPONSIVE DESIGN - MOBILE FIRST
+   =========================================== */
+
+/* Tablet and Mobile Breakpoint */
 @media (max-width: 768px) {
     .main-header {
         padding: 12px 15px;
         flex-direction: column;
         gap: 10px;
+        text-align: center;
     }
 
     .datetime {
+        font-size: 14px;
+        justify-content: center;
+    }
+
+    .datetime b {
         font-size: 14px;
     }
 
     .profile-info {
         gap: 8px;
         padding: 6px;
+        justify-content: center;
     }
 
     .profile-info p {
@@ -91,5 +181,34 @@
     .profile-info img {
         width: 32px;
         height: 32px;
+    }
+}
+
+/* Small Mobile Breakpoint */
+@media (max-width: 480px) {
+    .main-header {
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 12px;
+    }
+
+    .datetime {
+        font-size: 12px;
+        gap: 6px;
+    }
+
+    .datetime b {
+        font-size: 12px;
+        margin: 0 2px;
+    }
+
+    .profile-info p {
+        font-size: 12px;
+    }
+
+    .profile-info img {
+        width: 28px;
+        height: 28px;
+        border-width: 1px;
     }
 }

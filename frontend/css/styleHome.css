@@ -1,39 +1,102 @@
-/* General Styles */
+/*
+==============================================
+TOKKATOT - HOME PAGE STYLES
+==============================================
+Smart Poultry System - Frontend Styling
+Author: CamTech University Students
+Description: Main dashboard styling for environmental monitoring
+==============================================
+*/
+
+/* ===========================================
+   CSS CUSTOM PROPERTIES (VARIABLES)
+   =========================================== */
 :root {
+  /* Color Palette */
   --color-primary: #FFBA49;
   --color-background: #20A39E;
   --color-white: #ffffff;
   --color-dark: #333333;
+  --color-text-light: #666666;
+  --color-hover: rgba(255, 186, 73, 0.4);
+  
+  /* Layout Values */
   --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   --card-border-radius: 16px;
+  --transition-duration: 0.3s;
+  --max-container-width: 800px;
+  
+  /* Chart Colors */
+  --chart-temperature-color: #FFBA49;
+  --chart-humidity-color: #4FC3F7;
 }
 
+/* ===========================================
+   FONT CONFIGURATION
+   =========================================== */
 @font-face {
   font-family: 'Kantumruy Pro';
   src: url('../assets/fonts/KantumruyPro-VariableFont_wght.ttf') format('truetype');
   font-weight: 100 700;
   font-style: normal;
+  font-display: swap; /* Improve loading performance */
 }
 
+/* Fallback fonts for better performance */
+.khmer-font {
+  font-family: 'Kantumruy Pro', 'Khmer UI', 'Leelawadee UI', sans-serif;
+}
+
+/* ===========================================
+   GLOBAL RESET AND BASE STYLES
+   =========================================== */
 * {
-  font-family: 'Kantumruy Pro', sans-serif;
+  font-family: 'Kantumruy Pro', 'Khmer UI', 'Leelawadee UI', sans-serif;
+  font-display: swap;
+}
+
+html {
+  scroll-behavior: smooth;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, var(--color-background) 0%, #16857c 100%);
+  color: var(--color-dark);
+  min-height: 100vh;
+  line-height: 1.6;
+  /* Improve text rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   background-color: var(--color-background);
   min-height: 100vh;
   padding: 20px;
+  margin: 0;
 }
 
-/* Header */
+.app-container {
+  max-width: var(--max-container-width);
+  margin: 0 auto;
+}
+
+/* ===========================================
+   HEADER COMPONENTS
+   =========================================== */
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #FFBA49;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-white);
   padding: 15px 20px;
   border-radius: 10px;
+  margin-bottom: 20px;
 }
 
 header div {
@@ -48,39 +111,40 @@ header img {
   border-radius: 50%;
 }
 
-/* Weather & Gas Information */
-div > div {
-  background: white;
+/* ===========================================
+   COMMON CARD STYLING
+   =========================================== */
+.card-base {
+  background: var(--color-white);
   padding: 15px;
   margin: 10px 0;
   border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: var(--box-shadow);
 }
 
-div > div i {
-  font-size: 24px;
-  color: #EF5B5B;
-}
-
-/* Navigation Icons */
-div > p {
-  font-weight: bold;
-  margin-top: 15px;
-}
-
+/* ===========================================
+   NAVIGATION COMPONENTS
+   =========================================== */
 .material-icons-sharp {
   font-size: 30px;
   margin: 10px;
   cursor: pointer;
-  color: #FFBA49;
+  color: var(--color-primary);
+  transition: color var(--transition-duration) ease;
 }
 
-/* Sensor Controls */
+.material-icons-sharp:hover {
+  color: var(--color-dark);
+}
+
+/* ===========================================
+   SENSOR CONTROL COMPONENTS
+   =========================================== */
 .sensor-controls {
-  background: white;
+  background: var(--color-white);
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: var(--box-shadow);
   margin-top: 20px;
 }
 
@@ -92,13 +156,21 @@ div > p {
   padding: 15px;
   border-radius: 10px;
   margin-bottom: 10px;
+  transition: transform var(--transition-duration) ease;
+}
+
+.control-card:hover {
+  transform: translateY(-2px);
 }
 
 .control-card .icon img {
   width: 40px;
+  height: auto;
 }
 
-/* Toggle Switch */
+/* ===========================================
+   TOGGLE SWITCH COMPONENTS
+   =========================================== */
 .switch {
   position: relative;
   display: inline-block;
@@ -121,7 +193,7 @@ div > p {
   bottom: 0;
   background-color: #ccc;
   border-radius: 20px;
-  transition: 0.4s;
+  transition: var(--transition-duration);
 }
 
 .slider:before {
@@ -131,9 +203,9 @@ div > p {
   width: 14px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
+  background-color: var(--color-white);
   border-radius: 50%;
-  transition: 0.4s;
+  transition: var(--transition-duration);
 }
 
 input:checked + .slider {
@@ -144,26 +216,16 @@ input:checked + .slider:before {
   transform: translateX(20px);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-header {
-  flex-direction: column;
-  text-align: center;
-}
-.control-card {
-  flex-direction: column;
-  text-align: center;
-}
-}
-
-/* Info Section */
+/* ===========================================
+   ENVIRONMENTAL INFO SECTION
+   =========================================== */
 .info-section {
   background-color: var(--color-white);
   padding: 20px;
   border-radius: var(--card-border-radius);
   margin: 20px auto;
   box-shadow: var(--box-shadow);
-  max-width: 800px;
+  max-width: var(--max-container-width);
 }
 
 .info-section h2 {
@@ -174,6 +236,7 @@ header {
   text-align: center;
 }
 
+/* Information Cards Grid Layout */
 .info-grid {
   display: flex;
   justify-content: center;
@@ -192,16 +255,17 @@ header {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  transition: all 0.3s ease;
+  transition: all var(--transition-duration) ease;
   border: 2px solid transparent;
 }
 
 .info-card:hover {
   transform: translateY(-5px);
   border-color: var(--color-primary);
-  box-shadow: 0 8px 16px rgba(255, 186, 73, 0.4);
+  box-shadow: 0 8px 16px var(--color-hover);
 }
 
+/* Info Card Icon Styling */
 .info-card .icon {
   width: 48px;
   height: 48px;
@@ -210,11 +274,17 @@ header {
   justify-content: center;
 }
 
+.info-card .icon img {
+  width: 100%;
+  height: auto;
+}
+
 .info-card .icon i {
   font-size: 36px;
   color: var(--color-primary);
 }
 
+/* Info Card Text Styling */
 .info-title {
   font-size: 16px;
   font-weight: 500;
@@ -238,17 +308,19 @@ header {
 
 .info-value .unit {
   font-size: 16px;
-  color: #666;
+  color: var(--color-text-light);
 }
 
-/* Graph Container */
+/* ===========================================
+   DATA VISUALIZATION SECTION
+   =========================================== */
 .graph-container {
   background-color: var(--color-white);
   padding: 20px;
   border-radius: var(--card-border-radius);
   margin: 20px auto;
   box-shadow: var(--box-shadow);
-  max-width: 800px;
+  max-width: var(--max-container-width);
 }
 
 .graph-container h3 {
@@ -259,12 +331,14 @@ header {
   text-align: center;
 }
 
+/* Chart Canvas Wrapper */
 .graph-wrapper {
   position: relative;
   height: 300px;
   margin-bottom: 20px;
 }
 
+/* Chart Legend Styling */
 .graph-legend {
   display: flex;
   justify-content: center;
@@ -286,19 +360,21 @@ header {
 }
 
 .legend-color.temperature-color {
-  background-color: #FFBA49; /* Matches chart temperature color */
+  background-color: var(--chart-temperature-color);
 }
 
 .legend-color.humidity-color {
-  background-color: #4FC3F7; /* Matches chart humidity color */
+  background-color: var(--chart-humidity-color);
 }
 
 .legend-text {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-light);
 }
 
-/* Loading State */
+/* ===========================================
+   LOADING STATES AND ANIMATIONS
+   =========================================== */
 .loading {
   opacity: 0.6;
   pointer-events: none;
@@ -321,74 +397,117 @@ header {
 
 @keyframes spin {
   to {
-      transform: rotate(360deg);
+    transform: rotate(360deg);
   }
 }
 
-/* Responsive Design */
+/* ===========================================
+   RESPONSIVE DESIGN - MOBILE FIRST
+   =========================================== */
+
+/* Tablet Breakpoint */
 @media screen and (max-width: 768px) {
-  body {
-      padding: 10px;
+  /* Header Responsiveness */
+  header {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
   }
 
+  /* Control Card Responsiveness */
+  .control-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  /* Body Adjustments */
+  body {
+    padding: 10px;
+  }
+
+  /* Info Section Mobile Layout */
   .info-section {
-      margin: 15px 10px;
-      padding: 15px;
+    margin: 15px 10px;
+    padding: 15px;
   }
 
   .info-section h2 {
-      font-size: 18px;
-      margin-bottom: 15px;
+    font-size: 18px;
+    margin-bottom: 15px;
   }
 
   .info-grid {
-      flex-direction: row;
-      gap: 15px;
-      padding: 5px;
+    gap: 15px;
+    padding: 5px;
   }
 
   .info-card {
-      width: 150px;
-      padding: 15px;
+    width: 150px;
+    padding: 15px;
   }
 
   .info-card .icon {
-      width: 36px;
-      height: 36px;
+    width: 36px;
+    height: 36px;
   }
 
   .info-card .icon i {
-      font-size: 28px;
+    font-size: 28px;
   }
 
   .info-title {
-      font-size: 14px;
-      margin: 8px 0;
+    font-size: 14px;
+    margin: 8px 0;
   }
 
   .info-value span {
-      font-size: 24px;
+    font-size: 24px;
   }
 
   .info-value .unit {
-      font-size: 14px;
+    font-size: 14px;
   }
 
+  /* Graph Container Mobile Layout */
   .graph-container {
-      margin: 15px 10px;
-      padding: 15px;
+    margin: 15px 10px;
+    padding: 15px;
   }
 
   .graph-container h3 {
-      font-size: 16px;
-      margin-bottom: 15px;
+    font-size: 16px;
+    margin-bottom: 15px;
   }
 
   .graph-wrapper {
-      height: 250px;
+    height: 250px;
   }
 
   .legend-text {
-      font-size: 12px;
+    font-size: 12px;
+  }
+}
+
+/* Mobile Breakpoint */
+@media screen and (max-width: 480px) {
+  .info-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .info-card {
+    width: 100%;
+    max-width: 200px;
+  }
+
+  .graph-wrapper {
+    height: 200px;
+  }
+
+  .graph-legend {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
   }
 }

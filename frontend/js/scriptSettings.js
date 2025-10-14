@@ -1,310 +1,623 @@
-// DOM Elements
-const autoModeToggle = document.getElementById("autoModeToggle");
-// const scheduleModeToggle = document.getElementById("scheduleModeToggle");
-const beltToggle = document.getElementById("beltToggle");
-const fanToggle = document.getElementById("fanToggle");
-const lightToggle = document.getElementById("lightToggle");
-const feederToggle = document.getElementById("feedToggle");
-const waterToggle = document.getElementById("waterToggle");
-// const feedingTimesContainer = document.getElementById("feedingTimes");
-// const saveScheduleButton = document.getElementById("saveSchedule");
-const notification = document.getElementById("notification");
+// ===============================================
+// SETTINGS PAGE MANAGEMENT
+// ===============================================
 
-// Initialize the system on page load
-document.addEventListener("DOMContentLoaded", () => {
-    // Fetch and display initial settings
-    fetchInitialSettings();
+/**
+ * Smart Poultry Settings Management
+ * Handles device control toggles, automation modes, and system settings
+ */
 
-    // Attach event listeners for toggles
-    autoModeToggle.addEventListener("change", async () => {
-        const state = autoModeToggle.checked;
-        await handleModeToggle("/api/toggle-auto", state);
-        if (state) {
-            // Turn off all immediate toggles
-            beltToggle.checked = false;
-            fanToggle.checked = false;
-            lightToggle.checked = false;
-            feederToggle.checked = false;
-            waterToggle.checked = false;
+// ===============================================
+// DOM ELEMENTS AND STATE
+// ===============================================
 
-            // Optionally, send requests to turn off these toggles on the backend
-            await handleImmediateToggle("/api/toggle-belt", false);
-            await handleImmediateToggle("/api/toggle-fan", false);
-            await handleImmediateToggle("/api/toggle-bulb", false);
-            await handleImmediateToggle("/api/toggle-feeder", false);
-            await handleImmediateToggle("/api/toggle-water", false);
+let settingsElements = {};
+let isPageLoading = false;
+let pollingInterval = null;
 
-            showNotification("Auto Mode enabled. All manual controls are turned off.", "success");
-        } else {
-            showNotification("Auto Mode disabled.", "info");
+// Configuration constants
+const SETTINGS_CONFIG = {
+    POLLING_INTERVAL: 5000,      // 5 seconds for state synchronization
+    NOTIFICATION_TIMEOUT: 4000,  // 4 seconds for notifications
+    REQUEST_TIMEOUT: 8000,       // 8 seconds for API requests
+    API_ENDPOINTS: {
+        INITIAL_STATE: '/api/get-initial-state',
+        AUTO_MODE: '/api/toggle-auto',
+        BELT: '/api/toggle-belt',
+        FAN: '/api/toggle-fan',
+        LIGHT: '/api/toggle-bulb',
+        FEEDER: '/api/toggle-feeder',
+        WATER: '/api/toggle-water',
+        SCHEDULE: '/api/schedule'
+    }
+};
+
+// ===============================================
+// INITIALIZATION
+// ===============================================
+
+/**
+ * Initialize settings page when DOM is loaded
+ */
+document.addEventListener("DOMContentLoaded", initializeSettings);
+
+/**
+ * Initialize all settings functionality
+ */
+async function initializeSettings() {
+    try {
+        isPageLoading = true;
+        
+        cacheSettingsElements();
+        setupEventListeners();
+        await loadInitialSettings();
+        setupPeriodicSync();
+        
+        console.log("Settings page initialized successfully");
+        
+    } catch (error) {
+        console.error("Failed to initialize settings page:", error);
+        handleInitializationError();
+    } finally {
+        isPageLoading = false;
+    }
+}
+
+/**
+ * Cache DOM elements for better performance
+ */
+function cacheSettingsElements() {
+    settingsElements = {
+        // Mode toggles
+        autoModeToggle: document.getElementById("autoModeToggle"),
+        
+        // Device toggles
+        beltToggle: document.getElementById("beltToggle"),
+        fanToggle: document.getElementById("fanToggle"),
+        lightToggle: document.getElementById("lightToggle"),
+        feederToggle: document.getElementById("feedToggle"),
+        waterToggle: document.getElementById("waterToggle"),
+        
+        // Notification system
+        notification: document.getElementById("notification"),
+        
+        // Status indicators
+        connectionStatus: document.querySelector('.connection-status'),
+        lastUpdateTime: document.querySelector('.last-update')
+    };
+    
+    // Verify critical elements exist
+    const requiredElements = ['autoModeToggle', 'notification'];
+    requiredElements.forEach(elementKey => {
+        if (!settingsElements[elementKey]) {
+            throw new Error(`Required element '${elementKey}' not found`);
         }
     });
+}
 
-    //scheduleModeToggle.addEventListener("change", () => {
-    /*    const state = scheduleModeToggle.checked;
-        handleModeToggle("/api/toggle-schedule", state);
-        if (state) {
-            showNotification("Schedule Mode enabled. Configure your settings.", "info");
+// ===============================================
+// EVENT LISTENERS SETUP
+// ===============================================
+
+/**
+ * Setup all event listeners for settings functionality
+ */
+function setupEventListeners() {
+    // Auto mode toggle with enhanced handling
+    if (settingsElements.autoModeToggle) {
+        settingsElements.autoModeToggle.addEventListener("change", handleAutoModeChange);
+    }
+    
+    // Device control toggles
+    const deviceMappings = [
+        { element: settingsElements.beltToggle, endpoint: SETTINGS_CONFIG.API_ENDPOINTS.BELT, name: "សំពៅ" },
+        { element: settingsElements.fanToggle, endpoint: SETTINGS_CONFIG.API_ENDPOINTS.FAN, name: "កង្ហារ" },
+        { element: settingsElements.lightToggle, endpoint: SETTINGS_CONFIG.API_ENDPOINTS.LIGHT, name: "ភ្លើង" },
+        { element: settingsElements.feederToggle, endpoint: SETTINGS_CONFIG.API_ENDPOINTS.FEEDER, name: "ម្ជូរអាហារ" },
+        { element: settingsElements.waterToggle, endpoint: SETTINGS_CONFIG.API_ENDPOINTS.WATER, name: "ទឹក" }
+    ];
+    
+    deviceMappings.forEach(({ element, endpoint, name }) => {
+        if (element) {
+            element.addEventListener("change", (event) => {
+                handleDeviceToggle(endpoint, event.target.checked, name, element);
+            });
+        }
+    });
+    
+    // Page visibility handling for performance
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    
+    // Cleanup on page unload
+    window.addEventListener("beforeunload", cleanup);
+}
+
+// ===============================================
+// AUTO MODE HANDLING
+// ===============================================
+
+/**
+ * Handle auto mode toggle changes
+ * @param {Event} event - Toggle change event
+ */
+async function handleAutoModeChange(event) {
+    const isAutoMode = event.target.checked;
+    
+    try {
+        setLoadingState(true);
+        
+        await toggleAutoMode(isAutoMode);
+        
+        if (isAutoMode) {
+            await disableAllManualControls();
+            showNotification("ម៉ូដស្វ័យប្រវត្តិត្រូវបានបើក។ ការគ្រប់គ្រងដោយដៃទាំងអស់ត្រូវបានបិទ។", "success");
         } else {
-            showNotification("Schedule Mode disabled.", "info");
+            showNotification("ម៉ូដស្វ័យប្រវត្តិត្រូវបានបិទ។", "info");
         }
-    }); */
+        
+    } catch (error) {
+        console.error("Error handling auto mode change:", error);
+        handleAutoModeError(error, isAutoMode);
+    } finally {
+        setLoadingState(false);
+    }
+}
 
-    // Attach event listeners for immediate toggles
-    beltToggle.addEventListener("change", () =>
-        handleImmediateToggle("/api/toggle-belt", beltToggle.checked),
-    );
-    fanToggle.addEventListener("change", () =>
-        handleImmediateToggle("/api/toggle-fan", fanToggle.checked),
-    );
-    lightToggle.addEventListener("change", () =>
-        handleImmediateToggle("/api/toggle-bulb", lightToggle.checked),
-    );
-    feederToggle.addEventListener("change", () =>
-        handleImmediateToggle("/api/toggle-feeder", feederToggle.checked),
-    );
-    waterToggle.addEventListener("change", () =>
-        handleImmediateToggle("/api/toggle-water", waterToggle.checked),
-    );
+/**
+ * Toggle auto mode on the backend
+ * @param {boolean} state - Auto mode state
+ */
+async function toggleAutoMode(state) {
+    const response = await fetchWithTimeout(SETTINGS_CONFIG.API_ENDPOINTS.AUTO_MODE, {
+        method: 'GET'
+    });
+    
+    if (!response.ok) {
+        throw new Error(`Failed to toggle auto mode: ${response.status} ${response.statusText}`);
+    }
+    
+    let result = await response.json();
+    if (typeof result.state === 'string') {
+        result = JSON.parse(result.state);
+    }
+    
+    console.log("Auto mode toggle result:", result);
+    return result;
+}
 
-    // Attach event listener for saving schedule settings
-  /*  saveScheduleButton.addEventListener("click", saveScheduleSettings);
-
-    // Launch schedule modal (if existing modal functionality exists)
-    document
-        .getElementById("addFeedingTime")
-        .addEventListener("click", () => addFeedingTimeInput("")); */
-});
-
-// Fetch initial settings state from the backend
-async function fetchInitialSettings() {
+/**
+ * Disable all manual control toggles when auto mode is enabled
+ */
+async function disableAllManualControls() {
+    const controlElements = [
+        settingsElements.beltToggle,
+        settingsElements.fanToggle,
+        settingsElements.lightToggle,
+        settingsElements.feederToggle,
+        settingsElements.waterToggle
+    ].filter(Boolean);
+    
+    // Update UI immediately
+    controlElements.forEach(element => {
+        element.checked = false;
+    });
+    
+    // Send backend requests to disable devices
+    const disablePromises = [
+        handleDeviceToggleAPI(SETTINGS_CONFIG.API_ENDPOINTS.BELT, false),
+        handleDeviceToggleAPI(SETTINGS_CONFIG.API_ENDPOINTS.FAN, false),
+        handleDeviceToggleAPI(SETTINGS_CONFIG.API_ENDPOINTS.LIGHT, false),
+        handleDeviceToggleAPI(SETTINGS_CONFIG.API_ENDPOINTS.FEEDER, false),
+        handleDeviceToggleAPI(SETTINGS_CONFIG.API_ENDPOINTS.WATER, false)
+    ];
+    
     try {
-        const response = await fetch("/api/get-initial-state");
-        if (!response.ok) {
-            throw new Error("Failed to fetch initial state.");
-        }
+        await Promise.all(disablePromises);
+    } catch (error) {
+        console.warn("Some devices may not have been disabled properly:", error);
+    }
+}
 
+// ===============================================
+// DEVICE CONTROL HANDLING
+// ===============================================
+
+/**
+ * Handle individual device toggle changes
+ * @param {string} endpoint - API endpoint
+ * @param {boolean} state - Device state
+ * @param {string} deviceName - Device name in Khmer
+ * @param {HTMLElement} toggleElement - Toggle element
+ */
+async function handleDeviceToggle(endpoint, state, deviceName, toggleElement) {
+    // Prevent device control when auto mode is enabled
+    if (settingsElements.autoModeToggle?.checked) {
+        toggleElement.checked = !state; // Revert the toggle
+        showNotification("មិនអាចគ្រប់គ្រងឧបករណ៍ដោយដៃនៅពេលម៉ូដស្វ័យប្រវត្តិកំពុងដំណើរការ", "warning");
+        return;
+    }
+    
+    try {
+        setDeviceLoadingState(toggleElement, true);
+        
+        await handleDeviceToggleAPI(endpoint, state);
+        
+        const statusText = state ? "បើក" : "បិទ";
+        showNotification(`${deviceName}ត្រូវបាន${statusText}`, "success");
+        
+    } catch (error) {
+        console.error(`Error toggling device ${endpoint}:`, error);
+        handleDeviceToggleError(error, toggleElement, state, deviceName);
+    } finally {
+        setDeviceLoadingState(toggleElement, false);
+    }
+}
+
+/**
+ * Handle device toggle API call
+ * @param {string} endpoint - API endpoint
+ * @param {boolean} state - Device state
+ */
+async function handleDeviceToggleAPI(endpoint, state) {
+    const response = await fetchWithTimeout(endpoint, {
+        method: 'GET'
+    });
+    
+    if (!response.ok) {
+        throw new Error(`Failed to toggle device: ${response.status} ${response.statusText}`);
+    }
+    
+    let result = await response.json();
+    if (typeof result.state === 'string') {
+        result = JSON.parse(result.state);
+    }
+    
+    console.log(`Device toggle result for ${endpoint}:`, result);
+    return result;
+}
+
+// ===============================================
+// SETTINGS DATA MANAGEMENT
+// ===============================================
+
+/**
+ * Load initial settings from the backend
+ */
+async function loadInitialSettings() {
+    try {
+        const response = await fetchWithTimeout(SETTINGS_CONFIG.API_ENDPOINTS.INITIAL_STATE);
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch initial state: ${response.status} ${response.statusText}`);
+        }
+        
         let data = await response.json();
-        data = JSON.parse(data.data);
-        console.log("Fetched initial state:", data);
-
-        // Update the UI based on the fetched data
-        updateUI(data);
-    } catch (error) {
-        console.error("Error fetching initial state:", error);
-        showNotification("Unable to load initial settings!", "error");
-    }
-}
-
-// Update the UI based on retrieved settings
-function updateUI(data) {
-    // Update mode toggles
-    autoModeToggle.checked = data.automation;
-    // scheduleModeToggle.checked = data.scheduleMode;
-
-    // Update immediate toggles
-    beltToggle.checked = data.belt;
-    fanToggle.checked = data.fan;
-    lightToggle.checked = data.lightbulb;
-    feederToggle.checked = data.feeder;
-    waterToggle.checked = data.water;
-
-    // Update schedule settings
-  /*  document.getElementById("lightStart").value =
-        data.schedule.lighting.start || "06:00";
-    document.getElementById("lightEnd").value =
-        data.schedule.lighting.end || "18:00";
-
-    // Update feeding times schedule
-    feedingTimesContainer.innerHTML = ""; // Clear existing feeding times
-    data.schedule.feeding.forEach((time) => addFeedingTimeInput(time));
-
-    // Update water interval
-    document.getElementById("waterInterval").value =
-        data.schedule.waterInterval || 60;
-
-    // Update environmental thresholds
-    document.getElementById("tempMin").value =
-        data.schedule.tempThreshold.min || 20;
-    document.getElementById("tempMax").value =
-        data.schedule.tempThreshold.max || 25;
-    document.getElementById("humidityMin").value =
-        data.schedule.humThreshold.min || 40;
-    document.getElementById("humidityMax").value =
-        data.schedule.humThreshold.max || 60; */
-}
-
-// Handle toggling Auto Mode
-async function handleModeToggle(endpoint, state) {
-    try {
-        const response = await fetch(endpoint, {
-            method: "GET",
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to toggle ${endpoint}.`);
+        
+        // Handle different response formats
+        if (typeof data.data === 'string') {
+            data = JSON.parse(data.data);
+        } else if (data.data) {
+            data = data.data;
         }
-
-        let result = await response.json();
-        result = JSON.parse(result.state);
-        console.log(`Toggled ${endpoint}: `, result);
-
-        showNotification(
-            `Auto Mode ${state ? "enabled" : "disabled"}.`,
-            "success",
-        );
+        
+        console.log("Fetched initial settings state:", data);
+        updateSettingsUI(data);
+        updateConnectionStatus(true);
+        
     } catch (error) {
-        console.error(`Error toggling ${endpoint}:`, error);
-        showNotification("Failed to update Auto Mode toggle.", "error");
-
-        // Revert the toggle state on error
-        autoModeToggle.checked = !state;
+        console.error("Error loading initial settings:", error);
+        handleSettingsLoadError(error);
     }
 }
 
-// Handle immediate toggles (like belt, fan, light, feeder, and water)
-async function handleImmediateToggle(endpoint, state) {
+/**
+ * Update the settings UI based on retrieved data
+ * @param {Object} data - Settings state data
+ */
+function updateSettingsUI(data) {
     try {
-        const response = await fetch(endpoint, {
-            method: "GET",
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to toggle ${endpoint}.`);
+        // Update mode toggles
+        if (settingsElements.autoModeToggle && data.automation !== undefined) {
+            settingsElements.autoModeToggle.checked = data.automation;
         }
-
-        let result = await response.json();
-        result = JSON.parse(result.state);
-
-        showNotification(
-            `${endpoint.split("-")[1].charAt(0).toUpperCase() + endpoint.split("-")[1].slice(1)} ${
-                state ? "turned on" : "turned off"
-            }.`,
-            "success",
-        );
+        
+        // Update device toggles
+        const deviceMappings = [
+            { element: settingsElements.beltToggle, dataKey: 'belt' },
+            { element: settingsElements.fanToggle, dataKey: 'fan' },
+            { element: settingsElements.lightToggle, dataKey: 'lightbulb' },
+            { element: settingsElements.feederToggle, dataKey: 'feeder' },
+            { element: settingsElements.waterToggle, dataKey: 'water' }
+        ];
+        
+        deviceMappings.forEach(({ element, dataKey }) => {
+            if (element && data[dataKey] !== undefined) {
+                element.checked = data[dataKey];
+            }
+        });
+        
+        updateLastUpdateTime();
+        
     } catch (error) {
-        console.error(`Error toggling ${endpoint}:`, error);
-        showNotification("Failed to update device state.", "error");
-
-        // Revert the toggle state on error
-        const device = endpoint.split("-")[1];
-        document.getElementById(`${device}Toggle`).checked = !state;
+        console.error("Error updating settings UI:", error);
     }
 }
 
-// Handle saving updated schedule settings
-/* async function saveScheduleSettings() {
+// ===============================================
+// PERIODIC SYNCHRONIZATION
+// ===============================================
+
+/**
+ * Setup periodic state synchronization
+ */
+function setupPeriodicSync() {
+    // Clear existing interval
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+    }
+    
+    // Setup new interval for state synchronization
+    pollingInterval = setInterval(() => {
+        if (!document.hidden && !isPageLoading) {
+            syncSettingsState();
+        }
+    }, SETTINGS_CONFIG.POLLING_INTERVAL);
+}
+
+/**
+ * Synchronize settings state with backend
+ */
+async function syncSettingsState() {
     try {
-        // Gather lighting schedule inputs
-        const lightStart = document.getElementById("lightStart").value;
-        const lightEnd = document.getElementById("lightEnd").value;
-
-        // Gather feeding schedule inputs
-        const feedingTimes = Array.from(
-            feedingTimesContainer.querySelectorAll("input[type='time']"),
-        ).map((input) => input.value);
-
-        // Gather water interval input
-        const waterInterval = parseInt(
-            document.getElementById("waterInterval").value,
-            10,
-        );
-
-        // Gather environmental thresholds
-        const tempMin = parseFloat(document.getElementById("tempMin").value);
-        const tempMax = parseFloat(document.getElementById("tempMax").value);
-        const humidityMin = parseFloat(
-            document.getElementById("humidityMin").value,
-        );
-        const humidityMax = parseFloat(
-            document.getElementById("humidityMax").value,
-        );
-
-        // Create payload
-        const payload = {
-            lighting: {
-                start: lightStart,
-                end: lightEnd,
-            },
-            feeding: feedingTimes,
-            waterInterval: waterInterval,
-            tempThreshold: {
-                min: tempMin,
-                max: tempMax,
-            },
-            humThreshold: {
-                min: humidityMin,
-                max: humidityMax,
-            },
-        };
-
-        console.log("Saving schedule settings with payload:", payload);
-
-        const response = await fetch("/api/schedule", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-        });
-
+        const response = await fetchWithTimeout(SETTINGS_CONFIG.API_ENDPOINTS.INITIAL_STATE);
+        
         if (!response.ok) {
-            throw new Error("Failed to save the schedule settings.");
+            console.warn("Failed to sync settings state");
+            updateConnectionStatus(false);
+            return;
         }
-
-        const result = await response.json();
-        console.log("Schedule saved successfully:", result);
-
-        showNotification("Schedule updated successfully!", "success");
+        
+        let data = await response.json();
+        if (typeof data.data === 'string') {
+            data = JSON.parse(data.data);
+        } else if (data.data) {
+            data = data.data;
+        }
+        
+        updateSettingsUI(data);
+        updateConnectionStatus(true);
+        
     } catch (error) {
-        console.error("Error saving schedule:", error);
-        showNotification("Failed to save schedule settings.", "error");
+        console.warn("Error syncing settings state:", error);
+        updateConnectionStatus(false);
     }
 }
 
-// Helper function to dynamically add a feeding time row
- function addFeedingTimeInput(time = "") {
-    const feedingTimeDiv = document.createElement("div");
-    feedingTimeDiv.classList.add("feeding-time");
+// ===============================================
+// UI STATE MANAGEMENT
+// ===============================================
 
-    const input = document.createElement("input");
-    input.type = "time";
-    input.value = time;
-
-    const removeButton = document.createElement("button");
-    removeButton.textContent = "លុប"; // "Remove" in Khmer
-    removeButton.classList.add("remove-time");
-    removeButton.addEventListener("click", () => feedingTimeDiv.remove());
-
-    feedingTimeDiv.appendChild(input);
-    feedingTimeDiv.appendChild(removeButton);
-    feedingTimesContainer.appendChild(feedingTimeDiv);
-} */
-
-// Helper function to display notifications
-function showNotification(message, type) {
-    notification.textContent = message;
-    notification.className = `notification ${type}`;
-    setTimeout(() => {
-        notification.className = "notification"; // Clear notification
-    }, 3000);
+/**
+ * Set loading state for the entire page
+ * @param {boolean} loading - Loading state
+ */
+function setLoadingState(loading) {
+    const controls = document.querySelectorAll('input[type="checkbox"], button');
+    controls.forEach(control => {
+        control.disabled = loading;
+    });
+    
+    if (loading) {
+        document.body.classList.add('loading');
+    } else {
+        document.body.classList.remove('loading');
+    }
 }
 
-// Add periodic polling to sync the state of the toggles
-// setInterval(async () => {
-//     try {
-//         const response = await fetch("/api/get-current-data");
-//         if (!response.ok) {
-//             throw new Error("Failed to fetch current data.");
-//         }
+/**
+ * Set loading state for a specific device
+ * @param {HTMLElement} toggleElement - Toggle element
+ * @param {boolean} loading - Loading state
+ */
+function setDeviceLoadingState(toggleElement, loading) {
+    if (!toggleElement) return;
+    
+    toggleElement.disabled = loading;
+    
+    const parent = toggleElement.closest('.device-control');
+    if (parent) {
+        if (loading) {
+            parent.classList.add('loading');
+        } else {
+            parent.classList.remove('loading');
+        }
+    }
+}
 
-//         let data = await response.json();
-//         data = JSON.parse(data.data);
-//         console.log("Fetched current data:", data);
+/**
+ * Update connection status indicator
+ * @param {boolean} connected - Connection status
+ */
+function updateConnectionStatus(connected) {
+    if (settingsElements.connectionStatus) {
+        settingsElements.connectionStatus.className = `connection-status ${connected ? 'online' : 'offline'}`;
+        settingsElements.connectionStatus.textContent = connected ? 'តភ្ជាប់' : 'ផ្តាច់';
+    }
+}
 
-//         // Update the UI based on the fetched data
-//         updateUI(data);
-//     } catch (error) {
-//         console.error("Error fetching current data:", error);
-//     }
-// }, 3000); // Poll every 3 seconds
+/**
+ * Update last update time display
+ */
+function updateLastUpdateTime() {
+    if (settingsElements.lastUpdateTime) {
+        const now = new Date();
+        settingsElements.lastUpdateTime.textContent = `ធ្វើឱ្យទាន់សម័យចុងក្រោយ: ${now.toLocaleTimeString('km-KH')}`;
+    }
+}
+
+// ===============================================
+// NOTIFICATION SYSTEM
+// ===============================================
+
+/**
+ * Display notification message to user
+ * @param {string} message - Message to display
+ * @param {string} type - Notification type (success, error, warning, info)
+ */
+function showNotification(message, type = "success") {
+    try {
+        if (!settingsElements.notification) {
+            console.warn("Notification element not found");
+            return;
+        }
+        
+        settingsElements.notification.textContent = message;
+        settingsElements.notification.className = `notification ${type} show`;
+        
+        // Auto-hide notification
+        setTimeout(() => {
+            if (settingsElements.notification) {
+                settingsElements.notification.classList.remove("show");
+            }
+        }, SETTINGS_CONFIG.NOTIFICATION_TIMEOUT);
+        
+    } catch (error) {
+        console.error("Error showing notification:", error);
+    }
+}
+
+// ===============================================
+// ERROR HANDLING
+// ===============================================
+
+/**
+ * Handle initialization errors
+ */
+function handleInitializationError() {
+    showNotification("មានបញ្ហាក្នុងការផ្ទុកការកំណត់", "error");
+    
+    // Show fallback UI
+    const container = document.querySelector('.settings-container');
+    if (container) {
+        container.innerHTML += `
+            <div class="error-state">
+                <p>មានបញ្ហាក្នុងការផ្ទុកការកំណត់។ សូមបញ្ជាក់ការតភ្ជាប់អ៊ីនធឺណិត។</p>
+                <button onclick="location.reload()">ព្យាយាមម្តងទៀត</button>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Handle auto mode toggle errors
+ * @param {Error} error - Error object
+ * @param {boolean} intendedState - Intended auto mode state
+ */
+function handleAutoModeError(error, intendedState) {
+    // Revert the toggle state
+    if (settingsElements.autoModeToggle) {
+        settingsElements.autoModeToggle.checked = !intendedState;
+    }
+    
+    let message = "មានបញ្ហាក្នុងការផ្លាស់ប្តូរម៉ូដស្វ័យប្រវត្តិ";
+    
+    if (error.name === 'TimeoutError') {
+        message = "ការតភ្ជាប់យឺត។ សូមព្យាយាមម្តងទៀត";
+    }
+    
+    showNotification(message, "error");
+}
+
+/**
+ * Handle device toggle errors
+ * @param {Error} error - Error object
+ * @param {HTMLElement} toggleElement - Toggle element
+ * @param {boolean} intendedState - Intended device state
+ * @param {string} deviceName - Device name
+ */
+function handleDeviceToggleError(error, toggleElement, intendedState, deviceName) {
+    // Revert the toggle state
+    if (toggleElement) {
+        toggleElement.checked = !intendedState;
+    }
+    
+    let message = `មានបញ្ហាក្នុងការគ្រប់គ្រង${deviceName}`;
+    
+    if (error.name === 'TimeoutError') {
+        message = "ការតភ្ជាប់យឺត។ សូមព្យាយាមម្តងទៀត";
+    } else if (error.message.includes('404')) {
+        message = "ឧបករណ៍មិនដំណើរការ";
+    }
+    
+    showNotification(message, "error");
+}
+
+/**
+ * Handle settings loading errors
+ * @param {Error} error - Error object
+ */
+function handleSettingsLoadError(error) {
+    updateConnectionStatus(false);
+    
+    let message = "មិនអាចទាញយកការកំណត់បាន";
+    
+    if (error.name === 'TimeoutError') {
+        message = "ការតភ្ជាប់អ៊ីនធឺណិតយឺត";
+    }
+    
+    showNotification(message, "error");
+}
+
+// ===============================================
+// PAGE LIFECYCLE MANAGEMENT
+// ===============================================
+
+/**
+ * Handle page visibility changes
+ */
+function handleVisibilityChange() {
+    if (document.hidden) {
+        // Page is hidden, pause polling
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+        }
+    } else {
+        // Page is visible, resume polling
+        setupPeriodicSync();
+        syncSettingsState();
+    }
+}
+
+/**
+ * Cleanup resources before page unload
+ */
+function cleanup() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+}
+
+// ===============================================
+// UTILITY FUNCTIONS
+// ===============================================
+
+/**
+ * Fetch with timeout support
+ * @param {string} url - URL to fetch
+ * @param {Object} options - Fetch options
+ * @param {number} timeout - Timeout in milliseconds
+ * @returns {Promise} Fetch promise with timeout
+ */
+async function fetchWithTimeout(url, options = {}, timeout = SETTINGS_CONFIG.REQUEST_TIMEOUT) {
+    const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('TimeoutError')), timeout);
+    });
+    
+    return Promise.race([
+        fetch(url, options),
+        timeoutPromise
+    ]);
+}
+

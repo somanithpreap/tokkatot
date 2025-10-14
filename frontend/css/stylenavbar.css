@@ -1,3 +1,16 @@
+/*
+==============================================
+TOKKATOT - NAVIGATION BAR STYLES
+==============================================
+Smart Poultry System - Bottom Navigation
+Author: CamTech University Students
+Description: Mobile-first bottom navigation styling
+==============================================
+*/
+
+/* ===========================================
+   FONT CONFIGURATION
+   =========================================== */
 @font-face {
   font-family: 'Kantumruy Pro';
   src: url('../assets/fonts/KantumruyPro-VariableFont_wght.ttf') format('truetype');
@@ -5,141 +18,278 @@
   font-style: normal;
 }
 
+/* ===========================================
+   CSS CUSTOM PROPERTIES (VARIABLES)
+   =========================================== */
+:root {
+  /* Color Palette */
+  --navbar-bg-color: #FFBA49;
+  --navbar-button-bg: rgba(255, 255, 255, 0.2);
+  --navbar-button-hover: rgba(255, 255, 255, 0.3);
+  --navbar-text-color: #333333;
+  --navbar-shadow: 0 -4px 8px rgba(0, 0, 0, 0.15);
+  --navbar-button-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --navbar-button-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.2);
+  
+  /* Layout Values */
+  --navbar-height: 70px;
+  --navbar-height-mobile: 60px;
+  --navbar-height-small: 55px;
+  --navbar-border-radius: 15px;
+  --navbar-icon-size: 30px;
+  --navbar-icon-size-mobile: 28px;
+  --navbar-icon-size-small: 26px;
+  --transition-duration: 0.3s;
+  
+  /* Typography */
+  --navbar-font-size: 12px;
+  --navbar-font-weight: 500;
+}
+
+/* ===========================================
+   GLOBAL FONT SETTING
+   =========================================== */
 * {
   font-family: 'Kantumruy Pro', sans-serif;
 }
 
-/* Bottom Navbar */
+/* ===========================================
+   MAIN NAVIGATION CONTAINER
+   =========================================== */
 #bottom-navbar {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  background: #ffba49;
-  padding: 12px 0;
-  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.15);
-  height: 70px;
+  background: var(--navbar-bg-color);
+  padding: 12px 10px;
+  box-shadow: var(--navbar-shadow);
+  height: var(--navbar-height);
   display: flex;
-  justify-content: space-around; /* Changed to space-around for better mobile spacing */
+  justify-content: center;
   align-items: center;
   z-index: 1000;
-  border-top-left-radius: 15px;
-  border-top-right-radius: 15px;
-  padding: 0 10px; /* Adjusted padding for mobile */
+  border-top-left-radius: var(--navbar-border-radius);
+  border-top-right-radius: var(--navbar-border-radius);
+  transition: all var(--transition-duration) ease;
 }
 
-/* Add safe area for iPhone X and newer 
+/* Safe area support for modern devices with notches */
 @supports (padding: max(0px)) {
   #bottom-navbar {
     padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
-} */
+}
 
-/* Adjust Navigation List */
-#bottom-navbar nav ul {
+/* ===========================================
+   NAVIGATION LIST STYLING
+   =========================================== */
+#bottom-navbar nav ul,
+#bottom-navbar .nav-list {
   display: flex;
   list-style: none;
   padding: 0;
   margin: 0;
   width: 100%;
-  justify-content: space-around; /* Evenly space items */
+  max-width: 400px;
+  justify-content: space-around;
   align-items: center;
 }
 
-/* Adjust Items */
-#bottom-navbar nav ul li {
+/* ===========================================
+   NAVIGATION ITEMS
+   =========================================== */
+#bottom-navbar nav ul li,
+#bottom-navbar .nav-item {
   display: flex;
   align-items: center;
   flex: 1;
   text-align: center;
 }
 
-/* Adjust Links */
-#bottom-navbar nav ul li a {
+/* ===========================================
+   NAVIGATION LINKS
+   =========================================== */
+#bottom-navbar nav ul li a,
+#bottom-navbar .nav-link {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  transition: all 0.3s ease;
-  padding: 10px; /* Increased padding for easier clicking */
-  border-radius: 12px; /* Rounded corners for the buttons */
-  background-color: rgba(255, 255, 255, 0.2); /* Light background for buttons */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Soft shadow for a floating effect */
+  transition: all var(--transition-duration) ease;
+  padding: 10px;
+  border-radius: 12px;
+  background-color: var(--navbar-button-bg);
+  box-shadow: var(--navbar-button-shadow);
   width: 100%;
   margin: 0 5px;
+  min-height: 48px; /* Accessibility: minimum touch target */
+  position: relative;
 }
 
-/* Adjust Icons */
-#bottom-navbar nav ul li a img {
-  width: 30px; /* Increased icon size for better visibility */
-  height: 30px;
-  transition: transform 0.3s ease, filter 0.3s ease;
+/* Focus state for accessibility */
+#bottom-navbar .nav-link:focus {
+  outline: 2px solid var(--navbar-text-color);
+  outline-offset: 2px;
 }
 
-/* Hover Effects for Icons */
-#bottom-navbar nav ul li a:hover img {
-  transform: scale(1.1); /* Slight zoom effect */
-  filter: brightness(1.2); /* Slight brightening effect */
+/* ===========================================
+   NAVIGATION ICONS
+   =========================================== */
+#bottom-navbar nav ul li a img,
+#bottom-navbar .nav-icon {
+  width: var(--navbar-icon-size);
+  height: var(--navbar-icon-size);
+  transition: transform var(--transition-duration) ease, 
+              filter var(--transition-duration) ease;
+  margin-bottom: 2px;
 }
 
-/* Hover Effects for Links */
-#bottom-navbar nav ul li a:hover {
-  background-color: rgba(255, 255, 255, 0.3); /* Darker background on hover */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Stronger shadow effect */
+/* ===========================================
+   NAVIGATION TEXT LABELS
+   =========================================== */
+#bottom-navbar .nav-text {
+  font-size: var(--navbar-font-size);
+  font-weight: var(--navbar-font-weight);
+  color: var(--navbar-text-color);
+  text-align: center;
+  line-height: 1.2;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-/* Ensure the main content does not overlap */
+/* ===========================================
+   HOVER AND ACTIVE STATES
+   =========================================== */
+
+/* Icon hover effects */
+#bottom-navbar nav ul li a:hover img,
+#bottom-navbar .nav-link:hover .nav-icon {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+
+/* Link hover effects */
+#bottom-navbar nav ul li a:hover,
+#bottom-navbar .nav-link:hover {
+  background-color: var(--navbar-button-hover);
+  box-shadow: var(--navbar-button-shadow-hover);
+  transform: translateY(-2px);
+}
+
+/* Active/Current page indicator */
+#bottom-navbar .nav-link.active {
+  background-color: var(--navbar-button-hover);
+  box-shadow: var(--navbar-button-shadow-hover);
+}
+
+#bottom-navbar .nav-link.active .nav-icon {
+  filter: brightness(1.3);
+}
+
+/* ===========================================
+   BODY LAYOUT ADJUSTMENTS
+   =========================================== */
+
+/* Ensure main content doesn't overlap navbar */
 body {
-  margin-bottom: 90px; /* Increased margin to prevent overlap */
-  padding-bottom: env(safe-area-inset-bottom); /* Add safe area padding */
+  margin-bottom: 90px;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Add smooth transition for navbar */
-#bottom-navbar {
-  transition: all 0.3s ease;
-}
+/* ===========================================
+   RESPONSIVE DESIGN - MOBILE FIRST
+   =========================================== */
 
-/* Responsive Design */
+/* Tablet and Mobile Breakpoint */
 @media (max-width: 768px) {
   #bottom-navbar {
-    height: 60px;
-    padding: 8px 0;
-    bottom: 0; /* Changed to stick to bottom */
-    border-radius: 0; /* Remove rounded corners for mobile */
+    height: var(--navbar-height-mobile);
+    padding: 8px 5px;
+    border-radius: 0;
   }
 
-  #bottom-navbar nav ul {
+  #bottom-navbar nav ul,
+  #bottom-navbar .nav-list {
     justify-content: space-around;
-    padding: 0 5px;
+    max-width: none;
   }
 
-  #bottom-navbar nav ul li a {
-    padding: 8px; /* Reduced padding for mobile */
-    min-width: 50px; /* Ensure minimum touch target size */
+  #bottom-navbar nav ul li a,
+  #bottom-navbar .nav-link {
+    padding: 8px;
+    margin: 0 2px;
+    min-height: 44px;
   }
 
-  #bottom-navbar nav ul li a img {
-    width: 28px; /* Slightly larger icons for better touch */
-    height: 28px;
+  #bottom-navbar nav ul li a img,
+  #bottom-navbar .nav-icon {
+    width: var(--navbar-icon-size-mobile);
+    height: var(--navbar-icon-size-mobile);
+  }
+
+  #bottom-navbar .nav-text {
+    font-size: 10px;
   }
 
   body {
-    margin-bottom: 80px; /* Increased margin for mobile */
+    margin-bottom: 80px;
   }
 }
 
-/* Extra small devices (phones, 480px and down) */
+/* Small Mobile Breakpoint */
 @media (max-width: 480px) {
   #bottom-navbar {
-    height: 55px;
+    height: var(--navbar-height-small);
+    padding: 6px 2px;
   }
 
-  #bottom-navbar nav ul li a {
+  #bottom-navbar nav ul li a,
+  #bottom-navbar .nav-link {
     padding: 6px;
+    margin: 0 1px;
+    min-height: 40px;
   }
 
-  #bottom-navbar nav ul li a img {
-    width: 26px;
-    height: 26px;
+  #bottom-navbar nav ul li a img,
+  #bottom-navbar .nav-icon {
+    width: var(--navbar-icon-size-small);
+    height: var(--navbar-icon-size-small);
+  }
+
+  #bottom-navbar .nav-text {
+    font-size: 9px;
+  }
+
+  body {
+    margin-bottom: 70px;
+  }
+}
+
+/* ===========================================
+   ACCESSIBILITY ENHANCEMENTS
+   =========================================== */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  #bottom-navbar {
+    border-top: 2px solid var(--navbar-text-color);
+  }
+
+  #bottom-navbar .nav-link {
+    border: 1px solid var(--navbar-text-color);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  #bottom-navbar,
+  #bottom-navbar .nav-link,
+  #bottom-navbar .nav-icon {
+    transition: none;
   }
 }

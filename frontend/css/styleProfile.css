@@ -1,3 +1,16 @@
+/*
+==============================================
+TOKKATOT - PROFILE PAGE STYLES
+==============================================
+Smart Poultry System - User Profile & About
+Author: CamTech University Students
+Description: Profile management and project information styling
+==============================================
+*/
+
+/* ===========================================
+   FONT CONFIGURATION
+   =========================================== */
 @font-face {
   font-family: 'Kantumruy Pro';
   src: url('../assets/fonts/KantumruyPro-VariableFont_wght.ttf') format('truetype');
@@ -5,16 +18,44 @@
   font-style: normal;
 }
 
-/* General Styles */
+/* ===========================================
+   CSS CUSTOM PROPERTIES (VARIABLES)
+   =========================================== */
 :root {
+    /* Color Palette */
     --color-primary: #FFBA49;
+    --color-primary-hover: #ffc107;
     --color-background: #20A39E;
     --color-white: #ffffff;
     --color-dark: #333333;
+    --color-text-light: #666666;
+    --color-border: #e0e0e0;
+    --color-border-hover: #cccccc;
+    --color-success: #4CAF50;
+    --color-section-bg: #f8f9fa;
+    
+    /* Layout Values */
     --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --box-shadow-hover: 0 8px 16px rgba(255, 186, 73, 0.4);
     --card-border-radius: 16px;
+    --input-border-radius: 8px;
+    --max-container-width: 1200px;
+    --max-section-width: 800px;
+    --transition-duration: 0.3s;
+    
+    /* Typography */
+    --font-size-base: 16px;
+    --font-size-small: 14px;
+    --font-size-large: 20px;
+    --font-size-xl: 24px;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
 }
 
+/* ===========================================
+   GLOBAL RESET AND BASE STYLES
+   =========================================== */
 * {
     margin: 0;
     padding: 0;
@@ -26,15 +67,38 @@ body {
     background-color: var(--color-background);
     min-height: 100vh;
     padding: 20px;
+    color: var(--color-dark);
 }
 
 .container {
     padding: 20px;
-    max-width: 1200px;
+    max-width: var(--max-container-width);
     margin: 0 auto;
 }
 
-/* User Information Form */
+/* ===========================================
+   PROFILE SECTION BASE STYLES
+   =========================================== */
+.profile-section {
+    background-color: var(--color-white);
+    padding: 30px;
+    border-radius: var(--card-border-radius);
+    margin: 20px auto;
+    box-shadow: var(--box-shadow);
+    max-width: var(--max-section-width);
+}
+
+.profile-section h2 {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-dark);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* ===========================================
+   USER INFORMATION FORM SECTION
+   =========================================== */
 .user-info-section {
     margin-bottom: 30px;
 }
@@ -44,10 +108,13 @@ body {
     flex-direction: column;
     gap: 20px;
     padding: 20px;
-    background-color: #f8f9fa;
+    background-color: var(--color-section-bg);
     border-radius: 12px;
 }
 
+/* ===========================================
+   FORM GROUP STYLING
+   =========================================== */
 .form-group {
     display: flex;
     flex-direction: column;
@@ -55,20 +122,20 @@ body {
 }
 
 .form-group label {
-    font-size: 16px;
-    font-weight: 500;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     color: var(--color-dark);
 }
 
 .form-group input,
 .form-group select {
     padding: 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 16px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--input-border-radius);
+    font-size: var(--font-size-base);
     color: var(--color-dark);
     background-color: var(--color-white);
-    transition: all 0.3s ease;
+    transition: all var(--transition-duration) ease;
     font-family: 'Kantumruy Pro', sans-serif;
 }
 
@@ -81,13 +148,16 @@ body {
 
 .form-group input:hover,
 .form-group select:hover {
-    border-color: #ccc;
+    border-color: var(--color-border-hover);
 }
 
 .location-group select {
     width: 100%;
 }
 
+/* ===========================================
+   SAVE BUTTON STYLING
+   =========================================== */
 .save-button {
     display: flex;
     align-items: center;
@@ -97,22 +167,32 @@ body {
     background-color: var(--color-primary);
     color: var(--color-dark);
     border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
+    border-radius: var(--input-border-radius);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--transition-duration) ease;
     font-family: 'Kantumruy Pro', sans-serif;
 }
 
 .save-button:hover {
-    background-color: #ffc107;
+    background-color: var(--color-primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 186, 73, 0.4);
+    box-shadow: var(--box-shadow-hover);
 }
 
 .save-button:active {
     transform: translateY(0);
+}
+
+.save-button:focus {
+    outline: 2px solid var(--color-dark);
+    outline-offset: 2px;
+}
+
+.save-button img {
+    width: 20px;
+    height: 20px;
 }
 
 .save-button .material-icons-sharp {

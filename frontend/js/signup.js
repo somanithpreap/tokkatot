@@ -1,242 +1,347 @@
-document.querySelector("form").action = getURL() + "/register";
-document.getElementById("login-link").href = getURL() + "/login";
-
-const form = document.querySelector("form"),
-  uField = form.querySelector(".username"),
-  uInput = uField.querySelector("input"),
-  pField = form.querySelector(".password"),
-  pInput = pField.querySelector("input"),
-  cpField = form.querySelector(".confirm-password"),
-  cpInput = cpField.querySelector("input"),
-  kField = form.querySelector(".registration-key"),
-  kInput = kField.querySelector("input");
-
-// Get the toggle password icons
-const togglePassword = document.querySelector(".toggle-password");
-const toggleConfirmPassword = document.querySelector(
-  ".toggle-confirm-password",
-);
-
-// Password toggle functionality
-document.addEventListener("DOMContentLoaded", () => {
-  // Toggle password visibility
-  togglePassword.addEventListener("click", function () {
-    const type =
-      pInput.getAttribute("type") === "password" ? "text" : "password";
-    pInput.setAttribute("type", type);
-    this.classList.toggle("fa-eye");
-    this.classList.toggle("fa-eye-slash");
-  });
-
-  // Toggle confirm password visibility
-  toggleConfirmPassword.addEventListener("click", function () {
-    const type =
-      cpInput.getAttribute("type") === "password" ? "text" : "password";
-    cpInput.setAttribute("type", type);
-    this.classList.toggle("fa-eye");
-    this.classList.toggle("fa-eye-slash");
-  });
-});
-
-form.addEventListener("submit", function (event) {
-  event.preventDefault();
-
-  checkUsername();
-  checkPass();
-  checkConfirmPass();
-  checkRegKey();
-
-  if (
-    !uField.classList.contains("error") &&
-    !pField.classList.contains("error") &&
-    !cpField.classList.contains("error") &&
-    !kField.classList.contains("error")
-  ) {
-    const formData = new FormData(form);
-
-    fetch(form.action, {
-      method: "POST",
-      body: formData,
-    }).then((response) => {
-      if (response.ok) window.location.href = "/";
-      else {
-        return response.json().then((error) => {
-          handleServerErrors(error.error);
-          console.error("Error: ", error.error);
-        });
-      }
-    });
-  }
-});
-
-function handleServerErrors(error) {
-  let errorTxt;
-  switch (error) {
-    case "Invalid username":
-      uField.classList.add("error");
-      uField.querySelector(".error-txt").innerText =
-        "ឈ្មោះអ្នកប្រើប្រាស់មិនត្រឹមត្រូវ";
-      break;
-    case "Password must be at least 8 characters":
-      pField.classList.add("error");
-      pField.querySelector(".error-txt").innerText =
-        "ពាក្យសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ ៨ តួអក្សរ";
-      break;
-    case "Username already taken":
-      uField.classList.add("error");
-      uField.querySelector(".error-txt").innerText =
-        "ឈ្មោះអ្នកប្រើប្រាស់មានរួចហើយ";
-      break;
-    case "Failed to hash password":
-      pField.classList.add("error");
-      pField.querySelector(".error-txt").innerText =
-        "បរាជ័យក្នុងការអ៊ិនគ្រីបពាក្យសម្ងាត់";
-      break;
-    case "Invalid registration key":
-      kField.classList.add("error");
-      kField.querySelector(".error-txt").innerText =
-        "លេខកូដចុះឈ្មោះមិនត្រឹមត្រូវ";
-      break;
-    case "Failed to register":
-      alert("បរាជ័យក្នុងការចុះឈ្មោះ សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ");
-      break;
-    case "Database error":
-      alert("ឃ្លាំងផ្ទុកទិន្នន័យមានបញ្ហា សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ");
-      break;
-    case "Internal server error":
-      alert("ស៊ើវើមានបញ្ហា សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ");
-      break;
-  }
-}
-
-function checkUsername() {
-  if (uInput.value == "") {
-    uField.classList.add("error");
-    uField.classList.remove("valid");
-    uField.querySelector(".error-txt").innerText = "Username can't be blank";
-  } else {
-    uField.classList.remove("error");
-    uField.classList.add("valid");
-  }
-}
-
-function checkPass() {
-  if (pInput.value == "") {
-    pField.classList.add("error");
-    pField.classList.remove("valid");
-    pField.querySelector(".error-txt").innerText = "Password can't be blank";
-  } else if (pInput.value.length < 8) {
-    pField.classList.add("error");
-    pField.classList.remove("valid");
-    pField.querySelector(".error-txt").innerText =
-      "Password must be at least 8 characters";
-  } else {
-    pField.classList.remove("error");
-    pField.classList.add("valid");
-  }
-}
-
-function checkConfirmPass() {
-  if (cpInput.value == "" || cpInput.value !== pInput.value) {
-    cpField.classList.add("error");
-    cpField.classList.remove("valid");
-    cpField.querySelector(".error-txt").innerText =
-      cpInput.value != ""
-        ? "Passwords do not match"
-        : "Confirm Password can't be blank";
-  } else {
-    cpField.classList.remove("error");
-    cpField.classList.add("valid");
-  }
-}
-
-function checkRegKey() {
-  if (kInput.value == "") {
-    kField.classList.add("error");
-    kField.classList.remove("valid");
-    kField.querySelector(".error-txt").innerText =
-      "Registration key can't be blank";
-  } else {
-    kField.classList.remove("error");
-    kField.classList.add("valid");
-  }
-}
-
 /*
-// Socket functionality
-if (typeof socket !== 'undefined') {
-  socket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    if (data.type === 'signupResponse') {
-      if (data.success) {
-        localStorage.setItem('registrationKey', data.registrationKey);
-        window.location.href = form.getAttribute("action");
-      } else {
-        alert('Signup failed: ' + data.message);
-      }
-    }
-  };
-}
-
-form.onsubmit = (e) => {
-  e.preventDefault();
-  (uInput.value == "") ? uField.classList.add("shake", "error") : checkUsername();
-  (pInput.value == "") ? pField.classList.add("shake", "error") : checkPass();
-  (cpInput.value == "") ? cpField.classList.add("shake", "error") : checkConfirmPass();
-
-  setTimeout(() => {
-    uField.classList.remove("shake");
-    pField.classList.remove("shake");
-    cpField.classList.remove("shake");
-  }, 500);
-
-  uInput.onkeyup = () => { checkUsername(); }
-  pInput.onkeyup = () => { checkPass(); }
-  cpInput.onkeyup = () => { checkConfirmPass(); }
-
-  function checkUsername() {
-    if (uInput.value == "") {
-      uField.classList.add("error");
-      uField.classList.remove("valid");
-      let errorTxt = uField.querySelector(".error-txt");
-      errorTxt.innerText = "Username can't be blank";
-    } else {
-      uField.classList.remove("error");
-      uField.classList.add("valid");
-    }
-  }
-
-  function checkPass() {
-    if (pInput.value == "") {
-      pField.classList.add("error");
-      pField.classList.remove("valid");
-    } else {
-      pField.classList.remove("error");
-      pField.classList.add("valid");
-    }
-  }
-
-  function checkConfirmPass() {
-    if (cpInput.value == "" || cpInput.value !== pInput.value) {
-      cpField.classList.add("error");
-      cpField.classList.remove("valid");
-      let errorTxt = cpField.querySelector(".error-txt");
-      (cpInput.value != "") ? errorTxt.innerText = "Passwords do not match" : errorTxt.innerText = "Confirm Password can't be blank";
-    } else {
-      cpField.classList.remove("error");
-      cpField.classList.add("valid");
-    }
-  }
-
-  if (!uField.classList.contains("error") && !pField.classList.contains("error") && !cpField.classList.contains("error")) {
-    const signupData = {
-      type: 'signup',
-      username: uInput.value,
-      password: pInput.value
-    };
-    if (typeof socket !== 'undefined') {
-      socket.send(JSON.stringify(signupData));
-    }
-  }
-}
+==============================================
+TOKKATOT - SIGNUP FORM HANDLER
+==============================================
+Smart Poultry System - User Registration
+Author: CamTech University Students
+Description: Registration form validation and submission logic
+==============================================
 */
+
+// ===========================================
+// CONFIGURATION AND SETUP
+// ===========================================
+
+/**
+ * Initialize form configuration on page load
+ */
+document.addEventListener("DOMContentLoaded", () => {
+    initializeSignupForm();
+    setupPasswordToggles();
+    setupFormValidation();
+});
+
+// ===========================================
+// FORM INITIALIZATION
+// ===========================================
+
+/**
+ * Initialize form URLs and basic setup
+ */
+function initializeSignupForm() {
+    const form = document.querySelector("form");
+    const loginLink = document.getElementById("login-link");
+    
+    // Set form action URL and login link
+    form.action = getURL() + "/register";
+    loginLink.href = getURL() + "/login";
+}
+
+// ===========================================
+// DOM ELEMENT REFERENCES
+// ===========================================
+
+/**
+ * Get form elements for easier access
+ */
+function getSignupFormElements() {
+    const form = document.querySelector("form");
+    return {
+        form: form,
+        usernameField: form.querySelector(".username"),
+        usernameInput: form.querySelector(".username input"),
+        passwordField: form.querySelector(".password"),
+        passwordInput: form.querySelector(".password input"),
+        confirmPasswordField: form.querySelector(".confirm-password"),
+        confirmPasswordInput: form.querySelector(".confirm-password input"),
+        registrationKeyField: form.querySelector(".registration-key"),
+        registrationKeyInput: form.querySelector(".registration-key input"),
+        togglePassword: document.querySelector(".toggle-password"),
+        toggleConfirmPassword: document.querySelector(".toggle-confirm-password")
+    };
+}
+
+// ===========================================
+// PASSWORD VISIBILITY TOGGLES
+// ===========================================
+
+/**
+ * Setup password visibility toggle functionality for both password fields
+ */
+function setupPasswordToggles() {
+    const { passwordInput, confirmPasswordInput, togglePassword, toggleConfirmPassword } = getSignupFormElements();
+    
+    // Main password toggle
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener("click", () => {
+            togglePasswordVisibility(passwordInput, togglePassword);
+        });
+    }
+    
+    // Confirm password toggle
+    if (toggleConfirmPassword && confirmPasswordInput) {
+        toggleConfirmPassword.addEventListener("click", () => {
+            togglePasswordVisibility(confirmPasswordInput, toggleConfirmPassword);
+        });
+    }
+}
+
+/**
+ * Toggle password field visibility
+ * @param {HTMLInputElement} passwordInput - Password input element
+ * @param {HTMLElement} toggleIcon - Toggle icon element
+ */
+function togglePasswordVisibility(passwordInput, toggleIcon) {
+    const isPassword = passwordInput.getAttribute("type") === "password";
+    
+    // Toggle input type
+    passwordInput.setAttribute("type", isPassword ? "text" : "password");
+    
+    // Toggle icon classes
+    toggleIcon.classList.toggle("fa-eye", !isPassword);
+    toggleIcon.classList.toggle("fa-eye-slash", isPassword);
+}
+
+// ===========================================
+// FORM VALIDATION SETUP
+// ===========================================
+
+/**
+ * Setup form validation and submission handlers
+ */
+function setupFormValidation() {
+    const { form } = getSignupFormElements();
+    
+    if (form) {
+        form.addEventListener("submit", handleSignupFormSubmission);
+    }
+}
+
+/**
+ * Handle form submission with validation
+ * @param {Event} event - Form submission event
+ */
+function handleSignupFormSubmission(event) {
+    event.preventDefault();
+    
+    const { form } = getSignupFormElements();
+    
+    // Validate all form fields
+    const validationResults = [
+        validateSignupUsername(),
+        validateSignupPassword(),
+        validateConfirmPassword(),
+        validateRegistrationKey()
+    ];
+    
+    // Submit if all validations pass
+    if (validationResults.every(result => result === true)) {
+        submitSignupForm(form);
+    }
+}
+
+/**
+ * Submit signup form to server
+ * @param {HTMLFormElement} form - Form element to submit
+ */
+async function submitSignupForm(form) {
+    try {
+        const formData = new FormData(form);
+        
+        const response = await fetch(form.action, {
+            method: "POST",
+            body: formData,
+        });
+        
+        if (response.ok) {
+            // Successful registration - redirect to home
+            window.location.href = "/";
+        } else {
+            // Handle server errors
+            const errorData = await response.json();
+            handleSignupServerErrors(errorData.error);
+            console.error("Registration Error:", errorData.error);
+        }
+    } catch (error) {
+        console.error("Network Error:", error);
+        showSignupGenericError();
+    }
+}
+
+// ===========================================
+// FIELD VALIDATION FUNCTIONS
+// ===========================================
+
+/**
+ * Validate username field
+ * @returns {boolean} True if valid, false otherwise
+ */
+function validateSignupUsername() {
+    const { usernameField, usernameInput } = getSignupFormElements();
+    
+    if (!usernameInput.value.trim()) {
+        setSignupFieldError(usernameField, "Username can't be blank");
+        return false;
+    }
+    
+    setSignupFieldValid(usernameField);
+    return true;
+}
+
+/**
+ * Validate password field
+ * @returns {boolean} True if valid, false otherwise
+ */
+function validateSignupPassword() {
+    const { passwordField, passwordInput } = getSignupFormElements();
+    const password = passwordInput.value.trim();
+    
+    if (!password) {
+        setSignupFieldError(passwordField, "Password can't be blank");
+        return false;
+    }
+    
+    if (password.length < 8) {
+        setSignupFieldError(passwordField, "Password must be at least 8 characters");
+        return false;
+    }
+    
+    setSignupFieldValid(passwordField);
+    return true;
+}
+
+/**
+ * Validate confirm password field
+ * @returns {boolean} True if valid, false otherwise
+ */
+function validateConfirmPassword() {
+    const { confirmPasswordField, confirmPasswordInput, passwordInput } = getSignupFormElements();
+    const confirmPassword = confirmPasswordInput.value.trim();
+    const password = passwordInput.value.trim();
+    
+    if (!confirmPassword) {
+        setSignupFieldError(confirmPasswordField, "Confirm Password can't be blank");
+        return false;
+    }
+    
+    if (confirmPassword !== password) {
+        setSignupFieldError(confirmPasswordField, "Passwords do not match");
+        return false;
+    }
+    
+    setSignupFieldValid(confirmPasswordField);
+    return true;
+}
+
+/**
+ * Validate registration key field
+ * @returns {boolean} True if valid, false otherwise
+ */
+function validateRegistrationKey() {
+    const { registrationKeyField, registrationKeyInput } = getSignupFormElements();
+    
+    if (!registrationKeyInput.value.trim()) {
+        setSignupFieldError(registrationKeyField, "Registration key can't be blank");
+        return false;
+    }
+    
+    setSignupFieldValid(registrationKeyField);
+    return true;
+}
+
+// ===========================================
+// FIELD STATE MANAGEMENT
+// ===========================================
+
+/**
+ * Set field to error state with message
+ * @param {HTMLElement} field - Field container element
+ * @param {string} message - Error message to display
+ */
+function setSignupFieldError(field, message) {
+    field.classList.add("error");
+    field.classList.remove("valid");
+    
+    const errorElement = field.querySelector(".error-txt");
+    if (errorElement) {
+        errorElement.innerText = message;
+    }
+}
+
+/**
+ * Set field to valid state
+ * @param {HTMLElement} field - Field container element
+ */
+function setSignupFieldValid(field) {
+    field.classList.remove("error");
+    field.classList.add("valid");
+}
+
+// ===========================================
+// ERROR HANDLING
+// ===========================================
+
+/**
+ * Handle server-side validation errors
+ * @param {string} errorType - Type of error from server
+ */
+function handleSignupServerErrors(errorType) {
+    const { 
+        usernameField, 
+        passwordField, 
+        registrationKeyField 
+    } = getSignupFormElements();
+    
+    const errorMessages = {
+        "Invalid username": {
+            field: usernameField,
+            message: "ឈ្មោះអ្នកប្រើប្រាស់មិនត្រឹមត្រូវ"
+        },
+        "Password must be at least 8 characters": {
+            field: passwordField,
+            message: "ពាក្យសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ ៨ តួអក្សរ"
+        },
+        "Username already taken": {
+            field: usernameField,
+            message: "ឈ្មោះអ្នកប្រើប្រាស់មានរួចហើយ"
+        },
+        "Failed to hash password": {
+            field: passwordField,
+            message: "បរាជ័យក្នុងការអ៊ិនគ្រីបពាក្យសម្ងាត់"
+        },
+        "Invalid registration key": {
+            field: registrationKeyField,
+            message: "លេខកូដចុះឈ្មោះមិនត្រឹមត្រូវ"
+        }
+    };
+    
+    const systemErrorMessages = {
+        "Failed to register": "បរាជ័យក្នុងការចុះឈ្មោះ សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ",
+        "Database error": "ឃ្លាំងផ្ទុកទិន្នន័យមានបញ្ហា សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ",
+        "Internal server error": "ស៊ើវើមានបញ្ហា សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ"
+    };
+    
+    // Handle field-specific errors
+    if (errorMessages[errorType]) {
+        const { field, message } = errorMessages[errorType];
+        setSignupFieldError(field, message);
+        return;
+    }
+    
+    // Handle system-level errors
+    if (systemErrorMessages[errorType]) {
+        alert(systemErrorMessages[errorType]);
+        return;
+    }
+    
+    // Fallback for unknown errors
+    showSignupGenericError();
+}
+
+/**
+ * Show generic error message for unexpected errors
+ */
+function showSignupGenericError() {
+    console.error("An unexpected error occurred during registration");
+    alert("មានបញ្ហាមិនរំពឹងទុក សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ");
+}

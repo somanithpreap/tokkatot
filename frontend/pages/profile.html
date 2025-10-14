@@ -1,67 +1,108 @@
 <!DOCTYPE html>
 <html lang="km">
     <head>
+        <!-- Basic Meta Tags -->
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        
+        <!-- Page Title -->
         <title>ព័ត៌មានលម្អិត - Smart Poultry</title>
+        
+        <!-- Stylesheets - Order matters for proper cascading -->
         <link rel="stylesheet" href="../css/styleProfile.css" />
         <link rel="stylesheet" href="../css/styleHeader.css" />
         <link rel="stylesheet" href="../css/stylenavbar.css" />
+        
+        <!-- Favicon -->
         <link rel="icon" href="../assets/images/tokkatot logo-02.png" type="image/x-icon" />
+        
+        <!-- PWA Manifest -->
+        <link rel="manifest" href="../manifest.json" />
+        <meta name="theme-color" content="#00cc99" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Tokkatot" />
+        <link rel="apple-touch-icon" href="../assets/images/tokkatot logo-02.png" />
     </head>
     <body>
+        <!-- Main Application Container -->
         <div class="container">
-            <!-- Header Placeholder -->
+            <!-- Header Section - Dynamic content loaded via JavaScript -->
             <div id="header-placeholder"></div>
 
-            <!-- User Information Form Section -->
-            <div class="profile-section user-info-section">
+            <!-- User Information Management Section -->
+            <section class="profile-section user-info-section" aria-label="User Information">
                 <h2>ព័ត៌មានផ្ទាល់ខ្លួន</h2>
-                <form id="userInfoForm" class="user-form">
+                
+                <!-- User Information Form -->
+                <form id="userInfoForm" class="user-form" role="form" aria-label="Personal Information Form">
+                    <!-- Full Name Field -->
                     <div class="form-group">
                         <label for="fullName">ឈ្មោះពេញ</label>
-                        <input type="text" id="fullName" name="fullName" required>
+                        <input 
+                            type="text" 
+                            id="fullName" 
+                            name="fullName" 
+                            required 
+                            aria-describedby="fullName-error"
+                        />
                     </div>
 
+                    <!-- Phone Number Field -->
                     <div class="form-group">
                         <label for="phoneNumber">លេខទូរស័ព្ទ</label>
-                        <input type="tel" id="phoneNumber" name="phoneNumber" pattern="[0-9]{9,10}" required>
+                        <input 
+                            type="tel" 
+                            id="phoneNumber" 
+                            name="phoneNumber" 
+                            pattern="[0-9]{9,10}" 
+                            required
+                            aria-describedby="phoneNumber-error"
+                        />
                     </div>
 
+                    <!-- Gender Selection Field -->
                     <div class="form-group">
                         <label for="gender">ភេទ</label>
-                        <select id="gender" name="gender" required>
+                        <select id="gender" name="gender" required aria-describedby="gender-error">
                             <option value="">ជ្រើសរើសភេទ</option>
                             <option value="male">ប្រុស</option>
                             <option value="female">ស្រី</option>
                         </select>
                     </div>
 
+                    <!-- Province/Location Selection Field -->
                     <div class="form-group location-group">
                         <label for="province">ទីតាំងកសិដ្ឋាន</label>
-                        <select id="province" name="province" required>
+                        <select id="province" name="province" required aria-describedby="province-error">
                             <option value="">ជ្រើសរើសខេត្ត/ក្រុង</option>
+                            <!-- Capital and Central Provinces -->
                             <option value="Phnom Penh">ភ្នំពេញ</option>
                             <option value="Kandal">កណ្តាល</option>
                             <option value="Kampong Speu">កំពង់ស្ពឺ</option>
                             <option value="Takeo">តាកែវ</option>
+                            <!-- Southern Provinces -->
                             <option value="Kampot">កំពត</option>
                             <option value="Preah Sihanouk">ព្រះសីហនុ</option>
                             <option value="Koh Kong">កោះកុង</option>
+                            <!-- Western Provinces -->
                             <option value="Kampong Chhnang">កំពង់ឆ្នាំង</option>
                             <option value="Pursat">ពោធិ៍សាត់</option>
                             <option value="Battambang">បាត់ដំបង</option>
                             <option value="Pailin">ប៉ៃលិន</option>
                             <option value="Banteay Meanchey">បន្ទាយមានជ័យ</option>
+                            <!-- Northern Provinces -->
                             <option value="Siem Reap">សៀមរាប</option>
                             <option value="Oddar Meanchey">ឧត្តរមានជ័យ</option>
                             <option value="Preah Vihear">ព្រះវិហារ</option>
                             <option value="Kampong Thom">កំពង់ធំ</option>
+                            <!-- Eastern Provinces -->
                             <option value="Kampong Cham">កំពង់ចាម</option>
                             <option value="Prey Veng">ព្រៃវែង</option>
                             <option value="Svay Rieng">ស្វាយរៀង</option>
                             <option value="Tboung Khmum">ត្បូងឃ្មុំ</option>
+                            <!-- Northeastern Provinces -->
                             <option value="Kratie">ក្រចេះ</option>
                             <option value="Stung Treng">ស្ទឹងត្រែង</option>
                             <option value="Ratanakiri">រតនគិរី</option>
@@ -69,26 +110,36 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="save-button">
-                        <img src="../assets/icons/save.png" alt="Save Button" />
+                    <!-- Save Button -->
+                    <button type="submit" class="save-button" aria-label="Save Profile Information">
+                        <img src="../assets/icons/save.png" alt="" aria-hidden="true" />
                         រក្សាទុក
                     </button>
                 </form>
-            </div>
+            </section>
 
-            <!-- About Us Section -->
-            <div class="profile-section">
-                <!-- University Info -->
+            <!-- About Application Section -->
+            <section class="profile-section" aria-label="About Smart Poultry">
+                <!-- University Information -->
                 <div class="university-info">
-                    <img src="../assets/images/camtech.jpg" alt="CamTech University Logo" class="university-logo">
+                    <img 
+                        src="../assets/images/camtech.jpg" 
+                        alt="CamTech University Logo" 
+                        class="university-logo"
+                    />
                     <h2>គម្រោងនិស្សិតនៃសាកលវិទ្យាល័យ CamTech</h2>
                 </div>
 
-                <!-- Project Info -->
+                <!-- Project Information -->
                 <div class="project-info">
                     <h3>អំពីគម្រោង Smart Poultry</h3>
-                    <p>គម្រោងនេះត្រូវបានបង្កើតឡើងដើម្បីជួយកសិករក្នុងការគ្រប់គ្រងស្រុកមាន់របស់ពួកគេប្រកបដោយប្រសិទ្ធភាព តាមរយៈការប្រើប្រាស់បច្ចេកវិទ្យា IoT។</p>
-                    <ul>
+                    <p>
+                        គម្រោងនេះត្រូវបានបង្កើតឡើងដើម្បីជួយកសិករក្នុងការគ្រប់គ្រងស្រុកមាន់របស់ពួកគេប្រកបដោយប្រសិទ្ធភាព 
+                        តាមរយៈការប្រើប្រាស់បច្ចេកវិទ្យា IoT។
+                    </p>
+                    
+                    <!-- Features List -->
+                    <ul role="list" aria-label="Smart Poultry Features">
                         <li>កាត់បន្ថយការប្រើប្រាស់កម្លាំងពលកម្មសម្រាប់កសិករ</li>
                         <li>បង្កើនប្រាក់ចំណូលតាមរយៈការគ្រប់គ្រងដោយស្វ័យប្រវត្តិ</li>
                         <li>តាមដានសីតុណ្ហភាព និងសំណើមដោយស្វ័យប្រវត្តិ</li>
@@ -96,34 +147,42 @@
                     </ul>
                 </div>
 
-                <!-- Support Info -->
+                <!-- Technical Support Information -->
                 <div class="support-info">
                     <h3>ជំនួយបច្ចេកទេស</h3>
                     <div class="contact-cards">
                         <div class="contact-card">
-                            <span class="material-icons-sharp">phone</span>
-                            <p>088 944 449</p>
+                            <span class="material-icons-sharp" aria-hidden="true">phone</span>
+                            <p><a href="tel:088944449" aria-label="Call 088 944 449">088 944 449</a></p>
                         </div>
                         <div class="contact-card">
-                            <span class="material-icons-sharp">phone</span>
-                            <p>099 992 939</p>
+                            <span class="material-icons-sharp" aria-hidden="true">phone</span>
+                            <p><a href="tel:099992939" aria-label="Call 099 992 939">099 992 939</a></p>
                         </div>
                     </div>
                 </div>
 
-                <!-- University Link -->
+                <!-- University Website Link -->
                 <div class="university-link">
                     <h3>គេហទំព័រសាកលវិទ្យាល័យ</h3>
-                    <a href="https://camtech.edu.kh" target="_blank" class="camtech-button">
-                        <span class="material-icons-sharp">school</span>
+                    <a 
+                        href="https://camtech.edu.kh" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        class="camtech-button"
+                        aria-label="Visit CamTech University Website (opens in new tab)"
+                    >
+                        <span class="material-icons-sharp" aria-hidden="true">school</span>
                         CamTech University
                     </a>
                 </div>
-            </div>
+            </section>
 
-            <!-- Notification Toast -->
-            <div id="notification" class="notification"></div>
+            <!-- Notification Toast Container -->
+            <div id="notification" class="notification" role="alert" aria-live="polite"></div>
         </div>
+
+        <!-- JavaScript Dependencies - Load order matters -->
         <script src="../js/index.js"></script>
         <script src="../js/header.js"></script>
         <script src="../js/navbar.js"></script>

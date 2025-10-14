@@ -1,59 +1,93 @@
 <!doctype html>
-<html lang="en">
+<html lang="km">
 	<head>
+		<!-- Basic Meta Tags -->
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Tokkatot - Login</title>
+		
+		<!-- Page Title -->
+		<title>Tokkatot - ចូលគណនី</title>
+		
+		<!-- Stylesheets -->
 		<link rel="stylesheet" href="../css/loginSignUp.css" />
-		<link
-			rel="stylesheet"
-			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+		<link rel="stylesheet" href="../assets/libs/fontawesome.css" />
+		
+		<!-- Favicon -->
 		<link rel="icon" href="../assets/images/tokkatot logo-02.png" type="image/x-icon" />
+		
+		<!-- PWA Manifest -->
+		<link rel="manifest" href="../manifest.json" />
+		<meta name="theme-color" content="#00cc99" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+		<meta name="apple-mobile-web-app-title" content="Tokkatot" />
+		<link rel="apple-touch-icon" href="../assets/images/tokkatot logo-02.png" />
 	</head>
 	<body>
+		<!-- Main Login Container -->
 		<div class="wrapper">
+			<!-- Login Form Header -->
 			<header>ចូលគណនី</header>
-			<form action="#" method="POST">
+			
+			<!-- Login Form -->
+			<form action="#" method="POST" role="form" aria-label="Login Form">
+				<!-- Username Field -->
 				<div class="field username">
 					<div class="input-area">
 						<input
 							name="username"
 							type="text"
 							placeholder="ឈ្មោះគណនី"
+							required
+							aria-describedby="username-error"
 						/>
-						<i class="icon fas fa-user"></i>
-						<i
-							class="error error-icon fas fa-exclamation-circle"
-						></i>
+						<i class="icon fas fa-user" aria-hidden="true"></i>
+						<i class="error error-icon fas fa-exclamation-circle" aria-hidden="true"></i>
 					</div>
-					<div class="error error-txt">Username can't be blank</div>
+					<div class="error error-txt" id="username-error" role="alert">Username can't be blank</div>
 				</div>
+				
+				<!-- Password Field -->
 				<div class="field password">
 					<div class="input-area">
 						<input
 							name="password"
 							type="password"
 							placeholder="លេខសម្ងាត់"
+							required
+							aria-describedby="password-error"
 						/>
-						<i class="icon fas fa-lock"></i>
-						<i
+						<i class="icon fas fa-lock" aria-hidden="true"></i>
+						<i 
 							class="toggle-password fas fa-eye"
 							style="pointer-events: auto"
+							aria-label="Toggle password visibility"
+							role="button"
+							tabindex="0"
 						></i>
-						<i
-							class="error error-icon fas fa-exclamation-circle"
-						></i>
+						<i class="error error-icon fas fa-exclamation-circle" aria-hidden="true"></i>
 					</div>
-					<div class="error error-txt">Password can't be blank</div>
+					<div class="error error-txt" id="password-error" role="alert">Password can't be blank</div>
 				</div>
-				<div class="pass-txt"><a href="#">ភ្លេចលេខសម្ងាត់?</a></div>
-				<input type="submit" value="ចូលគណនី" />
+				
+				<!-- Forgot Password Link -->
+				<div class="pass-txt">
+					<a href="#" aria-label="Reset Password">ភ្លេចលេខសម្ងាត់?</a>
+				</div>
+				
+				<!-- Submit Button -->
+				<input type="submit" value="ចូលគណនី" aria-label="Login" />
 			</form>
+			
+			<!-- Sign Up Link Section -->
 			<div class="sign-txt">
 				មិនទាន់ជាសមាជិក
-				<a id="signup-link" href="#">ចុះឈ្មោះឥឡូវនេះ!</a>
+				<a id="signup-link" href="#" aria-label="Create New Account">ចុះឈ្មោះឥឡូវនេះ!</a>
 			</div>
 		</div>
+
+		<!-- JavaScript Dependencies -->
+		<script src="../js/config.js"></script>
 		<script src="../js/index.js"></script>
 		<script src="../js/login.js"></script>
 	</body>

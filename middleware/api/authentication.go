@@ -14,10 +14,30 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var DB *sql.DB
-var LegalCharacters = regexp.MustCompile(`^[\p{L}\p{N}\p{M}\p{Zs}\p{Pd}\p{Pe}\p{Ps}\p{Pi}\p{Pf}]+$`)
+// Global variables
+var (
+	DB                *sql.DB
+	LegalCharacters   = regexp.MustCompile(`^[\p{L}\p{N}\p{M}\p{Zs}\p{Pd}\p{Pe}\p{Ps}\p{Pi}\p{Pf}]+$`)
+	TokenExpiration   = 6 * 30 * 24 * time.Hour // 6 months
+	MinPasswordLength = 8
+	CookieName        = "token"
+)
 
-func GetSecret() []byte {
+// Authentication error messages
+const (
+	ErrInvalidUsername    = "Invalid username format"
+	ErrPasswordTooShort   = "Password must be at least 8 characters"
+	ErrUsernameExists     = "Username already taken"
+	ErrInvalidCredentials = "Invalid username or password"
+	ErrInvalidRegKey      = "Invalid registration key"
+	ErrTokenGeneration    = "Failed to generate token"
+	ErrPasswordHashing    = "Failed to hash password"
+	ErrDatabaseError      = "Database error occurred"
+	ErrTokenInvalid       = "Token is not set or invalid"
+)
+
+// getJWTSecret retrieves the JWT secret from environment variables
+func getJWTSecret() []byte {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
 		log.Fatal("JWT_SECRET environment variable not set")
@@ -25,7 +45,8 @@ func GetSecret() []byte {
 	return []byte(secret)
 }
 
-func GetRegKey() string {
+// getRegistrationKey retrieves the registration key from environment variables
+func getRegistrationKey() string {
 	regKey := os.Getenv("REG_KEY")
 	if regKey == "" {
 		log.Fatal("REG_KEY environment variable not set")
@@ -33,58 +54,64 @@ func GetRegKey() string {
 	return regKey
 }
 
-// ====== AUTHENTICATION FUNCTIONS ====== //
-// Encrypt password before storing in the database
+// ==================== AUTHENTICATION FUNCTIONS ====================
+
+// HashPassword encrypts a password using bcrypt before storing in database
 func HashPassword(password string) (string, error) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(hashed), err
 }
 
-// Check if the entered password matches the stored hashed password
-func CheckPassword(hashed, password string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hashed), []byte(password))
+// CheckPassword verifies if the entered password matches the stored hashed password
+func CheckPassword(hashedPassword, password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
-func GenerateToken(username string, expire time.Time) (string, error) {
+// GenerateToken creates a new JWT token for the given username
+func GenerateToken(username string, expireTime time.Time) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"client_id": username,
-		"exp":       expire.Unix(),
+		"exp":       expireTime.Unix(),
 	})
 
-	signedToken, err := token.SignedString(GetSecret())
-	return signedToken, err
+	return token.SignedString(getJWTSecret())
 }
 
-const expiration = 6 * 30 * 24 * time.Hour // 6 months
+// SetAuthCookie sets the authentication cookie with a JWT token
+func SetAuthCookie(c *fiber.Ctx, username string) error {
+	expireTime := time.Now().Add(TokenExpiration)
 
-func SetCookie(c **fiber.Ctx, username string, expire time.Time) error {
 	// Generate JWT token
-	expire = time.Now().Add(expiration)
-	signedToken, err := GenerateToken(username, expire)
+	signedToken, err := GenerateToken(username, expireTime)
 	if err != nil {
-		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token"})
+		return err
 	}
 
-	// Set token in cookie
-	(*c).Cookie(&fiber.Cookie{
-		Name:    "token",
-		Value:   signedToken,
-		Expires: expire, // 6 months
+	// Set secure cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     CookieName,
+		Value:    signedToken,
+		Expires:  expireTime,
+		HTTPOnly: true,
+		Secure:   false, // Set to true in production with HTTPS
+		SameSite: "Lax",
 	})
+
 	return nil
 }
 
-func ValidateToken(raw_token string) string {
-	if raw_token == "" {
+// ValidateToken validates a JWT token and returns the username if valid
+func ValidateToken(tokenString string) string {
+	if tokenString == "" {
 		return ""
 	}
 
-	token, err := jwt.Parse(raw_token, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Ensure the signing method is HMAC
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method")
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return GetSecret(), nil
+		return getJWTSecret(), nil
 	})
 
 	if err != nil {
@@ -93,95 +120,164 @@ func ValidateToken(raw_token string) string {
 
 	// Extract claims if token is valid
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims["client_id"].(string)
+		if clientID, exists := claims["client_id"]; exists {
+			return clientID.(string)
+		}
 	}
+
 	return ""
 }
 
-// Check if the user is logged in
+// ValidateCookie checks if the user has a valid authentication cookie
 func ValidateCookie(c *fiber.Ctx) error {
-	// Parse and validate the token
-	cookie := c.Cookies("token")
-	validToken := ValidateToken(cookie)
-	if validToken == "" {
-		return errors.New("Token is not set or invalid")
+	cookie := c.Cookies(CookieName)
+	username := ValidateToken(cookie)
+
+	if username == "" {
+		return errors.New(ErrTokenInvalid)
 	}
+
 	return nil
 }
 
-// ====== REGISTER USER ====== //
+// ==================== HTTP HANDLERS ====================
+
+// RegisterHandler handles user registration requests
 func RegisterHandler(c *fiber.Ctx) error {
+	// Redirect if already authenticated
 	if ValidateCookie(c) == nil {
-		return c.Redirect("/login")
+		return c.Redirect("/")
 	}
 
+	// Extract form data
 	username := c.FormValue("username")
 	password := c.FormValue("password")
-	regKey := c.FormValue("key") // User must provide a product key
+	regKey := c.FormValue("key")
 
-	// Validate username
-	if !LegalCharacters.MatchString(username) {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid username"})
+	// Validate input
+	if err := validateRegistrationInput(username, password, regKey); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
-	// Ensure password is at least 8 characters long
-	if len(password) < 8 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Password must be at least 8 characters"})
-	}
-
-	// Check if username exists
-	var exists bool
-	err := DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = ?)", username).Scan(&exists)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error"})
-	}
-	if exists {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Username already taken"})
+	// Check if username already exists
+	if exists, err := checkUserExists(username); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": ErrDatabaseError,
+		})
+	} else if exists {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": ErrUsernameExists,
+		})
 	}
 
 	// Hash password
 	hashedPassword, err := HashPassword(password)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to hash password"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": ErrPasswordHashing,
+		})
 	}
 
-	// Check if registration key is valid
-	if regKey != GetRegKey() {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid registration key"})
+	// Create user in database
+	if err := createUser(username, hashedPassword); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to create user account",
+		})
 	}
 
-	// Store user in database
-	_, err = DB.Exec("INSERT INTO users (username, password) VALUES (?, ?)", username, hashedPassword)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to register"})
+	// Set authentication cookie
+	if err := SetAuthCookie(c, username); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": ErrTokenGeneration,
+		})
 	}
 
-	SetCookie(&c, username, time.Now().Add(expiration))
-
-	return c.Redirect("/", fiber.StatusOK)
+	return c.Redirect("/")
 }
 
-// ====== LOGIN USER ====== //
+// LoginHandler handles user login requests
 func LoginHandler(c *fiber.Ctx) error {
+	// Redirect if already authenticated
 	if ValidateCookie(c) == nil {
 		return c.Redirect("/")
 	}
 
+	// Extract form data
 	username := c.FormValue("username")
 	password := c.FormValue("password")
 
+	// Validate credentials
+	if err := validateCredentials(username, password); err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	// Set authentication cookie
+	if err := SetAuthCookie(c, username); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": ErrTokenGeneration,
+		})
+	}
+
+	return c.Redirect("/")
+}
+
+// ==================== VALIDATION FUNCTIONS ====================
+
+// validateRegistrationInput validates user registration input
+func validateRegistrationInput(username, password, regKey string) error {
+	// Validate username format
+	if !LegalCharacters.MatchString(username) {
+		return errors.New(ErrInvalidUsername)
+	}
+
+	// Validate password length
+	if len(password) < MinPasswordLength {
+		return errors.New(ErrPasswordTooShort)
+	}
+
+	// Validate registration key
+	if regKey != getRegistrationKey() {
+		return errors.New(ErrInvalidRegKey)
+	}
+
+	return nil
+}
+
+// validateCredentials validates user login credentials
+func validateCredentials(username, password string) error {
+	// Get user's hashed password from database
 	var hashedPassword string
 	err := DB.QueryRow("SELECT password FROM users WHERE username = ?", username).Scan(&hashedPassword)
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid username"})
+		if err == sql.ErrNoRows {
+			return errors.New(ErrInvalidCredentials)
+		}
+		return errors.New(ErrDatabaseError)
 	}
 
 	// Check if password matches
 	if err := CheckPassword(hashedPassword, password); err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid password"})
+		return errors.New(ErrInvalidCredentials)
 	}
 
-	SetCookie(&c, username, time.Now().Add(expiration))
+	return nil
+}
 
-	return c.Redirect("/", fiber.StatusOK)
+// ==================== DATABASE FUNCTIONS ====================
+
+// checkUserExists checks if a username already exists in the database
+func checkUserExists(username string) (bool, error) {
+	var exists bool
+	err := DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = ?)", username).Scan(&exists)
+	return exists, err
+}
+
+// createUser creates a new user in the database
+func createUser(username, hashedPassword string) error {
+	_, err := DB.Exec("INSERT INTO users (username, password) VALUES (?, ?)", username, hashedPassword)
+	return err
 }
