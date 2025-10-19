@@ -19,18 +19,20 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                height: 100vh;
+                min-height: 100vh;
                 margin: 0;
                 font-family: "Orbitron", sans-serif;
                 background-color: #ffc966;
                 color: #00cc99;
-                overflow: hidden;
+                overflow: auto;
+                padding: 20px;
+                box-sizing: border-box;
             }
             .container {
                 text-align: center;
             }
             .error-code {
-                font-size: 5rem;
+                font-size: clamp(3rem, 10vw, 5rem);
                 font-weight: bold;
                 color: #18c56e;
                 text-shadow:
@@ -39,7 +41,7 @@
                     0 0 15px #ffea1f;
             }
             .message {
-                font-size: 2rem;
+                font-size: clamp(1.5rem, 5vw, 2rem);
                 color: #42ff9f;
                 text-shadow:
                     0 0 5px #ff4991,
@@ -47,7 +49,7 @@
                     0 0 15px #f44cff;
             }
             .sub-message {
-                font-size: 1.5rem;
+                font-size: clamp(1rem, 3vw, 1.5rem);
                 color: #44ffa0;
                 text-shadow:
                     0 0 5px #00ccff,
