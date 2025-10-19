@@ -1,0 +1,87 @@
+/* ===============================================
+   TOKKATOT PERFORMANCE OPTIMIZATIONS
+   ===============================================
+   Critical CSS for immediate rendering
+   Load this inline or as first stylesheet
+   =============================================== */
+
+/* Immediate font loading */
+@font-face {
+  font-family: 'KantumruyFast';
+  src: url('data:font/woff2;base64,') format('woff2');
+  font-display: block;
+  unicode-range: U+1780-17FF; /* Khmer Unicode range */
+}
+
+/* Critical above-the-fold styles */
+.critical-loading {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #20A39E 0%, #16857c 100%);
+  color: #333;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 186, 73, 0.3);
+  border-top: 4px solid #FFBA49;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  z-index: 9999;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Fast card rendering */
+.card-fast {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  margin: 16px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  will-change: transform;
+}
+
+/* Prevent layout shift */
+.stats-container-fast {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Fast responsive text */
+.responsive-text {
+  font-size: clamp(14px, 2.5vw, 18px);
+  line-height: 1.5;
+}
+
+/* Hardware acceleration */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

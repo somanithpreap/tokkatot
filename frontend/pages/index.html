@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="km">
+    <head>
+        <!-- Basic Meta Tags -->
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        
+        <!-- Page Title -->
+        <title>Tokkatot - ទំព័រដើម</title>
+        
+        <!-- Stylesheets - Order matters for proper cascading -->
+        <link rel="stylesheet" href="../css/critical.css" />
+        <link rel="stylesheet" href="../css/notifications.css" />
+        <link rel="stylesheet" href="../css/styleHome.css" />
+        <link rel="stylesheet" href="../css/styleHeader.css" />
+        <link rel="stylesheet" href="../css/stylenavbar.css" />
+        
+        <!-- Favicon -->
+        <link rel="icon" href="../assets/images/tokkatot logo-02.png" type="image/x-icon" />
+        
+        <!-- PWA Manifest -->
+        <link rel="manifest" href="../manifest.json" />
+        <meta name="theme-color" content="#00cc99" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Tokkatot" />
+        <link rel="apple-touch-icon" href="../assets/images/tokkatot logo-02.png" />
+    </head>
+
+    <body>
+        <!-- Main Application Container -->
+        <div class="app-container">
+            <!-- Header Section - Dynamic content loaded via JavaScript -->
+            <div id="header-placeholder"></div>
+
+            <!-- Environmental Information Section -->
+            <section class="info-section" aria-label="Environmental Information">
+                <h2>ព័ត៌មានបរិយាកាស</h2>
+                
+                <!-- Information Cards Grid -->
+                <div class="info-grid">
+                    <!-- Temperature Information Card -->
+                    <div class="info-card temperature" aria-label="Temperature Information">
+                        <span class="icon" aria-hidden="true">
+                            <img src="../assets/icons/thermostat.png" alt="Thermostat Icon" />
+                        </span>
+                        <p class="info-title">សីតុណ្ហភាពក្នុងទ្រុង</p>
+                        <div class="info-value">
+                            <span id="current-temp" aria-live="polite">--</span>
+                            <span class="unit">°C</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Humidity Information Card -->
+                    <div class="info-card humidity" aria-label="Humidity Information">
+                        <span class="icon" aria-hidden="true">
+                            <img src="../assets/icons/water_drop.png" alt="Water Drop Icon" />
+                        </span>
+                        <p class="info-title">សំណើមក្នុងទ្រុង</p>
+                        <div class="info-value">
+                            <span id="current-humidity" aria-live="polite">--</span>
+                            <span class="unit">%</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Visualization Section -->
+            <section class="graph-container" aria-label="Temperature and Humidity History">
+                <h3>ប្រវត្តិសីតុណ្ហភាព និងសំណើម</h3>
+                
+                <!-- Chart Wrapper -->
+                <div class="graph-wrapper">
+                    <canvas id="temperatureChart" aria-label="Temperature and Humidity Chart"></canvas>
+                </div>
+                
+                <!-- Chart Legend -->
+                <div class="graph-legend" role="img" aria-label="Chart Legend">
+                    <div class="legend-item">
+                        <span class="legend-color temperature-color" aria-hidden="true"></span>
+                        <span class="legend-text">សីតុណ្ហភាព (°C)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color humidity-color" aria-hidden="true"></span>
+                        <span class="legend-text">សំណើម (%)</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- JavaScript Dependencies - Load order matters -->
+        <!-- Core JavaScript Libraries -->
+        <script src="../js/libs/chart.js"></script>
+        
+        <!-- Application Scripts -->
+        <script src="../js/config.js"></script>
+        <script src="../js/notifications.js"></script>
+        <script src="../js/index.js"></script>
+        <script src="../js/header.js"></script>
+        <script src="../js/scriptHome.js"></script>
+        <script src="../js/navbar.js"></script>
+        
+        <!-- Service Worker Registration -->
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('../sw.js')
+                        .then((registration) => {
+                            console.log('ServiceWorker registered successfully:', registration.scope);
+                        })
+                        .catch((error) => {
+                            console.log('ServiceWorker registration failed:', error);
+                        });
+                });
+            }
+        </script>
+    </body>
+</html>
