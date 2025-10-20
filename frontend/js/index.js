@@ -256,9 +256,9 @@ function getURL() {
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         // Development: middleware runs on port 4000
         return 'http://localhost:4000';
-    } else if (hostname === '192.168.4.1') {
+    } else if (hostname === '10.0.0.1') {
         // Raspberry Pi: middleware on same host, port 4000
-        return 'http://192.168.4.1:4000';
+        return 'http://10.0.0.1:4000';
     } else {
         // Production: same origin
         return window.location.origin;

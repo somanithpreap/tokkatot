@@ -209,7 +209,6 @@ func setupAPIRoutes(app *fiber.App) {
 
 	// AI disease detection endpoints
 	apiRoutes.Get("/ai/health", api.AIHealthCheckHandler)
-	apiRoutes.Get("/ai/health", api.AIHealthCheckHandler)
 	apiRoutes.Post("/ai/predict-disease", api.PredictDiseaseHandler)
 	apiRoutes.Get("/ai/disease-info", api.GetDiseaseInfoHandler)
 

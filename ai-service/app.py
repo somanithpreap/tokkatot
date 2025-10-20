@@ -228,4 +228,5 @@ if __name__ == '__main__':
     initialize_detector()
     
     # Start the Flask server
-    app.run(host='10.0.0.1', port=5000, debug=False)
+    # Listen on localhost for security (middleware on same machine)
+    app.run(host='127.0.0.1', port=5000, debug=False)

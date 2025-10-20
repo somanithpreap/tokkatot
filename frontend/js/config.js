@@ -11,7 +11,7 @@ const CONFIG = {
     API_BASE_URL: {
         development: 'http://localhost:4000',  // Go middleware server
         production: window.location.origin,    // Same origin in production
-        raspberry: 'http://192.168.4.1:4000'  // Raspberry Pi local IP
+        raspberry: 'http://10.0.0.1:4000'  // Raspberry Pi local IP
     },
     
     // Detect current environment
@@ -20,7 +20,7 @@ const CONFIG = {
         
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
             return 'development';
-        } else if (hostname === '192.168.4.1') {
+        } else if (hostname === '10.0.0.1') {
             return 'raspberry';
         } else {
             return 'production';

@@ -45,3 +45,6 @@ Thumbs.db
 # Certificates
 /certs
 /certs/*.pem
+
+# Scripts should be included
+!/scripts/*.sh
