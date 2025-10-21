@@ -42,31 +42,80 @@ fi
 
 print_info "Starting Tokkatot Middleware setup..."
 
-# Step 1: Check if Go is installed
+# Step 1: Check if Go is installed and has correct version
 print_info "Checking Go installation..."
-if ! command -v go &> /dev/null; then
-    print_error "Go is not installed. Installing Go..."
+
+# Detect architecture
+ARCH=$(uname -m)
+if [ "$ARCH" = "aarch64" ]; then
+    GO_ARCH="arm64"
+elif [ "$ARCH" = "armv7l" ] || [ "$ARCH" = "armv6l" ]; then
+    GO_ARCH="armv6l"
+elif [ "$ARCH" = "x86_64" ]; then
+    GO_ARCH="amd64"
+else
+    print_error "Unsupported architecture: $ARCH"
+    exit 1
+fi
+
+print_info "Detected architecture: $ARCH (Go arch: $GO_ARCH)"
+
+# Check if Go is installed and version is sufficient
+GO_REQUIRED_VERSION="1.21"
+GO_INSTALLED=false
+
+if command -v go &> /dev/null; then
+    GO_VERSION=$(go version | awk '{print $3}' | sed 's/go//')
+    print_info "Found Go version: $GO_VERSION"
+    
+    # Simple version check (compare major.minor)
+    GO_MAJOR=$(echo $GO_VERSION | cut -d. -f1)
+    GO_MINOR=$(echo $GO_VERSION | cut -d. -f2)
+    
+    if [ "$GO_MAJOR" -gt 1 ] || ([ "$GO_MAJOR" -eq 1 ] && [ "$GO_MINOR" -ge 21 ]); then
+        GO_INSTALLED=true
+        print_info "Go version is sufficient"
+    else
+        print_warning "Go version is too old (need 1.21+). Will install newer version."
+    fi
+fi
+
+if [ "$GO_INSTALLED" = false ]; then
+    print_info "Installing Go 1.23.6 for $GO_ARCH..."
+    
+    # Remove old Go installations
+    apt remove -y golang-go 2>/dev/null || true
+    rm -rf /usr/local/go
     
     # Download and install Go
     cd /tmp
-    wget https://go.dev/dl/go1.23.6.linux-amd64.tar.gz
-    rm -rf /usr/local/go
-    tar -C /usr/local -xzf go1.23.6.linux-amd64.tar.gz
+    GO_TARBALL="go1.23.6.linux-$GO_ARCH.tar.gz"
     
-    # Add to PATH
-    echo 'export PATH=$PATH:/usr/local/go/bin' >> /root/.bashrc
-    export PATH=$PATH:/usr/local/go/bin
-    
-    # Verify installation
-    if go version; then
-        print_info "Go installed successfully: $(go version)"
-    else
-        print_error "Failed to install Go"
+    print_info "Downloading $GO_TARBALL..."
+    if ! wget -q https://go.dev/dl/$GO_TARBALL; then
+        print_error "Failed to download Go"
         exit 1
     fi
-else
-    print_info "Go is already installed: $(go version)"
+    
+    print_info "Extracting Go..."
+    tar -C /usr/local -xzf $GO_TARBALL
+    
+    # Cleanup
+    rm -f $GO_TARBALL
+    
+    print_info "Go installed successfully"
 fi
+
+# Ensure Go is in PATH
+export PATH=/usr/local/go/bin:$PATH
+
+# Verify Go installation
+if ! command -v go &> /dev/null; then
+    print_error "Go installation failed"
+    exit 1
+fi
+
+print_info "Using Go: $(go version)"
 
 # Step 2: Navigate to middleware directory
 if [ ! -d "$MIDDLEWARE_DIR" ]; then
@@ -115,10 +164,12 @@ fi
 
 # Step 4: Download Go dependencies
 print_info "Downloading Go dependencies..."
+export PATH=/usr/local/go/bin:$PATH
 go mod download
 
 # Step 5: Build the middleware
 print_info "Building middleware binary..."
+export PATH=/usr/local/go/bin:$PATH
 go build -o middleware main.go
 
 # Verify binary was created
