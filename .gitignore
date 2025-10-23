@@ -4,7 +4,6 @@
 # Documentation
 README.md
 LICENSE
-*.txt
 
 # Dependencies
 /node_modules
