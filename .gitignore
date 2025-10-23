@@ -31,6 +31,7 @@ yarn-error.log*
 /dist
 /build
 /out
+/embedded/build
 
 # System Files
 .DS_Store
@@ -45,3 +46,5 @@ Thumbs.db
 # Certificates
 /certs
 /certs/*.pem
+/embedded/main/certs
+/embedded/main/certs/*.pem
