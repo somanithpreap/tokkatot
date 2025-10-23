@@ -3,6 +3,7 @@
 #include "nvs_flash.h"
 #include "esp_event.h"
 #include "esp_log.h"
+#include "esp_timer.h"
 
 #include "wifi_manager.h"
 #include "sensor_manager.h"
@@ -11,18 +12,15 @@
 
 static const char *TAG = "TOKKATOT";
 
+// Conveyor timing constants (in milliseconds)
+#define CONVEYOR_ON_TIME    10000  // 10 seconds
+#define CONVEYOR_OFF_TIME   5000   // 5 seconds
+
 void app_main(void)
 {
     // Initialize NVS
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
-
-    // Initialize system components
-    ESP_ERROR_CHECK(device_control_init());
+    nvs_flash_init();
+    device_control_init();
     sensor_manager_init();
     
     // Start WiFi
@@ -33,30 +31,96 @@ void app_main(void)
 
     ESP_LOGI(TAG, "System initialization complete");
 
+    device_state_t current_state = {0};
+    current_state.auto_mode = true;  // Start in auto mode
+    static bool was_water_low = false;  // Track previous water state to prevent rapid switching
+    
+    // Conveyor timing variables
+    uint32_t last_conveyor_change = 0;
+    bool is_conveyor_on = false;
+
     // Main loop
     while (1) {
         sensor_data_t current_data;
-        ESP_ERROR_CHECK(get_current_sensor_data(&current_data));
+        get_current_sensor_data(&current_data);
         
         // Auto mode logic
-        device_state_t state;
-        if (state.auto_mode) {
+        if (current_state.auto_mode) {
+            // Conveyor control timing
+            uint32_t current_time = esp_timer_get_time() / 1000;  // Current time in milliseconds
+            uint32_t time_since_last_change = current_time - last_conveyor_change;
+
+            if (is_conveyor_on && time_since_last_change >= CONVEYOR_ON_TIME) {
+                // Turn off conveyor after ON_TIME
+                current_state.conveyer_state = false;
+                is_conveyor_on = false;
+                last_conveyor_change = current_time;
+                ESP_LOGI(TAG, "Auto: Conveyor OFF for %d seconds", CONVEYOR_OFF_TIME/1000);
+            } 
+            else if (!is_conveyor_on && time_since_last_change >= CONVEYOR_OFF_TIME) {
+                // Turn on conveyor after OFF_TIME
+                current_state.conveyer_state = true;
+                is_conveyor_on = true;
+                last_conveyor_change = current_time;
+                ESP_LOGI(TAG, "Auto: Conveyor ON for %d seconds", CONVEYOR_ON_TIME/1000);
+            }
+
+            // Temperature control with hysteresis
+            float temp = current_data.temperature;
+            
             // Temperature control
-            if (current_data.temperature < 27.0f) {
-                state.fan_state = false;
-                state.bulb_state = true;
-            } else if (current_data.temperature > 32.0f) {
-                state.fan_state = true;
-                state.bulb_state = false;
-            } else {
-                state.fan_state = false;
-                state.bulb_state = false;
+            if (temp <= 28.0f) {
+                // Cold condition: Turn on bulb, turn off fan
+                current_state.bulb_state = true;
+                current_state.fan_state = false;
+                ESP_LOGI(TAG, "Auto: Cold (%.1f°C) - Bulb ON, Fan OFF", temp);
+            } 
+            else if (temp >= 32.0f) {
+                // Hot condition: Turn on fan, turn off bulb
+                current_state.bulb_state = false;
+                current_state.fan_state = true;
+                ESP_LOGI(TAG, "Auto: Hot (%.1f°C) - Bulb OFF, Fan ON", temp);
+            }
+            else if (temp > 29.0f && temp < 31.0f) {
+                // Comfortable range: Both off
+                current_state.bulb_state = false;
+                current_state.fan_state = false;
+                ESP_LOGI(TAG, "Auto: Normal (%.1f°C) - Both OFF", temp);
+            }
+
+            // Water level control with hysteresis
+            if (current_data.water_level <= WATER_LEVEL_LOW) {
+                if (!was_water_low) {
+                    // Water level just became low
+                    current_state.pump_state = true;
+                    was_water_low = true;
+                    ESP_LOGI(TAG, "Auto: Water Low (%.2fV) - Pump ON", current_data.water_level);
+                }
+            } 
+            else if (current_data.water_level >= WATER_LEVEL_FULL) {
+                if (was_water_low) {
+                    // Water level reached full
+                    current_state.pump_state = false;
+                    was_water_low = false;
+                    ESP_LOGI(TAG, "Auto: Water Full (%.2fV) - Pump OFF", current_data.water_level);
+                }
             }
 
             // Update device states
-            ESP_ERROR_CHECK(update_device_state(&state));
+            update_device_state(&current_state);
+            
+            // Log overall status periodically (every 30 seconds)
+            static uint32_t last_status_log = 0;
+            if ((current_time - last_status_log) >= 30000) {
+                ESP_LOGI(TAG, "Status - Temp: %.1f°C, Water: %.2fV, Conveyor: %s, Time in state: %ds",
+                        current_data.temperature,
+                        current_data.water_level,
+                        current_state.conveyer_state ? "ON" : "OFF",
+                        time_since_last_change / 1000);
+                last_status_log = current_time;
+            }
         }
 
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(500));  // Shorter delay for more precise timing
     }
 }

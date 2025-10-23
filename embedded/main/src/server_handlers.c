@@ -67,7 +67,7 @@ esp_err_t send_json_response(httpd_req_t *req, cJSON *root)
 esp_err_t get_initial_state_handler(httpd_req_t *req)
 {
     sensor_data_t current_data;
-    ESP_ERROR_CHECK(get_current_sensor_data(&current_data));
+    get_current_sensor_data(&current_data);
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddNumberToObject(root, "timestamp", current_data.timestamp);
@@ -80,7 +80,7 @@ esp_err_t get_initial_state_handler(httpd_req_t *req)
 esp_err_t get_current_data_handler(httpd_req_t *req)
 {
     sensor_data_t current_data;
-    ESP_ERROR_CHECK(get_current_sensor_data(&current_data));
+    get_current_sensor_data(&current_data);
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddNumberToObject(root, "timestamp", current_data.timestamp);
@@ -93,7 +93,7 @@ esp_err_t get_current_data_handler(httpd_req_t *req)
 esp_err_t get_historical_data_handler(httpd_req_t *req)
 {
     sensor_history_t history;
-    ESP_ERROR_CHECK(get_sensor_history(&history));
+    get_sensor_history(&history);
 
     cJSON *root = cJSON_CreateArray();
     

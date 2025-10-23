@@ -1,23 +1,24 @@
-#ifndef __DHT_H__
-#define __DHT_H__
+/* 
+    DHT22 temperature sensor driver
+*/
 
-#include <driver/gpio.h>
-#include <esp_err.h>
+#ifndef DHT22_H_  
+#define DHT22_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <stdbool.h>
+#include "driver/gpio.h"
 
-typedef enum {
-    DHT_TYPE_DHT11 = 0,   //!< DHT11
-    DHT_TYPE_AM2301 = 1,  //!< AM2301 (DHT21, DHT22, AM2302, AM2321)
-} dht_sensor_type_t;
+#define DHT_OK 0
+#define DHT_CHECKSUM_ERROR -1
+#define DHT_TIMEOUT_ERROR -2
 
-esp_err_t dht_init(gpio_num_t pin, dht_sensor_type_t sensor_type);
-esp_err_t dht_read_float_data(dht_sensor_type_t sensor_type, gpio_num_t pin, float *humidity, float *temperature);
+// == function prototypes =======================================
 
-#ifdef __cplusplus
-}
-#endif
+void setDHTgpio(int gpio);
+void errorHandler(int response);
+int readDHT();
+float getHumidity();
+float getTemperature();
+int getSignalLevel(int usTimeOut, bool state);
 
-#endif  // __DHT_H__
+#endif /* DHT22_H_ */

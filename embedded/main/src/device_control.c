@@ -22,7 +22,7 @@ static device_state_t current_state = {
     .conveyer_state = false
 };
 
-esp_err_t device_control_init(void)
+void device_control_init(void)
 {
     // Configure GPIO pins
     gpio_config_t io_conf = {
@@ -35,7 +35,7 @@ esp_err_t device_control_init(void)
         .pull_down_en = 0,
         .pull_up_en = 0
     };
-    ESP_ERROR_CHECK(gpio_config(&io_conf));
+    gpio_config(&io_conf);
 
     // Configure LEDC for servo control
     ledc_timer_config_t ledc_timer = {
@@ -45,7 +45,7 @@ esp_err_t device_control_init(void)
         .freq_hz = LEDC_FREQUENCY,
         .clk_cfg = LEDC_AUTO_CLK
     };
-    ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
+    ledc_timer_config(&ledc_timer);
 
     ledc_channel_config_t ledc_channel = {
         .speed_mode = LEDC_MODE,
@@ -56,57 +56,53 @@ esp_err_t device_control_init(void)
         .duty = 0,
         .hpoint = 0
     };
-    ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
+    ledc_channel_config(&ledc_channel);
 
     // Initialize all devices to OFF state
-    ESP_ERROR_CHECK(gpio_set_level(CONVEYER_PIN, 1));
-    ESP_ERROR_CHECK(gpio_set_level(FAN_PIN, 1));
-    ESP_ERROR_CHECK(gpio_set_level(LIGHTBULB_PIN, 1));
-    ESP_ERROR_CHECK(gpio_set_level(WATERPUMP_PIN, 1));
-    
-    return ESP_OK;
+    gpio_set_level(CONVEYER_PIN, 1);
+    gpio_set_level(FAN_PIN, 1);
+    gpio_set_level(LIGHTBULB_PIN, 1);
+    gpio_set_level(WATERPUMP_PIN, 1);
 }
 
-esp_err_t set_servo_position(int position)
+void set_servo_position(int position)
 {
     uint32_t duty = (position * (SERVO_MAX_PULSEWIDTH - SERVO_MIN_PULSEWIDTH) / 180) + SERVO_MIN_PULSEWIDTH;
-    return ledc_set_duty_and_update(LEDC_MODE, LEDC_CHANNEL, duty, 0);
+    ledc_set_duty_and_update(LEDC_MODE, LEDC_CHANNEL, duty, 0);
 }
 
-esp_err_t dispense_food(void)
+void dispense_food(void)
 {
     current_state.feeder_state = true;
     
     // Move servo from 90 to 15 degrees
-    for (int pos = 90; pos >= 15; pos--) {
-        ESP_ERROR_CHECK(set_servo_position(pos));
+    for (int pos = 60; pos >= 0; pos--) {
+        set_servo_position(pos);
         vTaskDelay(pdMS_TO_TICKS(25));
     }
     
     // Move servo back from 15 to 90 degrees
-    for (int pos = 15; pos <= 90; pos++) {
-        ESP_ERROR_CHECK(set_servo_position(pos));
+    for (int pos = 0; pos <= 60; pos++) {
+        set_servo_position(pos);
         vTaskDelay(pdMS_TO_TICKS(25));
     }
     
     current_state.feeder_state = false;
-    return ESP_OK;
 }
 
-esp_err_t toggle_device(gpio_num_t pin, bool *state)
+void toggle_device(gpio_num_t pin, bool *state)
 {
     *state = !*state;
-    return gpio_set_level(pin, *state ? 0 : 1);
+    gpio_set_level(pin, *state ? 0 : 1);
 }
 
-esp_err_t update_device_state(device_state_t *state)
+void update_device_state(device_state_t *state)
 {
     memcpy(&current_state, state, sizeof(device_state_t));
     
-    ESP_ERROR_CHECK(gpio_set_level(FAN_PIN, state->fan_state ? 0 : 1));
-    ESP_ERROR_CHECK(gpio_set_level(LIGHTBULB_PIN, state->bulb_state ? 0 : 1));
-    ESP_ERROR_CHECK(gpio_set_level(WATERPUMP_PIN, state->pump_state ? 0 : 1));
-    ESP_ERROR_CHECK(gpio_set_level(CONVEYER_PIN, state->conveyer_state ? 0 : 1));
-    
-    return ESP_OK;
+    gpio_set_level(FAN_PIN, state->fan_state ? 0 : 1);
+    gpio_set_level(LIGHTBULB_PIN, state->bulb_state ? 0 : 1);
+    gpio_set_level(WATERPUMP_PIN, state->pump_state ? 0 : 1);
+    gpio_set_level(CONVEYER_PIN, state->conveyer_state ? 0 : 1);
+
 }

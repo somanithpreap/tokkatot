@@ -8,11 +8,11 @@
 #include "driver/ledc.h"
 
 // Pin definitions
-#define CONVEYER_PIN     GPIO_NUM_12
-#define SERVO_PIN        GPIO_NUM_13
-#define FAN_PIN         GPIO_NUM_14
-#define LIGHTBULB_PIN   GPIO_NUM_27
-#define WATERPUMP_PIN   GPIO_NUM_26
+#define CONVEYER_PIN     GPIO_NUM_25
+#define SERVO_PIN        GPIO_NUM_23
+#define FAN_PIN         GPIO_NUM_26
+#define LIGHTBULB_PIN   GPIO_NUM_14
+#define WATERPUMP_PIN   GPIO_NUM_27
 
 // Device states
 typedef struct {
@@ -25,10 +25,10 @@ typedef struct {
 } device_state_t;
 
 // Function declarations
-esp_err_t device_control_init(void);
-esp_err_t set_servo_position(int position);
-esp_err_t dispense_food(void);
-esp_err_t update_device_state(device_state_t *state);
-esp_err_t toggle_device(gpio_num_t pin, bool *state);
+void device_control_init(void);
+void set_servo_position(int position);
+void dispense_food(void);
+void update_device_state(device_state_t *state);
+void toggle_device(gpio_num_t pin, bool *state);
 
 #endif // DEVICE_CONTROL_H
