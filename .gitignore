@@ -19,6 +19,8 @@ yarn.lock
 .env.production.local
 venv*/
 .venv*/
+env*/
+.env.*/
 
 # Logs
 *.log
@@ -37,6 +39,7 @@ yarn-error.log*
 Thumbs.db
 
 /middleware/middleware
+/middleware/middleware.exe
 /middleware/users.db
 
 .idea/
