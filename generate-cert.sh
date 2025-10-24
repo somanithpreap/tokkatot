@@ -21,7 +21,7 @@ openssl req -x509 \
     -out "$CERT_FILE" \
     -days 1825 \
     -nodes \
-    -subj " /C=KH/ST=PhnomPenh/L=PhnomPenh/O=Tokkatot/CN=Tokkatot" \
+    -subj "/C=KH/ST=PhnomPenh/L=PhnomPenh/O=Tokkatot/CN=Tokkatot"
 
 if [ $? -eq 0 ]; then
     echo "Successfully generated certificate and key in $CERT_DIR"
