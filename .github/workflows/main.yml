@@ -25,7 +25,7 @@ jobs:
           cd middleware
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
           echo "REG_KEY=${{ secrets.REG_KEY }}" >> .env
-          echo "TLS_CERT=${{ secrets.${{ secrets.TLS_CERT }} }}" >> .env
+          echo "TLS_CERT=${{ secrets.TLS_CERT }}" >> .env
           echo "TLS_KEY=${{ secrets.TLS_KEY }}" >> .env
           go build
 
