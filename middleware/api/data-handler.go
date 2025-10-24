@@ -2,34 +2,31 @@ package api
 
 import (
 	"bytes"
-	"crypto/sha256"
-	"encoding/hex"
 	"io"
 	"net/http"
-
-	// "middleware/database"
-	"middleware/utils"
+	"crypto/tls"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 var (
-	dataProvider   = "http://10.0.0.2"
-	key            []byte
-	keyInitialized = false
+	dataProvider = "https://10.0.0.2"
+	httpClient   *http.Client
 )
 
-func getKey() []byte {
-	if !keyInitialized {
-		key = GetSecret()
-		keyInitialized = true
+func init() {
+	httpClient = &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+		Timeout: 10 * time.Second,
 	}
-	return key
 }
 
 // ====== DATA HANDLERS ====== //
 func getDataHandler(c **fiber.Ctx, endpoint string) error {
-	resp, err := http.Get(dataProvider + endpoint)
+	resp, err := httpClient.Get(dataProvider + endpoint)
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to get data from data provider"})
 	}
@@ -40,12 +37,8 @@ func getDataHandler(c **fiber.Ctx, endpoint string) error {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	data, err := utils.DecryptAESGCM(string(body), getKey())
-	if err != nil {
-		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	return (*c).JSON(fiber.Map{"data": string(data)})
+	// Forward raw data from the data provider directly to the client
+	return (*c).JSON(fiber.Map{"data": string(body)})
 }
 
 func GetInitialStateHandler(c *fiber.Ctx) error {
@@ -62,7 +55,7 @@ func GetHistoricalDataHandler(c *fiber.Ctx) error {
 
 // ====== TOGGLE HANDLERS ====== //
 func toggleHandler(c **fiber.Ctx, endpoint string) error {
-	resp, err := http.Get(dataProvider + endpoint)
+	resp, err := httpClient.Get(dataProvider + endpoint)
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to toggle device"})
 	}
@@ -73,15 +66,8 @@ func toggleHandler(c **fiber.Ctx, endpoint string) error {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	challenge, err := utils.DecryptAESGCM(string(body), getKey())
-	if err != nil {
-		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	hash := sha256.Sum256(challenge)
-	hashHex := hex.EncodeToString(hash[:])
-
-	verifyResp, err := http.Post(dataProvider+endpoint+"/verify", "text/plain", bytes.NewBufferString(hashHex))
+	// Instead of decrypting and hashing, forward the provider response to the verify endpoint over HTTPS
+	verifyResp, err := httpClient.Post(dataProvider+endpoint+"/verify", "application/octet-stream", bytes.NewReader(body))
 	if err != nil || verifyResp.StatusCode != http.StatusOK {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to verify toggle"})
 	}
@@ -92,12 +78,8 @@ func toggleHandler(c **fiber.Ctx, endpoint string) error {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	newState, err := utils.DecryptAESGCM(string(verifyBody), getKey())
-	if err != nil {
-		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	return (*c).Status(fiber.StatusOK).JSON(fiber.Map{"state": string(newState)})
+	// Forward the verify endpoint response directly
+	return (*c).Status(fiber.StatusOK).JSON(fiber.Map{"state": string(verifyBody)})
 }
 
 func ToggleAutoHandler(c *fiber.Ctx) error {
