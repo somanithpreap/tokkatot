@@ -18,11 +18,15 @@ jobs:
         with:
           go-version: 1.23.6
 
-      - name: Generate Certificate & Build Middleware
+      - name: Setup resources and build
         run: |
           chmod +x generate-cert.sh
           ./generate-cert.sh
           cd middleware
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "REG_KEY=${{ secrets.REG_KEY }}" >> .env
+          echo "TLS_CERT=${{ secrets.${{ secrets.TLS_CERT }} }}" >> .env
+          echo "TLS_KEY=${{ secrets.TLS_KEY }}" >> .env
           go build
 
       - name: Run Middleware with Environment Variables
