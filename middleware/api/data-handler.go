@@ -1,10 +1,16 @@
 package api
 
 import (
+<<<<<<< HEAD
 	"bytes"
 	"io"
 	"net/http"
 	"crypto/tls"
+=======
+	"crypto/tls"
+	"io"
+	"net/http"
+>>>>>>> 14660e4 (Modified API call mechanisms between middleware and embedded system)
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -66,20 +72,8 @@ func toggleHandler(c **fiber.Ctx, endpoint string) error {
 		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	// Instead of decrypting and hashing, forward the provider response to the verify endpoint over HTTPS
-	verifyResp, err := httpClient.Post(dataProvider+endpoint+"/verify", "application/octet-stream", bytes.NewReader(body))
-	if err != nil || verifyResp.StatusCode != http.StatusOK {
-		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to verify toggle"})
-	}
-	defer verifyResp.Body.Close()
-
-	verifyBody, err := io.ReadAll(verifyResp.Body)
-	if err != nil {
-		return (*c).Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	// Forward the verify endpoint response directly
-	return (*c).Status(fiber.StatusOK).JSON(fiber.Map{"state": string(verifyBody)})
+	// Verify step removed: return the provider response as the new state
+	return (*c).Status(fiber.StatusOK).JSON(fiber.Map{"state": string(body)})
 }
 
 func ToggleAutoHandler(c *fiber.Ctx) error {
