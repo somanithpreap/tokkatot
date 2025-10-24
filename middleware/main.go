@@ -153,5 +153,6 @@ func main() {
 	defer api.DB.Close()
 
 	// Start the server
-	log.Println("Server is running on port 4000")
+	log.Println("Server is running on port 443")
+	log.Fatal(app.ListenTLS(":443", os.Getenv("TLS_CERT"), os.Getenv("TLS_KEY")))
 }

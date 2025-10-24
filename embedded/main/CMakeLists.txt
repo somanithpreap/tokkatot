@@ -1,14 +1,14 @@
 idf_component_register(
-    SRCS 
+    SRCS
         "src/main.c"
         "src/adc.c"
         "src/sensor_manager.c"
         "src/device_control.c"
         "src/server_handlers.c"
         "src/wifi_manager.c"
-    INCLUDE_DIRS 
+    INCLUDE_DIRS
         "include"
-    REQUIRES 
+    REQUIRES
         "esp_https_server"
         "esp_wifi"
         "esp_timer"
@@ -17,6 +17,6 @@ idf_component_register(
         "json"
         "esp_adc"
         "dht"
-    EMBED_TXTFILES  "certs/cert.pem"
-                    "certs/key.pem"
+    EMBED_TXTFILES  "../../certs/cert.pem"
+                    "../../certs/key.pem"
 )
