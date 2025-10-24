@@ -4,7 +4,8 @@ import numpy as np
 from flask import Flask, request, jsonify
 from PIL import Image
 import tensorflow as tf
-from tensorflow import keras
+# Use tf_keras for compatibility with legacy Keras 2.x models
+import tf_keras as keras
 import cv2
 import io
 import base64
@@ -227,5 +228,5 @@ if __name__ == '__main__':
     # Initialize the detector
     initialize_detector()
     
-    # Start the Flask server
-    app.run(host='10.0.0.1', port=5000, debug=False)
+    # Start the Flask server on localhost (middleware will proxy requests)
+    app.run(host='127.0.0.1', port=5000, debug=False)
