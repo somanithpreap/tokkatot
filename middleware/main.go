@@ -105,6 +105,13 @@ func main() {
 		return c.SendFile(filepath.Join(frontendPath, "pages", "settings.html"))
 	})
 
+	app.Get("/disease-detection", func(c *fiber.Ctx) error {
+		if api.ValidateCookie(c) != nil {
+			return c.Redirect("/login")
+		}
+		return c.SendFile(filepath.Join(frontendPath, "pages", "disease-detection.html"))
+	})
+
 	// User authentication routes
 	app.Post("/register", api.RegisterHandler)
 	app.Post("/login", api.LoginHandler)
