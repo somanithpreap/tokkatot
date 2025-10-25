@@ -17,12 +17,14 @@
 // Device states
 typedef struct {
     bool auto_mode;
-    bool fan_state;
-    bool bulb_state;
-    bool feeder_state;
-    bool pump_state;
-    bool conveyer_state;
+    bool fan;
+    bool bulb;
+    bool feeder;
+    bool pump;
+    bool conveyer;
 } device_state_t;
+
+device_state_t device_states = {1,0,0,0,0,0};
 
 // Function declarations
 void device_control_init(void);

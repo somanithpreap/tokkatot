@@ -21,7 +21,6 @@ typedef struct {
     uint64_t timestamp;
     float temperature;
     float humidity;
-    float water_level;
 } sensor_data_t;
 
 typedef struct {

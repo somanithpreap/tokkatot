@@ -13,7 +13,7 @@ static const char *TAG = "device_control";
 #define SERVO_MIN_PULSEWIDTH    500
 #define SERVO_MAX_PULSEWIDTH    2500
 
-static device_state_t current_state = {
+static device_state_t device_states = {
     .auto_mode = true,
     .fan_state = false,
     .bulb_state = false,
@@ -73,7 +73,7 @@ void set_servo_position(int position)
 
 void dispense_food(void)
 {
-    current_state.feeder_state = true;
+    device_states.feeder_state = true;
     
     // Move servo from 90 to 15 degrees
     for (int pos = 60; pos >= 0; pos--) {
@@ -87,7 +87,7 @@ void dispense_food(void)
         vTaskDelay(pdMS_TO_TICKS(25));
     }
     
-    current_state.feeder_state = false;
+    device_states.feeder_state = false;
 }
 
 void toggle_device(gpio_num_t pin, bool *state)
@@ -98,7 +98,7 @@ void toggle_device(gpio_num_t pin, bool *state)
 
 void update_device_state(device_state_t *state)
 {
-    memcpy(&current_state, state, sizeof(device_state_t));
+    memcpy(&device_states, state, sizeof(device_state_t));
     
     gpio_set_level(FAN_PIN, state->fan_state ? 0 : 1);
     gpio_set_level(LIGHTBULB_PIN, state->bulb_state ? 0 : 1);

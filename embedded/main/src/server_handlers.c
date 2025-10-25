@@ -40,13 +40,13 @@ static esp_err_t send_text_response(httpd_req_t *req, const char *text)
 /* ====== DATA HANDLERS ====== */
 esp_err_t get_initial_state_handler(httpd_req_t *req)
 {
-    sensor_data_t current_data;
-    get_current_sensor_data(&current_data);
-
     cJSON *root = cJSON_CreateObject();
-    cJSON_AddNumberToObject(root, "timestamp", current_data.timestamp);
-    cJSON_AddNumberToObject(root, "temperature", current_data.temperature);
-    cJSON_AddNumberToObject(root, "humidity", current_data.humidity);
+    cJSON_AddNumberToObject(root, "auto_mode", device_states.auto_mode);
+    cJSON_AddNumberToObject(root, "fan", device_states.fan);
+    cJSON_AddNumberToObject(root, "bulb", device_states.bulb);
+    cJSON_AddNumberToObject(root, "feeder", device_states.feeder);
+    cJSON_AddNumberToObject(root, "pump", device_states.pump);
+    cJSON_AddNumberToObject(root, "conveyer", device_states.conveyer);
 
     return send_json_response(req, root);
 }
@@ -84,7 +84,7 @@ esp_err_t get_historical_data_handler(httpd_req_t *req)
 }
 
 /* ====== TOGGLE HANDLERS ======
-   Each toggle handler flips the relevant state and returns plain text "on" or "off"
+   Each toggle handler flips the relevant state and returns plain text "true" or "false"
    so the upstream API can consume the raw response body directly. */
 
 static esp_err_t toggle_auto_handler(httpd_req_t *req)
@@ -92,7 +92,7 @@ static esp_err_t toggle_auto_handler(httpd_req_t *req)
     device_state.auto_mode = !device_state.auto_mode;
     // update internal state store if needed
     update_device_state(&device_state);
-    return send_text_response(req, device_state.auto_mode ? "on" : "off");
+    return send_text_response(req, device_state.auto_mode ? "true" : "false");
 }
 
 static esp_err_t toggle_belt_handler(httpd_req_t *req)
@@ -100,21 +100,21 @@ static esp_err_t toggle_belt_handler(httpd_req_t *req)
     // Toggle conveyer (belt)
     toggle_device(CONVEYER_PIN, &device_state.conveyer_state);
     update_device_state(&device_state);
-    return send_text_response(req, device_state.conveyer_state ? "on" : "off");
+    return send_text_response(req, device_state.conveyer_state ? "true" : "false");
 }
 
 static esp_err_t toggle_fan_handler(httpd_req_t *req)
 {
     toggle_device(FAN_PIN, &device_state.fan_state);
     update_device_state(&device_state);
-    return send_text_response(req, device_state.fan_state ? "on" : "off");
+    return send_text_response(req, device_state.fan_state ? "true" : "false");
 }
 
 static esp_err_t toggle_bulb_handler(httpd_req_t *req)
 {
     toggle_device(LIGHTBULB_PIN, &device_state.bulb_state);
     update_device_state(&device_state);
-    return send_text_response(req, device_state.bulb_state ? "on" : "off");
+    return send_text_response(req, device_state.bulb_state ? "true" : "false");
 }
 
 static esp_err_t toggle_feeder_handler(httpd_req_t *req)
@@ -126,14 +126,14 @@ static esp_err_t toggle_feeder_handler(httpd_req_t *req)
         dispense_food();
     }
     update_device_state(&device_state);
-    return send_text_response(req, device_state.feeder_state ? "on" : "off");
+    return send_text_response(req, device_state.feeder_state ? "true" : "false");
 }
 
 static esp_err_t toggle_water_handler(httpd_req_t *req)
 {
     toggle_device(WATERPUMP_PIN, &device_state.pump_state);
     update_device_state(&device_state);
-    return send_text_response(req, device_state.pump_state ? "on" : "off");
+    return send_text_response(req, device_state.pump_state ? "true" : "false");
 }
 
 /* Server initialization: start HTTPS server, register data and toggle endpoints */
@@ -179,7 +179,7 @@ esp_err_t server_init(void)
     };
     httpd_register_uri_handler(server, &historical_data);
 
-    /* Register toggle endpoints (no verify step; return plain "on"/"off") */
+    /* Register toggle endpoints (no verify step; return plain "true"/"false") */
     httpd_uri_t uri_toggle_auto = {
         .uri = "/toggle-auto",
         .method = HTTP_GET,
