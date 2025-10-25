@@ -73,8 +73,14 @@ class ChickenDiseaseDetector:
             # Preprocess the image
             processed_image = self.preprocess_image(image)
             
-            # Make prediction
-            predictions = self.model.predict(processed_image)
+            # Make prediction with error handling
+            print("Starting model prediction...")
+            try:
+                predictions = self.model.predict(processed_image, verbose=0)
+            except Exception as pred_error:
+                print(f"Prediction failed, retrying... Error: {pred_error}")
+                # Retry once
+                predictions = self.model.predict(processed_image, verbose=0)
             
             # Get predicted class
             predicted_class_idx = np.argmax(predictions[0])
@@ -98,6 +104,8 @@ class ChickenDiseaseDetector:
             }
         except Exception as e:
             print(f"Error during prediction: {e}")
+            import traceback
+            traceback.print_exc()
             raise
     
     def get_recommendation(self, disease, confidence):
@@ -166,7 +174,11 @@ def predict_disease():
     """Main prediction endpoint"""
     if not detector:
         print("ERROR: Detector not initialized")
-        return jsonify({'error': 'Model not loaded'}), 500
+        return jsonify({
+            'success': False,
+            'error': 'Model not loaded. Please check server logs.',
+            'details': 'AI model initialization failed'
+        }), 500
     
     try:
         print(f"Received prediction request")
@@ -177,35 +189,65 @@ def predict_disease():
         # Check if image is provided
         if 'image' not in request.files:
             print("ERROR: No 'image' field in request.files")
-            return jsonify({'error': 'No image provided', 'hint': 'Expected multipart/form-data with image field'}), 400
+            return jsonify({
+                'success': False,
+                'error': 'No image provided',
+                'hint': 'Expected multipart/form-data with image field'
+            }), 400
         
         file = request.files['image']
         if file.filename == '':
             print("ERROR: Empty filename")
-            return jsonify({'error': 'No image selected'}), 400
+            return jsonify({
+                'success': False,
+                'error': 'No image selected'
+            }), 400
         
         print(f"Processing image: {file.filename}, content_type: {file.content_type}")
         
         # Read and process image
-        image = Image.open(file.stream)
-        print(f"Image opened successfully: size={image.size}, mode={image.mode}")
+        try:
+            image = Image.open(file.stream)
+            print(f"Image opened successfully: size={image.size}, mode={image.mode}")
+        except Exception as img_error:
+            print(f"ERROR: Failed to open image: {img_error}")
+            return jsonify({
+                'success': False,
+                'error': 'Invalid image file',
+                'details': str(img_error)
+            }), 400
         
         # Make prediction
         print("Starting prediction...")
-        result = detector.predict_disease(image)
-        print(f"Prediction complete: {result['predicted_disease']} ({result['confidence']:.2%})")
-        
-        return jsonify({
-            'success': True,
-            'prediction': result,
-            'timestamp': str(np.datetime64('now'))
-        })
+        try:
+            result = detector.predict_disease(image)
+            print(f"Prediction complete: {result['predicted_disease']} ({result['confidence']:.2%})")
+            
+            return jsonify({
+                'success': True,
+                'prediction': result,
+                'timestamp': str(np.datetime64('now'))
+            })
+        except Exception as pred_error:
+            print(f"ERROR: Prediction failed: {pred_error}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                'success': False,
+                'error': 'Prediction failed',
+                'details': str(pred_error)
+            }), 500
     
     except Exception as e:
-        print(f"Prediction error: {e}")
+        print(f"ERROR: Unexpected error: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({'error': str(e), 'type': str(type(e).__name__)}), 500
+        return jsonify({
+            'success': False,
+            'error': 'Internal server error',
+            'details': str(e),
+            'type': str(type(e).__name__)
+        }), 500
 
 if __name__ == '__main__':
     # Initialize the detector

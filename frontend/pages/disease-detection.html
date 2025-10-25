@@ -641,12 +641,14 @@
                 if (result.success) {
                     displayResult(result.prediction);
                 } else {
-                    displayError(result.error || 'Failed to analyze image');
+                    // Show detailed error message
+                    const errorMsg = result.details || result.error || 'Failed to analyze image';
+                    displayError(errorMsg);
                 }
 
             } catch (error) {
                 loading.style.display = 'none';
-                displayError('បញ្ហាបណ្តាញ: ' + error.message);
+                displayError('បញ្ហាបណ្តាញ: ' + error.message + '. សូមព្យាយាមម្តងទៀត។');
             }
         }
 

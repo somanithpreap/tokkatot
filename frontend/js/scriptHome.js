@@ -148,7 +148,13 @@ let temperatureChart;
 // Initialize chart
 document.addEventListener("DOMContentLoaded", () => {
 	const ctx = document.getElementById("temperatureChart");
+	console.log("Canvas element:", ctx);
+	console.log("Chart constructor:", typeof Chart);
 	if (ctx) {
+		if (typeof Chart === 'undefined') {
+			console.error("Chart.js library not loaded!");
+			return;
+		}
 		temperatureChart = new Chart(ctx, chartConfig);
 
 		// Start data fetching
