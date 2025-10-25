@@ -37,10 +37,10 @@ void app_main(void)
             get_current_sensor_data(&current_data);
             last_sensors_read_ms = current_time;
 
-            ESP_LOGI(TAG, "Temp: %.2f°C, Humidity: %.2f%%, Water Level: %d", 
-                     current_data.temperature, 
-                     current_data.humidity, 
-                     current_data.water_level);
+            // ESP_LOGI(TAG, "Temp: %.2f°C, Humidity: %.2f%%, Water Level: %d", 
+            //          current_data.temperature, 
+            //          current_data.humidity, 
+            //          current_data.water_level);
         }
 
         // Auto mode logic

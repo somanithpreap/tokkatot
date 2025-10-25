@@ -19,25 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
     autoModeToggle.addEventListener("change", async () => {
         const state = autoModeToggle.checked;
         await handleModeToggle("/api/toggle-auto", state);
-        if (state) {
-            // Turn off all immediate toggles
-            conveyerToggle.checked = false;
-            fanToggle.checked = false;
-            lightToggle.checked = false;
-            feederToggle.checked = false;
-            pumpToggle.checked = false;
-
-            // Optionally, send requests to turn off these toggles on the backend
-            await handleImmediateToggle("/api/toggle-belt", false);
-            await handleImmediateToggle("/api/toggle-fan", false);
-            await handleImmediateToggle("/api/toggle-bulb", false);
-            await handleImmediateToggle("/api/toggle-feeder", false);
-            await handleImmediateToggle("/api/toggle-pump", false);
-
-            showNotification("Auto Mode enabled. All manual controls are turned off.", "success");
-        } else {
-            showNotification("Auto Mode disabled.", "info");
-        }
     });
 
     //scheduleModeToggle.addEventListener("change", () => {
@@ -175,6 +156,7 @@ async function handleImmediateToggle(endpoint, state) {
 
         let result = await response.json();
         result = JSON.parse(result.state);
+        console.log(`Toggled ${endpoint}: `, result);
 
         showNotification(
             `${endpoint.split("-")[1].charAt(0).toUpperCase() + endpoint.split("-")[1].slice(1)} ${

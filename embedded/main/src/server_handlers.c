@@ -124,6 +124,13 @@ static esp_err_t toggle_bulb_handler(httpd_req_t *req)
     return send_text_response(req, device_state.bulb ? "true" : "false");
 }
 
+static esp_err_t toggle_pump_handler(httpd_req_t *req)
+{
+    toggle_device(WATERPUMP_PIN, &device_state.pump);
+    update_device_state(&device_state);
+    return send_text_response(req, device_state.pump ? "true" : "false");
+}
+
 static esp_err_t toggle_feeder_handler(httpd_req_t *req)
 {
     // For feeder, when turned on trigger dispense action.
@@ -133,12 +140,6 @@ static esp_err_t toggle_feeder_handler(httpd_req_t *req)
     return send_text_response(req, device_state.feeder ? "true" : "false");
 }
 
-static esp_err_t toggle_pump_handler(httpd_req_t *req)
-{
-    toggle_device(WATERPUMP_PIN, &device_state.pump);
-    update_device_state(&device_state);
-    return send_text_response(req, device_state.pump ? "true" : "false");
-}
 
 /* Server initialization: start HTTPS server, register data and toggle endpoints */
 esp_err_t server_init(void)
@@ -212,19 +213,19 @@ esp_err_t server_init(void)
     };
     httpd_register_uri_handler(server, &uri_toggle_bulb);
 
-    httpd_uri_t uri_toggle_feeder = {
-        .uri = "/toggle-feeder",
-        .method = HTTP_GET,
-        .handler = toggle_feeder_handler
-    };
-    httpd_register_uri_handler(server, &uri_toggle_feeder);
-
     httpd_uri_t uri_toggle_pump = {
         .uri = "/toggle-pump",
         .method = HTTP_GET,
         .handler = toggle_pump_handler
     };
     httpd_register_uri_handler(server, &uri_toggle_pump);
+
+    httpd_uri_t uri_toggle_feeder = {
+        .uri = "/toggle-feeder",
+        .method = HTTP_GET,
+        .handler = toggle_feeder_handler
+    };
+    httpd_register_uri_handler(server, &uri_toggle_feeder);
 
     ESP_LOGI(TAG, "Server started and URIs registered");
     return ESP_OK;

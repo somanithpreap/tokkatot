@@ -11,6 +11,8 @@
 #define SERVO_MIN_PULSEWIDTH    500
 #define SERVO_MAX_PULSEWIDTH    2500
 
+static const char *tag = "device_control";
+
 static device_state_t device_state = {
     .auto_mode = false,
     .fan = false,
@@ -94,6 +96,7 @@ void toggle_device(gpio_num_t pin, bool *state)
 {
     *state = !*state;
     gpio_set_level(pin, *state ? 0 : 1);
+    ESP_LOGI(tag, "Toggled pin %d to %s", pin, *state ? "ON" : "OFF");
 }
 
 void update_device_state(device_state_t *state)
