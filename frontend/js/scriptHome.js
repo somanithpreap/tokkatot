@@ -91,13 +91,15 @@ const chartConfig = {
 				},
 			},
 			y: {
-				type: 'linear',
-				display: true,
-				position: 'left',
-				beginAtZero: false,
-				grid: {
-					color: "rgba(255, 186, 73, 0.1)",
-				},
+			type: 'linear',
+			display: true,
+			position: 'left',
+			beginAtZero: false,
+			suggestedMin: 20,
+			suggestedMax: 35,
+			grid: {
+				color: "rgba(255, 186, 73, 0.1)",
+			},
 				ticks: {
 					font: {
 						size: 10,
@@ -115,14 +117,15 @@ const chartConfig = {
 				},
 			},
 			y1: {
-				type: 'linear',
-				display: true,
-				position: 'right',
-				beginAtZero: true,
-				max: 100,
-				grid: {
-					drawOnChartArea: false,
-				},
+			type: 'linear',
+			display: true,
+			position: 'right',
+			beginAtZero: false,
+			suggestedMin: 0,
+			suggestedMax: 100,
+			grid: {
+				drawOnChartArea: false,
+			},
 				ticks: {
 					font: {
 						size: 10,
@@ -263,6 +266,9 @@ function updateCurrentValues(data) {
 
 // Update temperature chart
 function updateChart(data) {
+	console.log("updateChart called with data:", data ? data.length : 0, "records");
+	console.log("temperatureChart exists:", !!temperatureChart);
+	
 	if (!temperatureChart || !data || data.length === 0) {
 		console.log("Cannot update chart - missing data or chart not initialized");
 		return;
@@ -270,6 +276,7 @@ function updateChart(data) {
 
 	// Take last 20 data points for display
 	const recentData = data.slice(-20);
+	console.log("Recent data to display:", recentData.length, "points");
 	
 	// Use current browser time for timestamps
 	const now = new Date();
@@ -284,11 +291,15 @@ function updateChart(data) {
 	const humidities = recentData.map((item) => item.humidity);
 
 	console.log("Updating chart with", recentData.length, "data points");
+	console.log("Temperature range:", Math.min(...temperatures), "-", Math.max(...temperatures));
+	console.log("Humidity range:", Math.min(...humidities), "-", Math.max(...humidities));
 	
 	temperatureChart.data.labels = timestamps;
 	temperatureChart.data.datasets[0].data = temperatures;
 	temperatureChart.data.datasets[1].data = humidities;
 	temperatureChart.update('none'); // Update without animation for smoother updates
+	
+	console.log("Chart updated successfully");
 }
 
 // Helper function to parse timestamp consistently
