@@ -6,13 +6,13 @@
 #define LEDC_TIMER              LEDC_TIMER_0
 #define LEDC_MODE               LEDC_LOW_SPEED_MODE
 #define LEDC_CHANNEL            LEDC_CHANNEL_0
-#define LEDC_DUTY_RES          LEDC_TIMER_13_BIT
+#define LEDC_DUTY_RES           LEDC_TIMER_13_BIT
 #define LEDC_FREQUENCY          50 // 50Hz for servo motor
 #define SERVO_MIN_PULSEWIDTH    500
 #define SERVO_MAX_PULSEWIDTH    2500
 
 static device_state_t device_states = {
-    .auto_mode = true,
+    .auto_mode = false,
     .fan = false,
     .bulb = false,
     .feeder = false,
@@ -28,6 +28,7 @@ void device_control_init(void)
         .mode = GPIO_MODE_OUTPUT,
         .pin_bit_mask = (1ULL << CONVEYER_PIN) |
                        (1ULL << FAN_PIN) |
+                       (1ULL << SERVO_PIN) |
                        (1ULL << LIGHTBULB_PIN) |
                        (1ULL << WATERPUMP_PIN),
         .pull_down_en = 0,
@@ -100,7 +101,7 @@ void update_device_state(device_state_t *state)
     
     gpio_set_level(FAN_PIN, state->fan ? 0 : 1);
     gpio_set_level(LIGHTBULB_PIN, state->bulb ? 0 : 1);
+    gpio_set_level(SERVO_PIN, state->feeder ? 0 : 1);
     gpio_set_level(WATERPUMP_PIN, state->pump ? 0 : 1);
     gpio_set_level(CONVEYER_PIN, state->conveyer ? 0 : 1);
-
 }

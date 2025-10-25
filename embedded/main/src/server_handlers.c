@@ -16,7 +16,14 @@ extern const unsigned char serverkey_start[] asm("_binary_key_pem_start");
 extern const unsigned char serverkey_end[] asm("_binary_key_pem_end");
 
 /* Local copy of device states managed by device_control */
-static device_state_t device_states;
+static device_state_t device_states = {
+    .auto_mode = true,
+    .fan = false,
+    .bulb = false,
+    .feeder = false,
+    .pump = false,
+    .conveyer = false
+};
 
 /* Helper: send JSON response (already present) */
 esp_err_t send_json_response(httpd_req_t *req, cJSON *root)
@@ -90,6 +97,10 @@ esp_err_t get_historical_data_handler(httpd_req_t *req)
 static esp_err_t toggle_auto_handler(httpd_req_t *req)
 {
     device_states.auto_mode = !device_states.auto_mode;
+    device_states.bulb = false;
+    device_states.fan = false;
+    device_states.pump = false;
+    device_states.conveyer = false;
     // update internal state store if needed
     update_device_state(&device_states);
     return send_text_response(req, device_states.auto_mode ? "true" : "false");
