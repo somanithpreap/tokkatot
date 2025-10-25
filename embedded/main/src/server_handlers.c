@@ -16,14 +16,7 @@ extern const unsigned char serverkey_start[] asm("_binary_key_pem_start");
 extern const unsigned char serverkey_end[] asm("_binary_key_pem_end");
 
 /* Local copy of device states managed by device_control */
-static device_state_t device_states = {
-    .auto_mode = true,
-    .fan = false,
-    .bulb = false,
-    .feeder = false,
-    .pump = false,
-    .conveyer = false
-};
+static device_state_t device_state;
 
 /* Helper: send JSON response (already present) */
 esp_err_t send_json_response(httpd_req_t *req, cJSON *root)
@@ -48,12 +41,12 @@ static esp_err_t send_text_response(httpd_req_t *req, const char *text)
 esp_err_t get_initial_state_handler(httpd_req_t *req)
 {
     cJSON *root = cJSON_CreateObject();
-    cJSON_AddNumberToObject(root, "auto_mode", device_states.auto_mode);
-    cJSON_AddNumberToObject(root, "fan", device_states.fan);
-    cJSON_AddNumberToObject(root, "bulb", device_states.bulb);
-    cJSON_AddNumberToObject(root, "feeder", device_states.feeder);
-    cJSON_AddNumberToObject(root, "pump", device_states.pump);
-    cJSON_AddNumberToObject(root, "conveyer", device_states.conveyer);
+    cJSON_AddNumberToObject(root, "auto_mode", device_state.auto_mode);
+    cJSON_AddNumberToObject(root, "fan", device_state.fan);
+    cJSON_AddNumberToObject(root, "bulb", device_state.bulb);
+    cJSON_AddNumberToObject(root, "feeder", device_state.feeder);
+    cJSON_AddNumberToObject(root, "pump", device_state.pump);
+    cJSON_AddNumberToObject(root, "conveyer", device_state.conveyer);
 
     return send_json_response(req, root);
 }
@@ -96,55 +89,55 @@ esp_err_t get_historical_data_handler(httpd_req_t *req)
 
 static esp_err_t toggle_auto_handler(httpd_req_t *req)
 {
-    device_states.auto_mode = !device_states.auto_mode;
-    device_states.bulb = false;
-    device_states.fan = false;
-    device_states.pump = false;
-    device_states.conveyer = false;
+    device_state.auto_mode = !device_state.auto_mode;
+    if (!device_state.auto_mode) {
+        // When turning off auto mode, also turn off all devices
+        device_state.bulb = false;
+        device_state.fan = false;
+        device_state.pump = false;
+        device_state.conveyer = false;
+    }
     // update internal state store if needed
-    update_device_state(&device_states);
-    return send_text_response(req, device_states.auto_mode ? "true" : "false");
+    update_device_state(&device_state);
+    return send_text_response(req, device_state.auto_mode ? "true" : "false");
 }
 
 static esp_err_t toggle_belt_handler(httpd_req_t *req)
 {
     // Toggle conveyer (belt)
-    toggle_device(CONVEYER_PIN, &device_states.conveyer);
-    update_device_state(&device_states);
-    return send_text_response(req, device_states.conveyer ? "true" : "false");
+    toggle_device(CONVEYER_PIN, &device_state.conveyer);
+    update_device_state(&device_state);
+    return send_text_response(req, device_state.conveyer ? "true" : "false");
 }
 
 static esp_err_t toggle_fan_handler(httpd_req_t *req)
 {
-    toggle_device(FAN_PIN, &device_states.fan);
-    update_device_state(&device_states);
-    return send_text_response(req, device_states.fan ? "true" : "false");
+    toggle_device(FAN_PIN, &device_state.fan);
+    update_device_state(&device_state);
+    return send_text_response(req, device_state.fan ? "true" : "false");
 }
 
 static esp_err_t toggle_bulb_handler(httpd_req_t *req)
 {
-    toggle_device(LIGHTBULB_PIN, &device_states.bulb);
-    update_device_state(&device_states);
-    return send_text_response(req, device_states.bulb ? "true" : "false");
+    toggle_device(LIGHTBULB_PIN, &device_state.bulb);
+    update_device_state(&device_state);
+    return send_text_response(req, device_state.bulb ? "true" : "false");
 }
 
 static esp_err_t toggle_feeder_handler(httpd_req_t *req)
 {
     // For feeder, when turned on trigger dispense action.
     // Toggle feeder_state; if it becomes true, perform dispense_food().
-    device_states.feeder = !device_states.feeder;
-    if (device_states.feeder) {
-        dispense_food();
-    }
-    update_device_state(&device_states);
-    return send_text_response(req, device_states.feeder ? "true" : "false");
+    dispense_food();
+    update_device_state(&device_state);
+    return send_text_response(req, device_state.feeder ? "true" : "false");
 }
 
 static esp_err_t toggle_pump_handler(httpd_req_t *req)
 {
-    toggle_device(WATERPUMP_PIN, &device_states.pump);
-    update_device_state(&device_states);
-    return send_text_response(req, device_states.pump ? "true" : "false");
+    toggle_device(WATERPUMP_PIN, &device_state.pump);
+    update_device_state(&device_state);
+    return send_text_response(req, device_state.pump ? "true" : "false");
 }
 
 /* Server initialization: start HTTPS server, register data and toggle endpoints */
@@ -159,8 +152,8 @@ esp_err_t server_init(void)
 
     /* Initialize device control and read current state */
     device_control_init();
-    memset(&device_states, 0, sizeof(device_states));
-    update_device_state(&device_states);
+    memset(&device_state, 0, sizeof(device_state));
+    update_device_state(&device_state);
 
     esp_err_t ret = httpd_ssl_start(&server, &config);
     if (ret != ESP_OK) {

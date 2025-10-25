@@ -11,7 +11,7 @@
 #define SERVO_MIN_PULSEWIDTH    500
 #define SERVO_MAX_PULSEWIDTH    2500
 
-static device_state_t device_states = {
+static device_state_t device_state = {
     .auto_mode = false,
     .fan = false,
     .bulb = false,
@@ -62,6 +62,7 @@ void device_control_init(void)
     gpio_set_level(FAN_PIN, 1);
     gpio_set_level(LIGHTBULB_PIN, 1);
     gpio_set_level(WATERPUMP_PIN, 1);
+    set_servo_position(90); // Set servo to neutral position
 }
 
 void set_servo_position(int position)
@@ -72,7 +73,7 @@ void set_servo_position(int position)
 
 void dispense_food(void)
 {
-    device_states.feeder = true;
+    device_state.feeder = true;
     
     // Move servo from 90 to 15 degrees
     for (int pos = 60; pos >= 0; pos--) {
@@ -86,7 +87,7 @@ void dispense_food(void)
         vTaskDelay(pdMS_TO_TICKS(25));
     }
     
-    device_states.feeder = false;
+    device_state.feeder = false;
 }
 
 void toggle_device(gpio_num_t pin, bool *state)
@@ -97,7 +98,7 @@ void toggle_device(gpio_num_t pin, bool *state)
 
 void update_device_state(device_state_t *state)
 {
-    memcpy(&device_states, state, sizeof(device_state_t));
+    memcpy(&device_state, state, sizeof(device_state_t));
     
     gpio_set_level(FAN_PIN, state->fan ? 0 : 1);
     gpio_set_level(LIGHTBULB_PIN, state->bulb ? 0 : 1);

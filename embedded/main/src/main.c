@@ -12,21 +12,18 @@
 
 static const char *TAG = "TOKKATOT";
 
+static device_state_t device_state;
+
 void app_main(void)
 {
     // Initialize NVS
     nvs_flash_init();
-    device_control_init();
     sensor_manager_init();
     
     ESP_ERROR_CHECK(wifi_init_sta());   // Start WiFi
     ESP_ERROR_CHECK(server_init()); // Start HTTPS server
 
     ESP_LOGI(TAG, "System initialization complete");
-
-    static device_state_t device_states;
-    device_states.auto_mode = true;
-    update_device_state(&device_states);
 
     static bool was_water_low = false;  // Track previous water state to prevent rapid switching
     static uint32_t last_sensors_read_ms = 0;
@@ -47,25 +44,25 @@ void app_main(void)
         }
 
         // Auto mode logic
-        if (device_states.auto_mode) {
+        if (device_state.auto_mode) {
             // Temperature control with hysteresis
             float temp = current_data.temperature;
             
             // Temperature control
             if (temp <= 28.0f) {
                 // Cold condition: Turn on bulb, turn off fan
-                device_states.bulb = true;
-                device_states.fan = false;
+                device_state.bulb = true;
+                device_state.fan = false;
                 // ESP_LOGI(TAG, "Auto: Cold (%.2f°C) - Bulb ON, Fan OFF", temp);
             } else if (temp >= 32.0f) {
                 // Hot condition: Turn on fan, turn off bulb
-                device_states.bulb = false;
-                device_states.fan = true;
+                device_state.bulb = false;
+                device_state.fan = true;
                 // ESP_LOGI(TAG, "Auto: Hot (%.2f°C) - Bulb OFF, Fan ON", temp);
             } else {
                 // Comfortable range: Both off
-                device_states.bulb = false;
-                device_states.fan = false;
+                device_state.bulb = false;
+                device_state.fan = false;
                 // ESP_LOGI(TAG, "Auto: Normal (%.2f°C) - Both OFF", temp);
             }
 
@@ -87,7 +84,7 @@ void app_main(void)
             // }
 
             // Update device states
-            update_device_state(&device_states);
+            update_device_state(&device_state);
         }
 
         vTaskDelay(pdMS_TO_TICKS(100));  // Small delay to prevent watchdog timer resets
