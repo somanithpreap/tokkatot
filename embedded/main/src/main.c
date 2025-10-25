@@ -7,7 +7,7 @@
 
 #include "wifi_manager.h"
 #include "sensor_manager.h"
-#include "device_control.h"
+#include "device_control.c"
 #include "server_handlers.h"
 
 static const char *TAG = "TOKKATOT";
@@ -56,14 +56,14 @@ void app_main(void)
 
             if (is_conveyor_on && time_since_last_change >= CONVEYOR_ON_TIME) {
                 // Turn off conveyor after ON_TIME
-                device_states.conveyer_state = false;
+                device_states.conveyer= false;
                 is_conveyor_on = false;
                 last_conveyor_change = current_time;
                 ESP_LOGI(TAG, "Auto: Conveyor OFF for %d seconds", CONVEYOR_OFF_TIME/1000);
             } 
             else if (!is_conveyor_on && time_since_last_change >= CONVEYOR_OFF_TIME) {
                 // Turn on conveyor after OFF_TIME
-                device_states.conveyer_state = true;
+                device_states.conveyer= true;
                 is_conveyor_on = true;
                 last_conveyor_change = current_time;
                 ESP_LOGI(TAG, "Auto: Conveyor ON for %d seconds", CONVEYOR_ON_TIME/1000);
@@ -75,20 +75,20 @@ void app_main(void)
             // Temperature control
             if (temp <= 28.0f) {
                 // Cold condition: Turn on bulb, turn off fan
-                device_states.bulb_state = true;
-                device_states.fan_state = false;
+                device_states.bulb= true;
+                device_states.fan= false;
                 ESP_LOGI(TAG, "Auto: Cold (%.1f°C) - Bulb ON, Fan OFF", temp);
             } 
             else if (temp >= 32.0f) {
                 // Hot condition: Turn on fan, turn off bulb
-                device_states.bulb_state = false;
-                device_states.fan_state = true;
+                device_states.bulb= false;
+                device_states.fan= true;
                 ESP_LOGI(TAG, "Auto: Hot (%.1f°C) - Bulb OFF, Fan ON", temp);
             }
             else if (temp > 29.0f && temp < 31.0f) {
                 // Comfortable range: Both off
-                device_states.bulb_state = false;
-                device_states.fan_state = false;
+                device_states.bulb= false;
+                device_states.fan= false;
                 ESP_LOGI(TAG, "Auto: Normal (%.1f°C) - Both OFF", temp);
             }
 
@@ -96,7 +96,7 @@ void app_main(void)
             if (current_data.water_level <= WATER_LEVEL_LOW) {
                 if (!was_water_low) {
                     // Water level just became low
-                    device_states.pump_state = true;
+                    device_states.pump= true;
                     was_water_low = true;
                     ESP_LOGI(TAG, "Auto: Water Low (%.2fV) - Pump ON", current_data.water_level);
                 }
@@ -104,7 +104,7 @@ void app_main(void)
             else if (current_data.water_level >= WATER_LEVEL_FULL) {
                 if (was_water_low) {
                     // Water level reached full
-                    device_states.pump_state = false;
+                    device_states.pump= false;
                     was_water_low = false;
                     ESP_LOGI(TAG, "Auto: Water Full (%.2fV) - Pump OFF", current_data.water_level);
                 }
@@ -119,7 +119,7 @@ void app_main(void)
                 ESP_LOGI(TAG, "Status - Temp: %.1f°C, Water: %.2fV, Conveyor: %s, Time in state: %ds",
                         current_data.temperature,
                         current_data.water_level,
-                        device_states.conveyer_state ? "ON" : "OFF",
+                        device_states.conveyer? "ON" : "OFF",
                         time_since_last_change / 1000);
                 last_status_log = current_time;
             }

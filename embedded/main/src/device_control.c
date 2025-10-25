@@ -2,8 +2,6 @@
 #include "esp_log.h"
 #include "driver/ledc.h"
 
-static const char *TAG = "device_control";
-
 // LEDC configuration for servo motor
 #define LEDC_TIMER              LEDC_TIMER_0
 #define LEDC_MODE               LEDC_LOW_SPEED_MODE
@@ -15,11 +13,11 @@ static const char *TAG = "device_control";
 
 static device_state_t device_states = {
     .auto_mode = true,
-    .fan_state = false,
-    .bulb_state = false,
-    .feeder_state = false,
-    .pump_state = false,
-    .conveyer_state = false
+    .fan = false,
+    .bulb = false,
+    .feeder = false,
+    .pump = false,
+    .conveyer = false
 };
 
 void device_control_init(void)
@@ -73,7 +71,7 @@ void set_servo_position(int position)
 
 void dispense_food(void)
 {
-    device_states.feeder_state = true;
+    device_states.feeder = true;
     
     // Move servo from 90 to 15 degrees
     for (int pos = 60; pos >= 0; pos--) {
@@ -87,7 +85,7 @@ void dispense_food(void)
         vTaskDelay(pdMS_TO_TICKS(25));
     }
     
-    device_states.feeder_state = false;
+    device_states.feeder = false;
 }
 
 void toggle_device(gpio_num_t pin, bool *state)
@@ -100,9 +98,9 @@ void update_device_state(device_state_t *state)
 {
     memcpy(&device_states, state, sizeof(device_state_t));
     
-    gpio_set_level(FAN_PIN, state->fan_state ? 0 : 1);
-    gpio_set_level(LIGHTBULB_PIN, state->bulb_state ? 0 : 1);
-    gpio_set_level(WATERPUMP_PIN, state->pump_state ? 0 : 1);
-    gpio_set_level(CONVEYER_PIN, state->conveyer_state ? 0 : 1);
+    gpio_set_level(FAN_PIN, state->fan ? 0 : 1);
+    gpio_set_level(LIGHTBULB_PIN, state->bulb ? 0 : 1);
+    gpio_set_level(WATERPUMP_PIN, state->pump ? 0 : 1);
+    gpio_set_level(CONVEYER_PIN, state->conveyer ? 0 : 1);
 
 }

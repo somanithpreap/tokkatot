@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
             await handleImmediateToggle("/api/toggle-fan", false);
             await handleImmediateToggle("/api/toggle-bulb", false);
             await handleImmediateToggle("/api/toggle-feeder", false);
-            await handleImmediateToggle("/api/toggle-water", false);
+            await handleImmediateToggle("/api/toggle-pump", false);
 
             showNotification("Auto Mode enabled. All manual controls are turned off.", "success");
         } else {
@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
         handleImmediateToggle("/api/toggle-feeder", feederToggle.checked),
     );
     pumpToggle.addEventListener("change", () =>
-        handleImmediateToggle("/api/toggle-water", pumpToggle.checked),
+        handleImmediateToggle("/api/toggle-pump", pumpToggle.checked),
     );
 
     // Attach event listener for saving schedule settings

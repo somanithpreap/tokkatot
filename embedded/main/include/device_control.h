@@ -24,8 +24,6 @@ typedef struct {
     bool conveyer;
 } device_state_t;
 
-device_state_t device_states = {1,0,0,0,0,0};
-
 // Function declarations
 void device_control_init(void);
 void set_servo_position(int position);

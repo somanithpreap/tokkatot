@@ -16,7 +16,7 @@ extern const unsigned char serverkey_start[] asm("_binary_key_pem_start");
 extern const unsigned char serverkey_end[] asm("_binary_key_pem_end");
 
 /* Local copy of device states managed by device_control */
-static device_state_t device_state;
+static device_state_t device_states;
 
 /* Helper: send JSON response (already present) */
 esp_err_t send_json_response(httpd_req_t *req, cJSON *root)
@@ -89,51 +89,51 @@ esp_err_t get_historical_data_handler(httpd_req_t *req)
 
 static esp_err_t toggle_auto_handler(httpd_req_t *req)
 {
-    device_state.auto_mode = !device_state.auto_mode;
+    device_states.auto_mode = !device_states.auto_mode;
     // update internal state store if needed
-    update_device_state(&device_state);
-    return send_text_response(req, device_state.auto_mode ? "true" : "false");
+    update_device_state(&device_states);
+    return send_text_response(req, device_states.auto_mode ? "true" : "false");
 }
 
 static esp_err_t toggle_belt_handler(httpd_req_t *req)
 {
     // Toggle conveyer (belt)
-    toggle_device(CONVEYER_PIN, &device_state.conveyer_state);
-    update_device_state(&device_state);
-    return send_text_response(req, device_state.conveyer_state ? "true" : "false");
+    toggle_device(CONVEYER_PIN, &device_states.conveyer);
+    update_device_state(&device_states);
+    return send_text_response(req, device_states.conveyer ? "true" : "false");
 }
 
 static esp_err_t toggle_fan_handler(httpd_req_t *req)
 {
-    toggle_device(FAN_PIN, &device_state.fan_state);
-    update_device_state(&device_state);
-    return send_text_response(req, device_state.fan_state ? "true" : "false");
+    toggle_device(FAN_PIN, &device_states.fan);
+    update_device_state(&device_states);
+    return send_text_response(req, device_states.fan ? "true" : "false");
 }
 
 static esp_err_t toggle_bulb_handler(httpd_req_t *req)
 {
-    toggle_device(LIGHTBULB_PIN, &device_state.bulb_state);
-    update_device_state(&device_state);
-    return send_text_response(req, device_state.bulb_state ? "true" : "false");
+    toggle_device(LIGHTBULB_PIN, &device_states.bulb);
+    update_device_state(&device_states);
+    return send_text_response(req, device_states.bulb ? "true" : "false");
 }
 
 static esp_err_t toggle_feeder_handler(httpd_req_t *req)
 {
     // For feeder, when turned on trigger dispense action.
     // Toggle feeder_state; if it becomes true, perform dispense_food().
-    device_state.feeder_state = !device_state.feeder_state;
-    if (device_state.feeder_state) {
+    device_states.feeder = !device_states.feeder;
+    if (device_states.feeder) {
         dispense_food();
     }
-    update_device_state(&device_state);
-    return send_text_response(req, device_state.feeder_state ? "true" : "false");
+    update_device_state(&device_states);
+    return send_text_response(req, device_states.feeder ? "true" : "false");
 }
 
-static esp_err_t toggle_water_handler(httpd_req_t *req)
+static esp_err_t toggle_pump_handler(httpd_req_t *req)
 {
-    toggle_device(WATERPUMP_PIN, &device_state.pump_state);
-    update_device_state(&device_state);
-    return send_text_response(req, device_state.pump_state ? "true" : "false");
+    toggle_device(WATERPUMP_PIN, &device_states.pump);
+    update_device_state(&device_states);
+    return send_text_response(req, device_states.pump ? "true" : "false");
 }
 
 /* Server initialization: start HTTPS server, register data and toggle endpoints */
@@ -148,8 +148,8 @@ esp_err_t server_init(void)
 
     /* Initialize device control and read current state */
     device_control_init();
-    memset(&device_state, 0, sizeof(device_state));
-    update_device_state(&device_state);
+    memset(&device_states, 0, sizeof(device_states));
+    update_device_state(&device_states);
 
     esp_err_t ret = httpd_ssl_start(&server, &config);
     if (ret != ESP_OK) {
@@ -215,12 +215,12 @@ esp_err_t server_init(void)
     };
     httpd_register_uri_handler(server, &uri_toggle_feeder);
 
-    httpd_uri_t uri_toggle_water = {
-        .uri = "/toggle-water",
+    httpd_uri_t uri_toggle_pump = {
+        .uri = "/toggle-pump",
         .method = HTTP_GET,
-        .handler = toggle_water_handler
+        .handler = toggle_pump_handler
     };
-    httpd_register_uri_handler(server, &uri_toggle_water);
+    httpd_register_uri_handler(server, &uri_toggle_pump);
 
     ESP_LOGI(TAG, "Server started and URIs registered");
     return ESP_OK;
