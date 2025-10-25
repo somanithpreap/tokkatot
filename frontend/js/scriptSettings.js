@@ -1,11 +1,11 @@
 // DOM Elements
 const autoModeToggle = document.getElementById("autoModeToggle");
 // const scheduleModeToggle = document.getElementById("scheduleModeToggle");
-const conveyerToggle = document.getElementById("conveyerToggle");
+const beltToggle = document.getElementById("beltToggle");
 const fanToggle = document.getElementById("fanToggle");
 const lightToggle = document.getElementById("lightToggle");
-const feederToggle = document.getElementById("feederToggle");
-const pumpToggle = document.getElementById("pumpToggle");
+const feederToggle = document.getElementById("feedToggle");
+const waterToggle = document.getElementById("waterToggle");
 // const feedingTimesContainer = document.getElementById("feedingTimes");
 // const saveScheduleButton = document.getElementById("saveSchedule");
 const notification = document.getElementById("notification");
@@ -21,18 +21,18 @@ document.addEventListener("DOMContentLoaded", () => {
         await handleModeToggle("/api/toggle-auto", state);
         if (state) {
             // Turn off all immediate toggles
-            conveyerToggle.checked = false;
+            beltToggle.checked = false;
             fanToggle.checked = false;
             lightToggle.checked = false;
             feederToggle.checked = false;
-            pumpToggle.checked = false;
+            waterToggle.checked = false;
 
             // Optionally, send requests to turn off these toggles on the backend
             await handleImmediateToggle("/api/toggle-belt", false);
             await handleImmediateToggle("/api/toggle-fan", false);
             await handleImmediateToggle("/api/toggle-bulb", false);
             await handleImmediateToggle("/api/toggle-feeder", false);
-            await handleImmediateToggle("/api/toggle-pump", false);
+            await handleImmediateToggle("/api/toggle-water", false);
 
             showNotification("Auto Mode enabled. All manual controls are turned off.", "success");
         } else {
@@ -51,8 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }); */
 
     // Attach event listeners for immediate toggles
-    conveyerToggle.addEventListener("change", () =>
-        handleImmediateToggle("/api/toggle-belt", conveyerToggle.checked),
+    beltToggle.addEventListener("change", () =>
+        handleImmediateToggle("/api/toggle-belt", beltToggle.checked),
     );
     fanToggle.addEventListener("change", () =>
         handleImmediateToggle("/api/toggle-fan", fanToggle.checked),
@@ -63,8 +63,8 @@ document.addEventListener("DOMContentLoaded", () => {
     feederToggle.addEventListener("change", () =>
         handleImmediateToggle("/api/toggle-feeder", feederToggle.checked),
     );
-    pumpToggle.addEventListener("change", () =>
-        handleImmediateToggle("/api/toggle-pump", pumpToggle.checked),
+    waterToggle.addEventListener("change", () =>
+        handleImmediateToggle("/api/toggle-water", waterToggle.checked),
     );
 
     // Attach event listener for saving schedule settings
@@ -99,15 +99,15 @@ async function fetchInitialSettings() {
 // Update the UI based on retrieved settings
 function updateUI(data) {
     // Update mode toggles
-    autoModeToggle.checked = data.auto_mode;
+    autoModeToggle.checked = data.automation;
     // scheduleModeToggle.checked = data.scheduleMode;
 
     // Update immediate toggles
-    conveyerToggle.checked = data.conveyer;
+    beltToggle.checked = data.belt;
     fanToggle.checked = data.fan;
-    lightToggle.checked = data.bulb;
+    lightToggle.checked = data.lightbulb;
     feederToggle.checked = data.feeder;
-    pumpToggle.checked = data.pump;
+    waterToggle.checked = data.water;
 
     // Update schedule settings
   /*  document.getElementById("lightStart").value =

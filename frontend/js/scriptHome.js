@@ -148,23 +148,8 @@ let temperatureChart;
 // Initialize chart
 document.addEventListener("DOMContentLoaded", () => {
 	const ctx = document.getElementById("temperatureChart");
-	console.log("Canvas element:", ctx);
-	console.log("Chart constructor:", typeof Chart);
-	console.log("Chart object:", Chart);
-	
-	if (!ctx) {
-		console.error("Canvas element not found!");
-		return;
-	}
-	
-	if (typeof Chart === 'undefined') {
-		console.error("Chart.js library not loaded!");
-		return;
-	}
-	
-	try {
+	if (ctx) {
 		temperatureChart = new Chart(ctx, chartConfig);
-		console.log("Chart initialized successfully:", temperatureChart);
 
 		// Start data fetching
 		fetchCurrentData();
@@ -173,8 +158,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		// Set up intervals for updates
 		setInterval(fetchCurrentData, 5000); // Update current data every 5 seconds
 		setInterval(fetchHistoricalData, 30000); // Update historical data every 30 seconds (less frequent for performance)
-	} catch (error) {
-		console.error("Error initializing chart:", error);
 	}
 });
 

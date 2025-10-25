@@ -111,6 +111,14 @@ div > p {
   height: 0;
 }
 
+.legend-color.temperature-color {
+  background-color: #FFBA49; /* Matches chart temperature color */
+}
+
+.legend-color.humidity-color {
+  background-color: #4FC3F7; /* Matches chart humidity color */
+}
+
 .slider {
   position: absolute;
   cursor: pointer;
