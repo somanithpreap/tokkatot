@@ -42,22 +42,12 @@ jobs:
             ./env/bin/pip install -r requirements.txt
           fi
 
-      - name: Setup and Start AI Service
-        run: |
-          # Make setup script executable
-          chmod +x setup-ai-service.sh
-          
-          # Check if service exists, if not create it
-          if ! systemctl list-unit-files | grep -q tokkatot-ai.service; then
-            echo "Service not found. Creating tokkatot-ai.service..."
-            ./setup-ai-service.sh
-          fi
-          
-          # Start the service
-          sudo systemctl restart tokkatot-ai.service
-          systemctl status tokkatot-ai.service --no-pager
-
       - name: Run Middleware with Environment Variables
         run: |
           sudo systemctl restart tokkatot.service
           systemctl status tokkatot.service --no-pager
+      
+      - name: Restart AI Service
+        run: |
+          sudo systemctl restart tokkatot-ai.service
+          systemctl status tokkatot-ai.service --no-pager
