@@ -8,11 +8,7 @@
 #include "wifi_manager.h"
 #include "sensor_manager.h"
 #include "device_control.h"
-#include "server_handlers.h"
-
-static const char *TAG = "TOKKATOT";
-
-static device_state_t device_state;
+#include "server_handlers.c"
 
 void app_main(void)
 {

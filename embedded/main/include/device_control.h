@@ -26,9 +26,9 @@ typedef struct {
 
 // Function declarations
 void device_control_init(void);
-void set_servo_position(int position);
-void dispense_food(void);
-void update_device_state(device_state_t *state);
+void open_feeder(void);
+void close_feeder(void);
 void toggle_device(gpio_num_t pin, bool *state);
+void update_device_state(device_state_t *state);
 
 #endif // DEVICE_CONTROL_H

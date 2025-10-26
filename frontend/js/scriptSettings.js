@@ -67,15 +67,16 @@ async function fetchInitialSettings() {
 
         let data = await response.json();
         data = JSON.parse(data.data);
-        console.log("Fetched initial state:", data);
-
-        // Update the UI based on the fetched data
+        // console.log("Fetched initial state:", data);
+        
         updateUI(data);
     } catch (error) {
         console.error("Error fetching initial state:", error);
         showNotification("Unable to load initial settings!", "error");
     }
 }
+
+setInterval(fetchInitialSettings, 1000);
 
 // Update the UI based on retrieved settings
 function updateUI(data) {
@@ -84,7 +85,7 @@ function updateUI(data) {
     // scheduleModeToggle.checked = data.scheduleMode;
 
     // Update immediate toggles
-    conveyerToggle.checked = data.belt;
+    conveyerToggle.checked = data.conveyer;
     fanToggle.checked = data.fan;
     lightToggle.checked = data.bulb;
     feederToggle.checked = data.feeder;
@@ -130,10 +131,13 @@ async function handleModeToggle(endpoint, state) {
         result = JSON.parse(result.state);
         console.log(`Toggled ${endpoint}: `, result);
 
-        showNotification(
-            `Auto Mode ${state ? "enabled" : "disabled"}.`,
-            "success",
-        );
+        if (!result) {
+            conveyerToggle.checked = false;
+            fanToggle.checked = false;
+            lightToggle.checked = false;
+            feederToggle.checked = false;
+            pumpToggle.checked = false;
+        }
     } catch (error) {
         console.error(`Error toggling ${endpoint}:`, error);
         showNotification("Failed to update Auto Mode toggle.", "error");
@@ -157,13 +161,6 @@ async function handleImmediateToggle(endpoint, state) {
         let result = await response.json();
         result = JSON.parse(result.state);
         console.log(`Toggled ${endpoint}: `, result);
-
-        showNotification(
-            `${endpoint.split("-")[1].charAt(0).toUpperCase() + endpoint.split("-")[1].slice(1)} ${
-                state ? "turned on" : "turned off"
-            }.`,
-            "success",
-        );
     } catch (error) {
         console.error(`Error toggling ${endpoint}:`, error);
         showNotification("Failed to update device state.", "error");

@@ -90,15 +90,12 @@ esp_err_t get_historical_data_handler(httpd_req_t *req)
 static esp_err_t toggle_auto_handler(httpd_req_t *req)
 {
     device_state.auto_mode = !device_state.auto_mode;
-    if (!device_state.auto_mode) {
-        // When turning off auto mode, also turn off all devices
-        device_state.bulb = false;
-        device_state.fan = false;
-        device_state.pump = false;
-        device_state.conveyer = false;
-    }
-    // update internal state store if needed
+    device_state.bulb = false;
+    device_state.fan = false;
+    device_state.pump = false;
+    device_state.conveyer = false;
     update_device_state(&device_state);
+
     return send_text_response(req, device_state.auto_mode ? "true" : "false");
 }
 
@@ -133,18 +130,17 @@ static esp_err_t toggle_pump_handler(httpd_req_t *req)
 
 static esp_err_t toggle_feeder_handler(httpd_req_t *req)
 {
-    // For feeder, when turned on trigger dispense action.
-    // Toggle feeder_state; if it becomes true, perform dispense_food().
-    dispense_food();
+    device_state.feeder = !device_state.feeder;
+    device_state.feeder ? open_feeder() : close_feeder();
     update_device_state(&device_state);
     return send_text_response(req, device_state.feeder ? "true" : "false");
 }
-
 
 /* Server initialization: start HTTPS server, register data and toggle endpoints */
 esp_err_t server_init(void)
 {
     httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
+    config.httpd.max_uri_handlers = 12; // Adjust based on number of handlers
 
     config.servercert = servercert_start;
     config.servercert_len = servercert_end - servercert_start;

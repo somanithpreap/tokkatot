@@ -1,17 +1,12 @@
 #include "device_control.h"
 #include "esp_log.h"
-#include "driver/ledc.h"
-
-// LEDC configuration for servo motor
-#define LEDC_TIMER              LEDC_TIMER_0
-#define LEDC_MODE               LEDC_LOW_SPEED_MODE
-#define LEDC_CHANNEL            LEDC_CHANNEL_0
-#define LEDC_DUTY_RES           LEDC_TIMER_13_BIT
-#define LEDC_FREQUENCY          50 // 50Hz for servo motor
-#define SERVO_MIN_PULSEWIDTH    500
-#define SERVO_MAX_PULSEWIDTH    2500
+#include "iot_servo.h"
 
 static const char *tag = "device_control";
+
+// Servo calibration angles
+static uint16_t CALIBRATION_0 = 30;    // Real 0 degree angle
+static uint16_t CALIBRATION_180 = 195; // Real 180 degree angle
 
 static device_state_t device_state = {
     .auto_mode = false,
@@ -30,7 +25,6 @@ void device_control_init(void)
         .mode = GPIO_MODE_OUTPUT,
         .pin_bit_mask = (1ULL << CONVEYER_PIN) |
                        (1ULL << FAN_PIN) |
-                       (1ULL << SERVO_PIN) |
                        (1ULL << LIGHTBULB_PIN) |
                        (1ULL << WATERPUMP_PIN),
         .pull_down_en = 0,
@@ -38,58 +32,48 @@ void device_control_init(void)
     };
     gpio_config(&io_conf);
 
-    // Configure LEDC for servo control
-    ledc_timer_config_t ledc_timer = {
-        .speed_mode = LEDC_MODE,
-        .timer_num = LEDC_TIMER,
-        .duty_resolution = LEDC_DUTY_RES,
-        .freq_hz = LEDC_FREQUENCY,
-        .clk_cfg = LEDC_AUTO_CLK
+    servo_config_t servo_cfg = {
+        .max_angle = 180,
+        .min_width_us = 500,
+        .max_width_us = 2500,
+        .freq = 50,
+        .timer_number = LEDC_TIMER_0,
+        .channels = {
+            .servo_pin = {
+                SERVO_PIN
+            },
+            .ch = {
+                LEDC_CHANNEL_0,
+            },
+        },
+        .channel_number = 1,
     };
-    ledc_timer_config(&ledc_timer);
 
-    ledc_channel_config_t ledc_channel = {
-        .speed_mode = LEDC_MODE,
-        .channel = LEDC_CHANNEL,
-        .timer_sel = LEDC_TIMER,
-        .intr_type = LEDC_INTR_DISABLE,
-        .gpio_num = SERVO_PIN,
-        .duty = 0,
-        .hpoint = 0
-    };
-    ledc_channel_config(&ledc_channel);
+    // Initialize the servo
+    iot_servo_init(LEDC_LOW_SPEED_MODE, &servo_cfg);
 
     // Initialize all devices to OFF state
     gpio_set_level(CONVEYER_PIN, 1);
     gpio_set_level(FAN_PIN, 1);
     gpio_set_level(LIGHTBULB_PIN, 1);
     gpio_set_level(WATERPUMP_PIN, 1);
-    set_servo_position(90); // Set servo to neutral position
+    iot_servo_write_angle(LEDC_LOW_SPEED_MODE, 0, CALIBRATION_0 + 60);
 }
 
-void set_servo_position(int position)
+void close_feeder(void)
 {
-    uint32_t duty = (position * (SERVO_MAX_PULSEWIDTH - SERVO_MIN_PULSEWIDTH) / 180) + SERVO_MIN_PULSEWIDTH;
-    ledc_set_duty_and_update(LEDC_MODE, LEDC_CHANNEL, duty, 0);
+    for (uint16_t i = CALIBRATION_0; i <= (CALIBRATION_0 + 60); i++) {
+        iot_servo_write_angle(LEDC_LOW_SPEED_MODE, 0, i);
+        vTaskDelay(20 / portTICK_PERIOD_MS);
+    }
 }
 
-void dispense_food(void)
+void open_feeder(void)
 {
-    device_state.feeder = true;
-    
-    // Move servo from 90 to 15 degrees
-    for (int pos = 60; pos >= 0; pos--) {
-        set_servo_position(pos);
-        vTaskDelay(pdMS_TO_TICKS(25));
+    for (uint16_t i = (CALIBRATION_0 + 60); i >= CALIBRATION_0; i--) {
+        iot_servo_write_angle(LEDC_LOW_SPEED_MODE, 0, i);
+        vTaskDelay(20 / portTICK_PERIOD_MS);
     }
-    
-    // Move servo back from 15 to 90 degrees
-    for (int pos = 0; pos <= 60; pos++) {
-        set_servo_position(pos);
-        vTaskDelay(pdMS_TO_TICKS(25));
-    }
-    
-    device_state.feeder = false;
 }
 
 void toggle_device(gpio_num_t pin, bool *state)
@@ -105,7 +89,6 @@ void update_device_state(device_state_t *state)
     
     gpio_set_level(FAN_PIN, state->fan ? 0 : 1);
     gpio_set_level(LIGHTBULB_PIN, state->bulb ? 0 : 1);
-    gpio_set_level(SERVO_PIN, state->feeder ? 0 : 1);
     gpio_set_level(WATERPUMP_PIN, state->pump ? 0 : 1);
     gpio_set_level(CONVEYER_PIN, state->conveyer ? 0 : 1);
 }
